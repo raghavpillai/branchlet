@@ -1,0 +1,183 @@
+import { readFile, writeFile, access, mkdir } from 'fs/promises';
+import { dirname, join } from 'path';
+import type { WorktreeConfig, ConfigFile, ConfigValidation } from '../types/index.js';
+import { DEFAULT_CONFIG, CONFIG_FILE_NAMES, GLOBAL_CONFIG_PATH } from '../constants/index.js';
+import { ConfigError } from '../utils/index.js';
+
+export class ConfigService {
+  private config: WorktreeConfig;
+  private configPath?: string;
+
+  constructor() {
+    this.config = { ...DEFAULT_CONFIG };
+  }
+
+  async loadConfig(projectPath?: string): Promise<WorktreeConfig> {
+    const configFile = await this.findConfigFile(projectPath);
+    
+    if (configFile) {
+      try {
+        const content = await readFile(configFile.path, 'utf-8');
+        const parsed = JSON.parse(content);
+        
+        const validation = this.validateConfig(parsed);
+        if (!validation.isValid) {
+          throw new ConfigError(
+            `Invalid configuration: ${validation.errors.join(', ')}`,
+            configFile.path
+          );
+        }
+        
+        this.config = { ...DEFAULT_CONFIG, ...parsed };
+        this.configPath = configFile.path;
+      } catch (error) {
+        if (error instanceof ConfigError) {
+          throw error;
+        }
+        throw new ConfigError(
+          `Failed to load config from ${configFile.path}: ${error}`,
+          configFile.path
+        );
+      }
+    }
+
+    return this.config;
+  }
+
+  async saveConfig(config: WorktreeConfig, path?: string): Promise<void> {
+    const configPath = path || this.configPath || join(process.cwd(), CONFIG_FILE_NAMES[0]);
+    
+    const validation = this.validateConfig(config);
+    if (!validation.isValid) {
+      throw new ConfigError(`Invalid configuration: ${validation.errors.join(', ')}`);
+    }
+
+    try {
+      await mkdir(dirname(configPath), { recursive: true });
+      await writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
+      
+      this.config = { ...config };
+      this.configPath = configPath;
+    } catch (error) {
+      throw new ConfigError(`Failed to save config to ${configPath}: ${error}`);
+    }
+  }
+
+  getConfig(): WorktreeConfig {
+    return { ...this.config };
+  }
+
+  updateConfig(updates: Partial<WorktreeConfig>): WorktreeConfig {
+    this.config = { ...this.config, ...updates };
+    return this.getConfig();
+  }
+
+  resetConfig(): WorktreeConfig {
+    this.config = { ...DEFAULT_CONFIG };
+    return this.getConfig();
+  }
+
+  validateConfig(config: unknown): ConfigValidation {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+
+    if (!config || typeof config !== 'object') {
+      return { isValid: false, errors: ['Configuration must be an object'], warnings: [] };
+    }
+
+    const cfg = config as Record<string, unknown>;
+
+    if (cfg.worktreeCopyPatterns !== undefined) {
+      if (!Array.isArray(cfg.worktreeCopyPatterns)) {
+        errors.push('worktreeCopyPatterns must be an array of strings');
+      } else if (!cfg.worktreeCopyPatterns.every(p => typeof p === 'string')) {
+        errors.push('All worktreeCopyPatterns must be strings');
+      }
+    }
+
+    if (cfg.worktreeCopyIgnores !== undefined) {
+      if (!Array.isArray(cfg.worktreeCopyIgnores)) {
+        errors.push('worktreeCopyIgnores must be an array of strings');
+      } else if (!cfg.worktreeCopyIgnores.every(p => typeof p === 'string')) {
+        errors.push('All worktreeCopyIgnores must be strings');
+      }
+    }
+
+    if (cfg.worktreePathTemplate !== undefined) {
+      if (typeof cfg.worktreePathTemplate !== 'string') {
+        errors.push('worktreePathTemplate must be a string');
+      } else if (!cfg.worktreePathTemplate.includes('$BASE_PATH')) {
+        warnings.push('worktreePathTemplate should include $BASE_PATH variable');
+      }
+    }
+
+    if (cfg.postCreateCmd !== undefined && typeof cfg.postCreateCmd !== 'string') {
+      errors.push('postCreateCmd must be a string');
+    }
+
+    if (cfg.terminalCommand !== undefined && typeof cfg.terminalCommand !== 'string') {
+      errors.push('terminalCommand must be a string');
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+      warnings
+    };
+  }
+
+  private async findConfigFile(projectPath?: string): Promise<ConfigFile | null> {
+    const searchPaths: string[] = [];
+    
+    if (projectPath) {
+      for (const fileName of CONFIG_FILE_NAMES) {
+        searchPaths.push(join(projectPath, fileName));
+      }
+    }
+
+    for (const fileName of CONFIG_FILE_NAMES) {
+      searchPaths.push(join(process.cwd(), fileName));
+    }
+
+    for (const fileName of CONFIG_FILE_NAMES) {
+      searchPaths.push(join(GLOBAL_CONFIG_PATH, fileName));
+    }
+
+    for (const path of searchPaths) {
+      try {
+        await access(path);
+        return {
+          config: this.config,
+          path,
+          isGlobal: path.includes(GLOBAL_CONFIG_PATH)
+        };
+      } catch {
+        continue;
+      }
+    }
+
+    return null;
+  }
+
+  async createGlobalConfig(): Promise<string> {
+    const globalConfigPath = join(GLOBAL_CONFIG_PATH, CONFIG_FILE_NAMES[0]);
+    await this.saveConfig(DEFAULT_CONFIG, globalConfigPath);
+    return globalConfigPath;
+  }
+
+  async hasGlobalConfig(): Promise<boolean> {
+    for (const fileName of CONFIG_FILE_NAMES) {
+      try {
+        await access(join(GLOBAL_CONFIG_PATH, fileName));
+        return true;
+      } catch {
+        continue;
+      }
+    }
+    return false;
+  }
+
+  getConfigPath(): string | undefined {
+    return this.configPath;
+  }
+}
