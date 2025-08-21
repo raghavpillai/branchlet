@@ -5,6 +5,10 @@ import { App } from "./components/app.js"
 import { MESSAGES } from "./constants/index.js"
 import type { AppMode } from "./types/index.js"
 
+// Import version from package.json using import assertion
+import packageJson from "../package.json" with { type: "json" }
+const VERSION = packageJson.version
+
 function parseArguments(): { mode: AppMode; help: boolean } {
   const argv = minimist(process.argv.slice(2), {
     string: ["mode"],
@@ -21,7 +25,7 @@ function parseArguments(): { mode: AppMode; help: boolean } {
   }
 
   if (argv.version) {
-    console.log("Brancher v0.1.0")
+    console.log(`Brancher v${VERSION}`)
     process.exit(0)
   }
 
@@ -73,7 +77,7 @@ Configuration:
   1. .brancher.json in current directory
   2. ~/.brancher/settings.json (global config)
 
-For more information, visit: https://github.com/your-username/brancher
+For more information, visit: https://github.com/raghavpillai/git-worktree-manager
 `)
 }
 
