@@ -62,6 +62,7 @@ export function App({ initialMode = 'menu', onExit }: AppProps): JSX.Element {
   const [worktreeService, setWorktreeService] = useState<WorktreeService | null>(null);
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(true);
+  const [lastMenuIndex, setLastMenuIndex] = useState(0);
 
   useEffect(() => {
     initializeService();
@@ -127,7 +128,10 @@ export function App({ initialMode = 'menu', onExit }: AppProps): JSX.Element {
     }
   ];
 
-  const handleMenuSelect = (value: AppMode | 'exit'): void => {
+  const handleMenuSelect = (value: AppMode | 'exit', selectedIndex?: number): void => {
+    if (selectedIndex !== undefined) {
+      setLastMenuIndex(selectedIndex);
+    }
     if (value === 'exit') {
       handleExit();
     } else {
@@ -167,42 +171,53 @@ export function App({ initialMode = 'menu', onExit }: AppProps): JSX.Element {
       <WelcomeHeader mode={mode} />
 
       {mode === 'menu' && (
-        <SelectPrompt
-          label={MESSAGES.MENU_TITLE}
-          options={getMenuOptions()}
-          onSelect={handleMenuSelect}
-          onCancel={handleExit}
-        />
+        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED} dimColor>
+          <SelectPrompt
+            label={MESSAGES.MENU_TITLE}
+            options={getMenuOptions()}
+            onSelect={handleMenuSelect}
+            onCancel={handleExit}
+            defaultIndex={lastMenuIndex}
+          />
+        </Box>
       )}
 
       {mode === 'create' && (
-        <CreateWorktree
-          worktreeService={worktreeService}
-          onComplete={handleBackToMenu}
-          onCancel={handleBackToMenu}
-        />
+        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED} dimColor>
+          <CreateWorktree
+            worktreeService={worktreeService}
+            onComplete={handleBackToMenu}
+            onCancel={handleBackToMenu}
+          />
+        </Box>
       )}
 
       {mode === 'list' && (
-        <ListWorktrees
-          worktreeService={worktreeService}
-          onBack={handleBackToMenu}
-        />
+        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED} dimColor>
+          <ListWorktrees
+            worktreeService={worktreeService}
+            onBack={handleBackToMenu}
+          />
+        </Box>
       )}
 
       {mode === 'delete' && (
-        <DeleteWorktree
-          worktreeService={worktreeService}
-          onComplete={handleBackToMenu}
-          onCancel={handleBackToMenu}
-        />
+        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED} dimColor>
+          <DeleteWorktree
+            worktreeService={worktreeService}
+            onComplete={handleBackToMenu}
+            onCancel={handleBackToMenu}
+          />
+        </Box>
       )}
 
       {mode === 'settings' && (
-        <SettingsMenu
-          worktreeService={worktreeService}
-          onBack={handleBackToMenu}
-        />
+        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED} dimColor>
+          <SettingsMenu
+            worktreeService={worktreeService}
+            onBack={handleBackToMenu}
+          />
+        </Box>
       )}
     </Box>
   );

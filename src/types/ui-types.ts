@@ -21,7 +21,7 @@ export interface InputPromptProps {
 export interface SelectPromptProps<T = string> {
   label: string;
   options: SelectOption<T>[];
-  onSelect: (value: T) => void;
+  onSelect: (value: T, selectedIndex?: number) => void;
   onCancel?: () => void;
   defaultIndex?: number;
 }

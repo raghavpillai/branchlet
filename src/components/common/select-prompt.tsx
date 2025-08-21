@@ -25,7 +25,7 @@ export function SelectPrompt<T = string>({
     if (key.return) {
       const selectedOption = options[selectedIndex];
       if (selectedOption) {
-        onSelect(selectedOption.value);
+        onSelect(selectedOption.value, selectedIndex);
       }
       return;
     }
