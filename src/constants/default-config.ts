@@ -29,8 +29,6 @@ export const CONFIG_FILE_NAMES = [
   "brancher.config.json",
 ] as const
 
-export const GLOBAL_CONFIG_DIR =
-  process.env.XDG_CONFIG_HOME ||
-  (process.platform === "win32" ? process.env.APPDATA : `${process.env.HOME}/.config`)
+export const GLOBAL_CONFIG_DIR = `${process.env.HOME}/.brancher`
 
-export const GLOBAL_CONFIG_PATH = `${GLOBAL_CONFIG_DIR}/brancher`
+export const GLOBAL_CONFIG_FILE = `${GLOBAL_CONFIG_DIR}/settings.json`

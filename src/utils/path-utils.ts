@@ -1,5 +1,5 @@
 import { basename, dirname, join, resolve } from "node:path"
-import type { TemplateVariables } from "../types/index.js"
+import type { TemplateVariables } from "../types/index"
 
 export function resolveTemplate(template: string, variables: TemplateVariables): string {
   let result = template
@@ -71,13 +71,12 @@ export function validateDirectoryName(name: string): string | undefined {
     return "Directory name cannot start with . or -"
   }
 
-  // Check for invalid filesystem characters
   const hasInvalidChars = /[<>:"|?*]/.test(name)
-  const hasControlChars = name.split('').some(char => {
+  const hasControlChars = name.split("").some((char) => {
     const code = char.charCodeAt(0)
-    return code >= 0x00 && code <= 0x1F
+    return code >= 0x00 && code <= 0x1f
   })
-  
+
   if (hasInvalidChars || hasControlChars) {
     return "Directory name contains invalid characters"
   }

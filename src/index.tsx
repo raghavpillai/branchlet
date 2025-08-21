@@ -73,7 +73,7 @@ Configuration:
   1. .brancherrc.json in current directory
   2. .brancher.json in current directory  
   3. brancher.config.json in current directory
-  4. Global config in ~/.config/brancher/
+  4. Global config in ~/.brancher/settings.json
 
 For more information, visit: https://github.com/your-username/brancher
 `)

@@ -1,8 +1,13 @@
 import { access, mkdir, readFile, writeFile } from "node:fs/promises"
 import { dirname, join } from "node:path"
-import { CONFIG_FILE_NAMES, DEFAULT_CONFIG, GLOBAL_CONFIG_PATH } from "../constants/index.js"
-import type { ConfigFile, ConfigValidation, WorktreeConfig } from "../types/index.js"
-import { ConfigError } from "../utils/index.js"
+import {
+  CONFIG_FILE_NAMES,
+  DEFAULT_CONFIG,
+  GLOBAL_CONFIG_DIR,
+  GLOBAL_CONFIG_FILE,
+} from "../constants/index"
+import type { ConfigFile, ConfigValidation, WorktreeConfig } from "../types/index"
+import { ConfigError } from "../utils/index"
 
 export class ConfigService {
   private config: WorktreeConfig
@@ -13,6 +18,8 @@ export class ConfigService {
   }
 
   async loadConfig(projectPath?: string): Promise<WorktreeConfig> {
+    await this.ensureGlobalConfig()
+
     const configFile = await this.findConfigFile(projectPath)
 
     if (configFile) {
@@ -139,8 +146,10 @@ export class ConfigService {
       searchPaths.push(join(process.cwd(), fileName))
     }
 
+    searchPaths.push(GLOBAL_CONFIG_FILE)
+
     for (const fileName of CONFIG_FILE_NAMES) {
-      searchPaths.push(join(GLOBAL_CONFIG_PATH, fileName))
+      searchPaths.push(join(GLOBAL_CONFIG_DIR, fileName))
     }
 
     for (const path of searchPaths) {
@@ -149,7 +158,7 @@ export class ConfigService {
         return {
           config: this.config,
           path,
-          isGlobal: path.includes(GLOBAL_CONFIG_PATH),
+          isGlobal: path.includes(GLOBAL_CONFIG_DIR),
         }
       } catch {}
     }
@@ -157,20 +166,27 @@ export class ConfigService {
     return null
   }
 
+  async ensureGlobalConfig(): Promise<void> {
+    try {
+      await access(GLOBAL_CONFIG_FILE)
+    } catch {
+      await mkdir(GLOBAL_CONFIG_DIR, { recursive: true })
+      await writeFile(GLOBAL_CONFIG_FILE, JSON.stringify(DEFAULT_CONFIG, null, 2), "utf-8")
+    }
+  }
+
   async createGlobalConfig(): Promise<string> {
-    const globalConfigPath = join(GLOBAL_CONFIG_PATH, CONFIG_FILE_NAMES[0])
-    await this.saveConfig(DEFAULT_CONFIG, globalConfigPath)
-    return globalConfigPath
+    await this.saveConfig(DEFAULT_CONFIG, GLOBAL_CONFIG_FILE)
+    return GLOBAL_CONFIG_FILE
   }
 
   async hasGlobalConfig(): Promise<boolean> {
-    for (const fileName of CONFIG_FILE_NAMES) {
-      try {
-        await access(join(GLOBAL_CONFIG_PATH, fileName))
-        return true
-      } catch {}
+    try {
+      await access(GLOBAL_CONFIG_FILE)
+      return true
+    } catch {
+      return false
     }
-    return false
   }
 
   getConfigPath(): string | undefined {
