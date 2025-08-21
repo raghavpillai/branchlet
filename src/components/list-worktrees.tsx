@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Text } from 'ink';
+import { Box, Text, useInput } from 'ink';
 import { StatusIndicator } from './common/index.js';
 import { WorktreeService } from '../services/index.js';
 import { MESSAGES, COLORS } from '../constants/index.js';
@@ -21,6 +21,12 @@ export function ListWorktrees({
   useEffect(() => {
     loadWorktrees();
   }, []);
+
+  useInput((input, key) => {
+    if (key.escape || key.return || input) {
+      onBack();
+    }
+  });
 
   const loadWorktrees = async (): Promise<void> => {
     try {

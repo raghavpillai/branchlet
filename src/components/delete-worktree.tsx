@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Text } from 'ink';
+import { Box, Text, useInput } from 'ink';
 import { SelectPrompt, ConfirmDialog, StatusIndicator } from './common/index.js';
 import { WorktreeService } from '../services/index.js';
 import { MESSAGES, COLORS } from '../constants/index.js';
@@ -26,6 +26,15 @@ export function DeleteWorktree({
   useEffect(() => {
     loadWorktrees();
   }, []);
+
+  useInput((input, key) => {
+    // Handle key press for error and no-worktrees states
+    if (state.error || worktrees.length === 0) {
+      if (key.escape || key.return || input) {
+        onCancel();
+      }
+    }
+  });
 
   const loadWorktrees = async (): Promise<void> => {
     try {

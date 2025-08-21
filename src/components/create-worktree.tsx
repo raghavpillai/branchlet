@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Text } from 'ink';
+import { Box, Text, useInput } from 'ink';
 import { InputPrompt, SelectPrompt, ConfirmDialog, StatusIndicator } from './common/index.js';
 import { WorktreeService } from '../services/index.js';
 import { validateDirectoryName, validateBranchName, getWorktreePath, getRepositoryRoot } from '../utils/index.js';
@@ -29,6 +29,18 @@ export function CreateWorktree({
   useEffect(() => {
     loadBranches();
   }, []);
+
+  useInput((input, key) => {
+    // Handle key press for error states
+    if (state.error) {
+      if (key.escape || key.return || input) {
+        setState(prev => {
+          const { error, ...rest } = prev;
+          return rest;
+        });
+      }
+    }
+  });
 
   const loadBranches = async (): Promise<void> => {
     try {
@@ -107,16 +119,19 @@ export function CreateWorktree({
     const options: SelectOption<string>[] = [];
     
     for (const branch of branches) {
-      options.push({
+      const option: SelectOption<string> = {
         label: branch.name,
         value: branch.name,
-        description: branch.isCurrent 
-          ? 'current' 
-          : branch.isDefault 
-          ? 'default' 
-          : undefined,
         isDefault: branch.isCurrent
-      });
+      };
+      
+      if (branch.isCurrent) {
+        option.description = 'current';
+      } else if (branch.isDefault) {
+        option.description = 'default';
+      }
+      
+      options.push(option);
     }
 
     return options;

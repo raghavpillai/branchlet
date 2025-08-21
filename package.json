@@ -1,7 +1,7 @@
 {
   "name": "brancher",
-  "version": "0.1.0",
-  "description": "Interactive CLI for managing Git worktrees",
+  "version": "0.0.1",
+  "description": "CLI for creating and managing Git worktrees",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -15,8 +15,20 @@
     "lint": "eslint src/**/*.{ts,tsx}",
     "format": "prettier --write src/**/*.{ts,tsx}"
   },
-  "keywords": ["git", "worktree", "cli", "interactive", "typescript"],
-  "author": "",
+  "keywords": [
+    "git",
+    "worktree",
+    "cli",
+    "codegen",
+    "claude",
+    "ai",
+    "codex"
+  ],
+  "author": {
+    "name": "Raghav Pillai",
+    "email": "me@raghav.sh",
+    "url": "https://raghav.sh"
+  },
   "license": "MIT",
   "dependencies": {
     "ink": "^4.4.1",
