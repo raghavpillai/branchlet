@@ -9,12 +9,13 @@
   },
   "scripts": {
     "dev": "bun run src/index.tsx",
-    "build": "bun build src/index.tsx --outdir dist --target node --format esm --external react-devtools-core",
+    "build": "bun run typecheck && bun build src/index.tsx --outdir dist --target node --format esm --external react-devtools-core",
     "start": "node dist/index.js",
     "test": "bun test",
     "lint": "biome lint src/",
     "format": "biome format --write src/",
-    "check": "biome check --write src/"
+    "check": "biome check --write src/",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": ["git", "worktree", "cli", "codegen", "claude", "ai", "codex"],
   "author": {
