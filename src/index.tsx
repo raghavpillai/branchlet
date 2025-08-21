@@ -70,10 +70,8 @@ Examples:
 
 Configuration:
   The tool looks for configuration files in the following order:
-  1. .brancherrc.json in current directory
-  2. .brancher.json in current directory  
-  3. brancher.config.json in current directory
-  4. Global config in ~/.brancher/settings.json
+  1. .brancher.json in current directory
+  2. ~/.brancher/settings.json (global config)
 
 For more information, visit: https://github.com/your-username/brancher
 `)

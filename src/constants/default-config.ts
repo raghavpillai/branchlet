@@ -23,11 +23,7 @@ export const DEFAULT_CONFIG: WorktreeConfig = {
   terminalCommand: "",
 }
 
-export const CONFIG_FILE_NAMES = [
-  ".brancherrc.json",
-  ".brancher.json",
-  "brancher.config.json",
-] as const
+export const LOCAL_CONFIG_FILE_NAME = ".brancher.json"
 
 export const GLOBAL_CONFIG_DIR = `${process.env.HOME}/.brancher`
 

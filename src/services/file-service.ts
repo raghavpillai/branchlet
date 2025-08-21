@@ -193,5 +193,4 @@ export class FileService {
       resolve({ success: true })
     })
   }
-
 }

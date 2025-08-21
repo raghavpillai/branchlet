@@ -12,7 +12,6 @@ export interface ConfigFile {
   isGlobal: boolean
 }
 
-
 export interface TemplateVariables {
   BASE_PATH: string
   WORKTREE_PATH: string

@@ -1,30 +1,26 @@
-import { Box, Text, useInput } from "ink";
-import { useEffect, useState } from "react";
+import { Box, Text, useInput } from "ink"
+import { useEffect, useState } from "react"
 import {
   CommandProgress,
   ConfirmDialog,
   InputPrompt,
   SelectPrompt,
   StatusIndicator,
-} from "../../components/common/index.js";
-import { COLORS, MESSAGES } from "../../constants/index.js";
-import type { WorktreeService } from "../../services/index.js";
-import type {
-  CreateWorktreeState,
-  GitBranch,
-  SelectOption,
-} from "../../types/index.js";
+} from "../../components/common/index.js"
+import { COLORS, MESSAGES } from "../../constants/index.js"
+import type { WorktreeService } from "../../services/index.js"
+import type { CreateWorktreeState, GitBranch, SelectOption } from "../../types/index.js"
 import {
   getRepositoryRoot,
   getWorktreePath,
   validateBranchName,
   validateDirectoryName,
-} from "../../utils/index.js";
+} from "../../utils/index.js"
 
 interface CreateWorktreeProps {
-  worktreeService: WorktreeService;
-  onComplete: () => void;
-  onCancel: () => void;
+  worktreeService: WorktreeService
+  onComplete: () => void
+  onCancel: () => void
 }
 
 export function CreateWorktree({
@@ -37,48 +33,48 @@ export function CreateWorktree({
     directoryName: "",
     sourceBranch: "",
     newBranch: "",
-  });
-  const [branches, setBranches] = useState<GitBranch[]>([]);
-  const [loading, setLoading] = useState(false);
+  })
+  const [branches, setBranches] = useState<GitBranch[]>([])
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    loadBranches();
-  }, []);
+    loadBranches()
+  }, [])
 
   useInput((input, key) => {
     if (state.error) {
       if (key.escape || key.return || input) {
         setState((prev) => {
-          const { error, ...rest } = prev;
-          return rest;
-        });
+          const { error, ...rest } = prev
+          return rest
+        })
       }
     }
-  });
+  })
 
   const loadBranches = async (): Promise<void> => {
     try {
-      setLoading(true);
-      const gitService = worktreeService.getGitService();
-      const repoInfo = await gitService.getRepositoryInfo();
-      setBranches(repoInfo.branches);
+      setLoading(true)
+      const gitService = worktreeService.getGitService()
+      const repoInfo = await gitService.getRepositoryInfo()
+      setBranches(repoInfo.branches)
     } catch (error) {
       setState((prev) => ({
         ...prev,
         error: `Failed to load branches: ${error}`,
-      }));
+      }))
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleDirectorySubmit = (directoryName: string): void => {
     setState((prev) => ({
       ...prev,
       directoryName: directoryName.trim(),
       step: "source-branch",
-    }));
-  };
+    }))
+  }
 
   const handleSourceBranchSelect = (sourceBranch: string): void => {
     setState((prev) => ({
@@ -86,55 +82,55 @@ export function CreateWorktree({
       sourceBranch,
       newBranch: "",
       step: "new-branch",
-    }));
-  };
+    }))
+  }
 
   const handleNewBranchSubmit = (newBranch: string): void => {
     setState((prev) => ({
       ...prev,
       newBranch: newBranch.trim(),
       step: "confirm",
-    }));
-  };
+    }))
+  }
 
   const validateNewBranchName = (name: string): string | undefined => {
-    const formatError = validateBranchName(name);
+    const formatError = validateBranchName(name)
     if (formatError) {
-      return formatError;
+      return formatError
     }
 
-    const existingBranch = branches.find((branch) => branch.name === name);
+    const existingBranch = branches.find((branch) => branch.name === name)
     if (existingBranch) {
-      return "Branch already exists";
+      return "Branch already exists"
     }
 
-    return undefined;
-  };
+    return undefined
+  }
 
   const handleConfirm = async (): Promise<void> => {
     try {
-      setState((prev) => ({ ...prev, step: "creating" }));
+      setState((prev) => ({ ...prev, step: "creating" }))
 
-      const config = worktreeService.getConfigService().getConfig();
-      const gitRoot = getRepositoryRoot();
+      const config = worktreeService.getConfigService().getConfig()
+      const gitRoot = getRepositoryRoot()
       const worktreePath = getWorktreePath(
         gitRoot,
         state.directoryName,
-        config.worktreePathTemplate,
-      );
-      const parentDir = worktreePath.replace(`/${state.directoryName}`, "");
+        config.worktreePathTemplate
+      )
+      const parentDir = worktreePath.replace(`/${state.directoryName}`, "")
 
-      const gitService = worktreeService.getGitService();
+      const gitService = worktreeService.getGitService()
       await gitService.createWorktree({
         name: state.directoryName,
         sourceBranch: state.sourceBranch,
         newBranch: state.newBranch,
         basePath: parentDir,
-      });
+      })
 
       if (config.worktreeCopyPatterns.length > 0) {
-        const fileService = worktreeService.getFileService();
-        await fileService.copyFiles(gitRoot, worktreePath, config);
+        const fileService = worktreeService.getFileService()
+        await fileService.copyFiles(gitRoot, worktreePath, config)
       }
 
       if (config.postCreateCmd.length > 0) {
@@ -142,15 +138,15 @@ export function CreateWorktree({
           ...prev,
           step: "running-commands",
           commandProgress: { current: 0, total: config.postCreateCmd.length },
-        }));
+        }))
 
-        const fileService = worktreeService.getFileService();
+        const fileService = worktreeService.getFileService()
         const variables = {
           BASE_PATH: gitRoot.split("/").pop() || "",
           WORKTREE_PATH: worktreePath,
           BRANCH_NAME: state.newBranch,
           SOURCE_BRANCH: state.sourceBranch,
-        };
+        }
 
         await fileService.executePostCreateCommands(
           config.postCreateCmd,
@@ -160,56 +156,54 @@ export function CreateWorktree({
               ...prev,
               currentCommand: command,
               commandProgress: { current, total },
-            }));
-          },
-        );
+            }))
+          }
+        )
       }
 
       if (config.terminalCommand) {
-        const fileService = worktreeService.getFileService();
-        await fileService.openTerminal(config.terminalCommand, worktreePath);
+        const fileService = worktreeService.getFileService()
+        await fileService.openTerminal(config.terminalCommand, worktreePath)
       }
 
-      setState((prev) => ({ ...prev, step: "success" }));
+      setState((prev) => ({ ...prev, step: "success" }))
 
       setTimeout(() => {
-        onComplete();
-      }, 2000);
+        onComplete()
+      }, 2000)
     } catch (error) {
       setState((prev) => ({
         ...prev,
         error: error instanceof Error ? error.message : String(error),
         step: "directory",
-      }));
+      }))
     }
-  };
+  }
 
   const getBranchOptions = (): SelectOption<string>[] => {
-    const options: SelectOption<string>[] = [];
+    const options: SelectOption<string>[] = []
 
     for (const branch of branches) {
       const option: SelectOption<string> = {
         label: branch.name,
         value: branch.name,
         isDefault: branch.isCurrent,
-      };
-
-      if (branch.isCurrent) {
-        option.description = "current";
-      } else if (branch.isDefault) {
-        option.description = "default";
       }
 
-      options.push(option);
+      if (branch.isCurrent) {
+        option.description = "current"
+      } else if (branch.isDefault) {
+        option.description = "default"
+      }
+
+      options.push(option)
     }
 
-    return options;
-  };
+    return options
+  }
 
   if (loading) {
-    return (
-      <StatusIndicator status="loading" message={MESSAGES.LOADING_BRANCHES} />
-    );
+    return <StatusIndicator status="loading" message={MESSAGES.LOADING_BRANCHES} />
   }
 
   if (state.error) {
@@ -220,7 +214,7 @@ export function CreateWorktree({
           <Text color={COLORS.MUTED}>Press any key to try again...</Text>
         </Box>
       </Box>
-    );
+    )
   }
 
   switch (state.step) {
@@ -233,7 +227,7 @@ export function CreateWorktree({
           onSubmit={handleDirectorySubmit}
           onCancel={onCancel}
         />
-      );
+      )
 
     case "source-branch":
       return (
@@ -243,7 +237,7 @@ export function CreateWorktree({
           onSelect={handleSourceBranchSelect}
           onCancel={onCancel}
         />
-      );
+      )
 
     case "new-branch":
       return (
@@ -254,7 +248,7 @@ export function CreateWorktree({
           onSubmit={handleNewBranchSubmit}
           onCancel={onCancel}
         />
-      );
+      )
 
     case "confirm":
       return (
@@ -264,12 +258,10 @@ export function CreateWorktree({
           onConfirm={handleConfirm}
           onCancel={onCancel}
         />
-      );
+      )
 
     case "creating":
-      return (
-        <StatusIndicator status="loading" message={MESSAGES.CREATE_CREATING} />
-      );
+      return <StatusIndicator status="loading" message={MESSAGES.CREATE_CREATING} />
 
     case "running-commands":
       return (
@@ -278,18 +270,12 @@ export function CreateWorktree({
           currentIndex={state.commandProgress?.current || 0}
           totalCommands={state.commandProgress?.total || 0}
         />
-      );
+      )
 
     case "success":
-      return (
-        <StatusIndicator
-          status="success"
-          message={MESSAGES.CREATE_SUCCESS}
-          spinner={false}
-        />
-      );
+      return <StatusIndicator status="success" message={MESSAGES.CREATE_SUCCESS} spinner={false} />
 
     default:
-      return <Text>Unknown step</Text>;
+      return <Text>Unknown step</Text>
   }
 }

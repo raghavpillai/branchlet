@@ -20,7 +20,6 @@ export function getRepositoryRoot(path?: string): string {
   return resolve(path || process.cwd())
 }
 
-
 export function getWorktreePath(
   gitRoot: string,
   directoryName: string,
