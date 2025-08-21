@@ -1,25 +1,25 @@
-import { Box, Text, useInput } from "ink"
-import { useCallback, useEffect, useState } from "react"
-import { COLORS, MESSAGES } from "../constants/index.js"
+import { Box, Text, useInput } from "ink";
+import { useCallback, useEffect, useState } from "react";
+import { COLORS, MESSAGES } from "../constants/index.js";
 import {
   CreateWorktree,
   DeleteWorktree,
   ListWorktrees,
   MainPanel,
   SettingsMenu,
-} from "../panels/index.js"
-import { WorktreeService } from "../services/index.js"
-import type { AppMode } from "../types/index.js"
-import { getUserFriendlyErrorMessage } from "../utils/index.js"
-import { ConfirmDialog, StatusIndicator } from "./common/index.js"
-import { ConfigService } from "../services/config-service.js"
+} from "../panels/index.js";
+import { WorktreeService } from "../services/index.js";
+import type { AppMode } from "../types/index.js";
+import { getUserFriendlyErrorMessage } from "../utils/index.js";
+import { ConfirmDialog, StatusIndicator } from "./common/index.js";
+import { ConfigService } from "../services/config-service.js";
 
 function WelcomeHeader({ mode }: { mode: AppMode }): JSX.Element {
-  const cwd = process.cwd()
+  const cwd = process.cwd();
   const formatPath = (path: string): string => {
-    const home = process.env.HOME || ""
-    return path.replace(home, "~")
-  }
+    const home = process.env.HOME || "";
+    return path.replace(home, "~");
+  };
 
   const getHeaderText = (): JSX.Element => {
     if (mode === "menu") {
@@ -31,7 +31,7 @@ function WelcomeHeader({ mode }: { mode: AppMode }): JSX.Element {
           </Text>
           !
         </Text>
-      )
+      );
     }
 
     const modeLabels = {
@@ -39,7 +39,7 @@ function WelcomeHeader({ mode }: { mode: AppMode }): JSX.Element {
       list: "List",
       delete: "Delete",
       settings: "Settings",
-    }
+    };
 
     return (
       <Text>
@@ -48,8 +48,8 @@ function WelcomeHeader({ mode }: { mode: AppMode }): JSX.Element {
           {modeLabels[mode] || mode}
         </Text>
       </Text>
-    )
-  }
+    );
+  };
 
   return (
     <Box borderStyle="round" paddingX={1} paddingY={0} marginBottom={1}>
@@ -58,95 +58,101 @@ function WelcomeHeader({ mode }: { mode: AppMode }): JSX.Element {
         <Text color={COLORS.MUTED}>cwd: {formatPath(cwd)}</Text>
       </Box>
     </Box>
-  )
+  );
 }
 
 interface AppProps {
-  initialMode?: AppMode
-  onExit?: () => void
+  initialMode?: AppMode;
+  onExit?: () => void;
 }
 
 export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
-  const [mode, setMode] = useState<AppMode>(initialMode)
-  const [worktreeService, setWorktreeService] = useState<WorktreeService | null>(null)
-  const [error, setError] = useState<string>()
-  const [loading, setLoading] = useState(true)
-  const [lastMenuIndex, setLastMenuIndex] = useState(0)
-  const [showResetConfirm, setShowResetConfirm] = useState(false)
+  const [mode, setMode] = useState<AppMode>(initialMode);
+  const [worktreeService, setWorktreeService] =
+    useState<WorktreeService | null>(null);
+  const [error, setError] = useState<string>();
+  const [loading, setLoading] = useState(true);
+  const [lastMenuIndex, setLastMenuIndex] = useState(0);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   useEffect(() => {
-    initializeService()
-  }, [])
+    initializeService();
+  }, []);
 
   const initializeService = async (): Promise<void> => {
     try {
-      setLoading(true)
-      setError(undefined)
+      setLoading(true);
+      setError(undefined);
 
-      const service = new WorktreeService()
-      await service.initialize()
+      const service = new WorktreeService();
+      await service.initialize();
 
-      setWorktreeService(service)
+      setWorktreeService(service);
     } catch (err) {
-      setError(getUserFriendlyErrorMessage(err instanceof Error ? err : new Error(String(err))))
+      setError(
+        getUserFriendlyErrorMessage(
+          err instanceof Error ? err : new Error(String(err)),
+        ),
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleExit = useCallback((): void => {
-    onExit?.()
-  }, [onExit])
+    onExit?.();
+  }, [onExit]);
 
   const handleBackToMenu = useCallback((): void => {
-    setMode("menu")
-  }, [])
+    setMode("menu");
+  }, []);
 
   useInput((input, key) => {
     if (key.ctrl && input === "c") {
-      handleExit()
+      handleExit();
     }
 
     if (error && !loading && !showResetConfirm) {
       if (input?.toLowerCase() === "r") {
-        setShowResetConfirm(true)
-        return
+        setShowResetConfirm(true);
+        return;
       }
 
-      setError(undefined)
+      setError(undefined);
       if (mode !== "menu") {
-        setMode("menu")
+        setMode("menu");
       }
     }
-  })
+  });
 
   const handleResetConfig = async (): Promise<void> => {
     try {
-      setShowResetConfirm(false)
-      setLoading(true)
+      setShowResetConfirm(false);
+      setLoading(true);
 
-      // Create a temporary config service to reset
-      const tempConfigService = new ConfigService()
-      await tempConfigService.createGlobalConfig()
+      const tempConfigService = new ConfigService();
+      await tempConfigService.createGlobalConfig();
 
-      // Reinitialize the service
-      await initializeService()
+      await initializeService();
     } catch (err) {
-      setError(`Failed to reset configuration: ${err}`)
-      setLoading(false)
+      setError(`Failed to reset configuration: ${err}`);
+      setLoading(false);
     }
-  }
+  };
 
-  const handleMenuSelect = (value: AppMode | "exit", selectedIndex?: number): void => {
+  const handleMenuSelect = (
+    value: AppMode | "exit",
+    selectedIndex?: number,
+  ): void => {
     if (selectedIndex !== undefined) {
-      setLastMenuIndex(selectedIndex)
+      setLastMenuIndex(selectedIndex);
     }
     if (value === "exit") {
-      handleExit()
+      handleExit();
     } else {
-      setMode(value)
+      setMode(value);
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -154,7 +160,7 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
         <WelcomeHeader mode={mode} />
         <StatusIndicator status="loading" message={MESSAGES.LOADING_GIT_INFO} />
       </Box>
-    )
+    );
   }
 
   if (error) {
@@ -170,10 +176,10 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
             onCancel={() => setShowResetConfirm(false)}
           />
         </Box>
-      )
+      );
     }
 
-    const isConfigError = error.toLowerCase().includes("configuration")
+    const isConfigError = error.toLowerCase().includes("configuration");
 
     return (
       <Box flexDirection="column">
@@ -183,22 +189,27 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
         {isConfigError && (
           <Box marginTop={1}>
             <Text color={COLORS.MUTED}>
-              Press 'r' to reset settings, any other key to retry, or Ctrl+C to exit
+              Press 'r' to reset settings, any other key to retry, or Ctrl+C to
+              exit
             </Text>
           </Box>
         )}
 
         {!isConfigError && (
           <Box marginTop={1}>
-            <Text color={COLORS.MUTED}>Press any key to retry or Ctrl+C to exit</Text>
+            <Text color={COLORS.MUTED}>
+              Press any key to retry or Ctrl+C to exit
+            </Text>
           </Box>
         )}
       </Box>
-    )
+    );
   }
 
   if (!worktreeService) {
-    return <Text color={COLORS.ERROR}>Failed to initialize worktree service</Text>
+    return (
+      <Text color={COLORS.ERROR}>Failed to initialize worktree service</Text>
+    );
   }
 
   return (
@@ -206,7 +217,12 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
       <WelcomeHeader mode={mode} />
 
       {mode === "menu" && (
-        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED} dimColor>
+        <Box
+          borderStyle="round"
+          padding={1}
+          borderColor={COLORS.MUTED}
+          dimColor
+        >
           <MainPanel
             onSelect={handleMenuSelect}
             onCancel={handleExit}
@@ -216,7 +232,12 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
       )}
 
       {mode === "create" && (
-        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED} dimColor>
+        <Box
+          borderStyle="round"
+          padding={1}
+          borderColor={COLORS.MUTED}
+          dimColor
+        >
           <CreateWorktree
             worktreeService={worktreeService}
             onComplete={handleBackToMenu}
@@ -226,13 +247,26 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
       )}
 
       {mode === "list" && (
-        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED} dimColor>
-          <ListWorktrees worktreeService={worktreeService} onBack={handleBackToMenu} />
+        <Box
+          borderStyle="round"
+          padding={1}
+          borderColor={COLORS.MUTED}
+          dimColor
+        >
+          <ListWorktrees
+            worktreeService={worktreeService}
+            onBack={handleBackToMenu}
+          />
         </Box>
       )}
 
       {mode === "delete" && (
-        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED} dimColor>
+        <Box
+          borderStyle="round"
+          padding={1}
+          borderColor={COLORS.MUTED}
+          dimColor
+        >
           <DeleteWorktree
             worktreeService={worktreeService}
             onComplete={handleBackToMenu}
@@ -242,10 +276,18 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
       )}
 
       {mode === "settings" && (
-        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED} dimColor>
-          <SettingsMenu worktreeService={worktreeService} onBack={handleBackToMenu} />
+        <Box
+          borderStyle="round"
+          padding={1}
+          borderColor={COLORS.MUTED}
+          dimColor
+        >
+          <SettingsMenu
+            worktreeService={worktreeService}
+            onBack={handleBackToMenu}
+          />
         </Box>
       )}
     </Box>
-  )
+  );
 }
