@@ -24,7 +24,7 @@ function WelcomeHeader({ mode }: { mode: AppMode }): JSX.Element {
     if (mode === "menu") {
       return (
         <Text>
-          🌳 Welcome to <Text bold>Brancher</Text>!
+          🌳 Welcome to <Text bold color={COLORS.PRIMARY}>Brancher</Text>!
         </Text>
       )
     }
@@ -38,7 +38,7 @@ function WelcomeHeader({ mode }: { mode: AppMode }): JSX.Element {
 
     return (
       <Text>
-        🌳 <Text bold>Brancher</Text> - {modeLabels[mode] || mode}
+        🌳 Brancher - <Text bold color={COLORS.PRIMARY}>{modeLabels[mode] || mode}</Text>
       </Text>
     )
   }

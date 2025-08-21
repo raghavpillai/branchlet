@@ -1,7 +1,8 @@
-import { Box, Text } from "ink"
+import { Box, Text, useInput } from "ink"
 import { useEffect, useState } from "react"
-import { InputPrompt, SelectPrompt, StatusIndicator } from "../../components/common/index.js"
+import { SelectPrompt, StatusIndicator } from "../../components/common/index.js"
 import { COLORS } from "../../constants/index.js"
+import { GLOBAL_CONFIG_FILE } from "../../constants/default-config.js"
 import type { WorktreeService } from "../../services/index.js"
 import type { SelectOption, WorktreeConfig } from "../../types/index.js"
 
@@ -10,25 +11,25 @@ interface SettingsMenuProps {
   onBack: () => void
 }
 
-type SettingsStep =
-  | "menu"
-  | "edit-copy-patterns"
-  | "edit-ignore-patterns"
-  | "edit-path-template"
-  | "edit-post-cmd"
-  | "edit-terminal-cmd"
-  | "save-config"
-  | "reset-config"
-
 export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JSX.Element {
-  const [step, setStep] = useState<SettingsStep>("menu")
   const [config, setConfig] = useState<WorktreeConfig | null>(null)
   const [loading, setLoading] = useState(true)
-  const [status, setStatus] = useState<string>()
+  const [error, setError] = useState<string>()
 
   useEffect(() => {
     loadConfig()
   }, [])
+
+  useInput((input, key) => {
+    if (error && input?.toLowerCase() === "r") {
+      resetConfig()
+      return
+    }
+    
+    if (key.escape || key.return || input) {
+      onBack()
+    }
+  })
 
   const loadConfig = async (): Promise<void> => {
     try {
@@ -36,106 +37,53 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JS
       const configService = worktreeService.getConfigService()
       const currentConfig = configService.getConfig()
       setConfig(currentConfig)
-    } catch (error) {
-      setStatus(`Failed to load configuration: ${error}`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
     } finally {
       setLoading(false)
-    }
-  }
-
-  const saveConfig = async (): Promise<void> => {
-    if (!config) return
-
-    try {
-      const configService = worktreeService.getConfigService()
-      await configService.saveConfig(config)
-      setStatus("Configuration saved successfully!")
-
-      setTimeout(() => {
-        setStatus(undefined)
-        setStep("menu")
-      }, 2000)
-    } catch (error) {
-      setStatus(`Failed to save configuration: ${error}`)
     }
   }
 
   const resetConfig = async (): Promise<void> => {
     try {
       const configService = worktreeService.getConfigService()
-      const defaultConfig = configService.resetConfig()
-      setConfig(defaultConfig)
-      setStatus("Configuration reset to defaults!")
-
-      setTimeout(() => {
-        setStatus(undefined)
-        setStep("menu")
-      }, 2000)
-    } catch (error) {
-      setStatus(`Failed to reset configuration: ${error}`)
+      await configService.createGlobalConfig()
+      const newConfig = configService.getConfig()
+      setConfig(newConfig)
+      setError(undefined)
+    } catch (err) {
+      setError(`Failed to reset configuration: ${err}`)
     }
-  }
-
-  const getMenuOptions = (): SelectOption<SettingsStep>[] => [
-    {
-      label: "Copy Patterns",
-      value: "edit-copy-patterns",
-      description: config?.worktreeCopyPatterns.join(", ") || "",
-    },
-    {
-      label: "Ignore Patterns",
-      value: "edit-ignore-patterns",
-      description: `${config?.worktreeCopyIgnores.length || 0} patterns`,
-    },
-    {
-      label: "Path Template",
-      value: "edit-path-template",
-      description: config?.worktreePathTemplate || "",
-    },
-    {
-      label: "Post-Create Command",
-      value: "edit-post-cmd",
-      description: config?.postCreateCmd || "(none)",
-    },
-    {
-      label: "Terminal Command",
-      value: "edit-terminal-cmd",
-      description: config?.terminalCommand || "(none)",
-    },
-    {
-      label: "Save Configuration",
-      value: "save-config",
-    },
-    {
-      label: "Reset to Defaults",
-      value: "reset-config",
-    },
-  ]
-
-  const handleMenuSelect = (value: SettingsStep): void => {
-    if (value === "save-config") {
-      saveConfig()
-    } else if (value === "reset-config") {
-      resetConfig()
-    } else {
-      setStep(value)
-    }
-  }
-
-  const updateConfigField = <K extends keyof WorktreeConfig>(
-    field: K,
-    value: WorktreeConfig[K]
-  ): void => {
-    if (!config) return
-    setConfig((prev) => (prev ? { ...prev, [field]: value } : null))
   }
 
   if (loading) {
     return <StatusIndicator status="loading" message="Loading configuration..." />
   }
 
-  if (status) {
-    return <StatusIndicator status="info" message={status} spinner={false} />
+  if (error) {
+    return (
+      <Box flexDirection="column">
+        <Box marginBottom={2}>
+          <Text color={COLORS.ERROR}>Configuration Error</Text>
+        </Box>
+        
+        <Box marginBottom={2}>
+          <Text>{error}</Text>
+        </Box>
+
+        <Box marginBottom={2}>
+          <Text>
+            Please edit the configuration file at: <Text bold color={COLORS.PRIMARY}>{GLOBAL_CONFIG_FILE}</Text>
+          </Text>
+        </Box>
+
+        <Box marginBottom={2}>
+          <Text color={COLORS.MUTED}>
+            Or press 'r' to reset to default settings, any other key to go back
+          </Text>
+        </Box>
+      </Box>
+    )
   }
 
   if (!config) {
@@ -149,119 +97,41 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JS
     )
   }
 
-  switch (step) {
-    case "menu":
-      return (
-        <Box flexDirection="column">
-          <Box marginBottom={2}>
-            <Text bold color={COLORS.PRIMARY}>
-              Settings
-            </Text>
-          </Box>
+  return (
+    <Box flexDirection="column">
+      <Box marginBottom={2}>
+        <Text>
+          Configuration file: <Text bold color={COLORS.PRIMARY}>{GLOBAL_CONFIG_FILE}</Text>
+        </Text>
+      </Box>
 
-          <SelectPrompt
-            label="Select setting to edit:"
-            options={getMenuOptions()}
-            onSelect={handleMenuSelect}
-            onCancel={onBack}
-          />
-        </Box>
-      )
+      <Box marginBottom={1}>
+        <Text bold color={COLORS.INFO}>Current Settings:</Text>
+      </Box>
 
-    case "edit-copy-patterns":
-      return (
-        <InputPrompt
-          label="Copy Patterns (comma-separated):"
-          defaultValue={config.worktreeCopyPatterns.join(", ")}
-          onSubmit={(value) => {
-            const patterns = value
-              .split(",")
-              .map((p) => p.trim())
-              .filter((p) => p)
-            updateConfigField("worktreeCopyPatterns", patterns)
-            setStep("menu")
-          }}
-          onCancel={() => setStep("menu")}
-        />
-      )
+      <Box flexDirection="column" marginLeft={2} marginBottom={2}>
+        <Text>
+          <Text color={COLORS.MUTED}>Copy Patterns:</Text> {config.worktreeCopyPatterns.join(", ")}
+        </Text>
+        <Text>
+          <Text color={COLORS.MUTED}>Ignore Patterns:</Text> {config.worktreeCopyIgnores.length} patterns
+        </Text>
+        <Text>
+          <Text color={COLORS.MUTED}>Path Template:</Text> {config.worktreePathTemplate}
+        </Text>
+        <Text>
+          <Text color={COLORS.MUTED}>Post-Create Command:</Text> {config.postCreateCmd || "(none)"}
+        </Text>
+        <Text>
+          <Text color={COLORS.MUTED}>Terminal Command:</Text> {config.terminalCommand || "(none)"}
+        </Text>
+      </Box>
 
-    case "edit-ignore-patterns":
-      return (
-        <Box flexDirection="column">
-          <Text>Current ignore patterns:</Text>
-          <Box flexDirection="column" marginLeft={2} marginY={1}>
-            {config.worktreeCopyIgnores.map((pattern) => (
-              <Text key={pattern} color={COLORS.MUTED}>
-                • {pattern}
-              </Text>
-            ))}
-          </Box>
-          <InputPrompt
-            label="Ignore Patterns (comma-separated):"
-            defaultValue={config.worktreeCopyIgnores.join(", ")}
-            onSubmit={(value) => {
-              const patterns = value
-                .split(",")
-                .map((p) => p.trim())
-                .filter((p) => p)
-              updateConfigField("worktreeCopyIgnores", patterns)
-              setStep("menu")
-            }}
-            onCancel={() => setStep("menu")}
-          />
-        </Box>
-      )
-
-    case "edit-path-template":
-      return (
-        <Box flexDirection="column">
-          <Text color={COLORS.INFO}>
-            Available variables: $BASE_PATH, $WORKTREE_PATH, $BRANCH_NAME
-          </Text>
-          <InputPrompt
-            label="Worktree Path Template:"
-            defaultValue={config.worktreePathTemplate}
-            onSubmit={(value) => {
-              updateConfigField("worktreePathTemplate", value)
-              setStep("menu")
-            }}
-            onCancel={() => setStep("menu")}
-          />
-        </Box>
-      )
-
-    case "edit-post-cmd":
-      return (
-        <Box flexDirection="column">
-          <Text color={COLORS.INFO}>
-            Available variables: $WORKTREE_PATH, $BRANCH_NAME, $SOURCE_BRANCH
-          </Text>
-          <InputPrompt
-            label="Post-Create Command:"
-            defaultValue={config.postCreateCmd}
-            onSubmit={(value) => {
-              updateConfigField("postCreateCmd", value)
-              setStep("menu")
-            }}
-            onCancel={() => setStep("menu")}
-          />
-        </Box>
-      )
-
-    case "edit-terminal-cmd":
-      return (
-        <InputPrompt
-          label="Terminal Command:"
-          defaultValue={config.terminalCommand}
-          onSubmit={(value) => {
-            updateConfigField("terminalCommand", value)
-            setStep("menu")
-          }}
-          onCancel={() => setStep("menu")}
-        />
-      )
-
-    default:
-      return <Text>Unknown step</Text>
-  }
+      <Box marginTop={1}>
+        <Text color={COLORS.MUTED} dimColor>
+          Edit the configuration file directly, then restart. Press any key to go back.
+        </Text>
+      </Box>
+    </Box>
+  )
 }

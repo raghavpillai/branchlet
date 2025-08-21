@@ -14,7 +14,6 @@ export function InputPrompt({
   const [value, setValue] = useState(defaultValue)
   const [error, setError] = useState<string>()
 
-  // Real-time validation
   const currentError = validate?.(value)
   const isValid = !currentError
 

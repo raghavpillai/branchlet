@@ -6,6 +6,7 @@ import {
   GLOBAL_CONFIG_DIR,
   GLOBAL_CONFIG_FILE,
 } from "../constants/index"
+import { validateConfig, WorktreeConfigSchema } from "../schemas/config-schema.js"
 import type { ConfigFile, ConfigValidation, WorktreeConfig } from "../types/index"
 import { ConfigError } from "../utils/index"
 
@@ -27,15 +28,15 @@ export class ConfigService {
         const content = await readFile(configFile.path, "utf-8")
         const parsed = JSON.parse(content)
 
-        const validation = this.validateConfig(parsed)
-        if (!validation.isValid) {
+        const validation = validateConfig(parsed)
+        if (!validation.success) {
           throw new ConfigError(
-            `Invalid configuration: ${validation.errors.join(", ")}`,
+            `Invalid configuration: ${validation.error}`,
             configFile.path
           )
         }
 
-        this.config = { ...DEFAULT_CONFIG, ...parsed }
+        this.config = validation.data!
         this.configPath = configFile.path
       } catch (error) {
         if (error instanceof ConfigError) {
@@ -171,7 +172,8 @@ export class ConfigService {
       await access(GLOBAL_CONFIG_FILE)
     } catch {
       await mkdir(GLOBAL_CONFIG_DIR, { recursive: true })
-      await writeFile(GLOBAL_CONFIG_FILE, JSON.stringify(DEFAULT_CONFIG, null, 2), "utf-8")
+      const defaultConfig = WorktreeConfigSchema.parse(DEFAULT_CONFIG)
+      await writeFile(GLOBAL_CONFIG_FILE, JSON.stringify(defaultConfig, null, 2), "utf-8")
     }
   }
 
