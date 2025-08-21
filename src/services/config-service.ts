@@ -36,7 +36,7 @@ export class ConfigService {
           )
         }
 
-        this.config = validation.data!
+        this.config = validation.data || DEFAULT_CONFIG
         this.configPath = configFile.path
       } catch (error) {
         if (error instanceof ConfigError) {
