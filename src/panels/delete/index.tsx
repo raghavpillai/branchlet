@@ -1,9 +1,17 @@
-import { useState, useEffect } from 'react';
-import { Box, Text, useInput } from 'ink';
-import { SelectPrompt, ConfirmDialog, StatusIndicator } from './common/index.js';
-import { WorktreeService } from '../services/index.js';
-import { MESSAGES, COLORS } from '../constants/index.js';
-import type { DeleteWorktreeState, GitWorktree, SelectOption } from '../types/index.js';
+import { useState, useEffect } from "react";
+import { Box, Text, useInput } from "ink";
+import {
+  SelectPrompt,
+  ConfirmDialog,
+  StatusIndicator,
+} from "../../components/common/index.js";
+import { WorktreeService } from "../../services/index.js";
+import { MESSAGES, COLORS } from "../../constants/index.js";
+import type {
+  DeleteWorktreeState,
+  GitWorktree,
+  SelectOption,
+} from "../../types/index.js";
 
 interface DeleteWorktreeProps {
   worktreeService: WorktreeService;
@@ -11,14 +19,14 @@ interface DeleteWorktreeProps {
   onCancel: () => void;
 }
 
-export function DeleteWorktree({ 
-  worktreeService, 
-  onComplete, 
-  onCancel 
+export function DeleteWorktree({
+  worktreeService,
+  onComplete,
+  onCancel,
 }: DeleteWorktreeProps): JSX.Element {
   const [state, setState] = useState<DeleteWorktreeState>({
-    step: 'select',
-    force: false
+    step: "select",
+    force: false,
   });
   const [worktrees, setWorktrees] = useState<GitWorktree[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +36,6 @@ export function DeleteWorktree({
   }, []);
 
   useInput((input, key) => {
-    // Handle key press for error and no-worktrees states
     if (state.error || worktrees.length === 0) {
       if (key.escape || key.return || input) {
         onCancel();
@@ -41,13 +48,13 @@ export function DeleteWorktree({
       setLoading(true);
       const gitService = worktreeService.getGitService();
       const repoInfo = await gitService.getRepositoryInfo();
-      
-      const deletableWorktrees = repoInfo.worktrees.filter(wt => !wt.isMain);
+
+      const deletableWorktrees = repoInfo.worktrees.filter((wt) => !wt.isMain);
       setWorktrees(deletableWorktrees);
     } catch (error) {
-      setState(prev => ({ 
-        ...prev, 
-        error: `Failed to load worktrees: ${error}` 
+      setState((prev) => ({
+        ...prev,
+        error: `Failed to load worktrees: ${error}`,
       }));
     } finally {
       setLoading(false);
@@ -55,10 +62,10 @@ export function DeleteWorktree({
   };
 
   const handleWorktreeSelect = (path: string): void => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       selectedWorktree: path,
-      step: 'confirm'
+      step: "confirm",
     }));
   };
 
@@ -66,47 +73,49 @@ export function DeleteWorktree({
     if (!state.selectedWorktree) return;
 
     try {
-      setState(prev => ({ ...prev, step: 'deleting' }));
-      
+      setState((prev) => ({ ...prev, step: "deleting" }));
+
       await worktreeService.deleteWorktree(state.selectedWorktree, state.force);
-      
-      setState(prev => ({ ...prev, step: 'success' }));
-      
+
+      setState((prev) => ({ ...prev, step: "success" }));
+
       setTimeout(() => {
         onComplete();
       }, 1500);
     } catch (error) {
-      setState(prev => ({ 
-        ...prev, 
+      setState((prev) => ({
+        ...prev,
         error: error instanceof Error ? error.message : String(error),
-        step: 'select'
+        step: "select",
       }));
     }
   };
 
   const getWorktreeOptions = (): SelectOption<string>[] => {
-    return worktrees.map(worktree => {
+    return worktrees.map((worktree) => {
       const formatPath = (path: string): string => {
-        const home = process.env.HOME || '';
-        return path.replace(home, '~');
+        const home = process.env.HOME || "";
+        return path.replace(home, "~");
       };
 
-      const statusInfo = worktree.isClean ? '' : ' (has changes)';
-      
+      const statusInfo = worktree.isClean ? "" : " (has changes)";
+
       return {
         label: `${formatPath(worktree.path)} [${worktree.branch}]`,
         value: worktree.path,
-        description: statusInfo
+        description: statusInfo,
       };
     });
   };
 
   const getSelectedWorktree = (): GitWorktree | undefined => {
-    return worktrees.find(wt => wt.path === state.selectedWorktree);
+    return worktrees.find((wt) => wt.path === state.selectedWorktree);
   };
 
   if (loading) {
-    return <StatusIndicator status="loading" message={MESSAGES.LOADING_WORKTREES} />;
+    return (
+      <StatusIndicator status="loading" message={MESSAGES.LOADING_WORKTREES} />
+    );
   }
 
   if (state.error) {
@@ -132,7 +141,7 @@ export function DeleteWorktree({
   }
 
   switch (state.step) {
-    case 'select':
+    case "select":
       return (
         <SelectPrompt
           label={MESSAGES.DELETE_SELECT_PROMPT}
@@ -142,10 +151,10 @@ export function DeleteWorktree({
         />
       );
 
-    case 'confirm': {
+    case "confirm": {
       const selectedWorktree = getSelectedWorktree();
       const hasChanges = selectedWorktree && !selectedWorktree.isClean;
-      const warningMessage = hasChanges 
+      const warningMessage = hasChanges
         ? `${MESSAGES.DELETE_WARNING} This worktree has uncommitted changes.`
         : MESSAGES.DELETE_WARNING;
 
@@ -160,18 +169,26 @@ export function DeleteWorktree({
               <Text>{warningMessage}</Text>
             </Box>
           }
-          variant={hasChanges ? 'danger' : 'warning'}
+          variant={hasChanges ? "danger" : "warning"}
           onConfirm={handleConfirm}
-          onCancel={() => setState(prev => ({ ...prev, step: 'select' }))}
+          onCancel={() => setState((prev) => ({ ...prev, step: "select" }))}
         />
       );
     }
 
-    case 'deleting':
-      return <StatusIndicator status="loading" message={MESSAGES.DELETE_DELETING} />;
+    case "deleting":
+      return (
+        <StatusIndicator status="loading" message={MESSAGES.DELETE_DELETING} />
+      );
 
-    case 'success':
-      return <StatusIndicator status="success" message={MESSAGES.DELETE_SUCCESS} spinner={false} />;
+    case "success":
+      return (
+        <StatusIndicator
+          status="success"
+          message={MESSAGES.DELETE_SUCCESS}
+          spinner={false}
+        />
+      );
 
     default:
       return <Text>Unknown step</Text>;

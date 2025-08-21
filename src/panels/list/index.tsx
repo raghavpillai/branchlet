@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Text, useInput } from 'ink';
-import { StatusIndicator } from './common/index.js';
-import { WorktreeService } from '../services/index.js';
-import { MESSAGES, COLORS } from '../constants/index.js';
-import type { GitWorktree } from '../types/index.js';
+import React, { useState, useEffect } from "react";
+import { Box, Text, useInput } from "ink";
+import { StatusIndicator } from "../../components/common/index.js";
+import { WorktreeService } from "../../services/index.js";
+import { MESSAGES, COLORS } from "../../constants/index.js";
+import type { GitWorktree } from "../../types/index.js";
 
 interface ListWorktreesProps {
   worktreeService: WorktreeService;
   onBack: () => void;
 }
 
-export function ListWorktrees({ 
-  worktreeService, 
-  onBack 
+export function ListWorktrees({
+  worktreeService,
+  onBack,
 }: ListWorktreesProps): JSX.Element {
   const [worktrees, setWorktrees] = useState<GitWorktree[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,8 +34,7 @@ export function ListWorktrees({
       setError(undefined);
       const gitService = worktreeService.getGitService();
       const repoInfo = await gitService.getRepositoryInfo();
-      // Filter out the main worktree from display
-      const additionalWorktrees = repoInfo.worktrees.filter(wt => !wt.isMain);
+      const additionalWorktrees = repoInfo.worktrees.filter((wt) => !wt.isMain);
       setWorktrees(additionalWorktrees);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -45,13 +44,17 @@ export function ListWorktrees({
   };
 
   if (loading) {
-    return <StatusIndicator status="loading" message={MESSAGES.LOADING_WORKTREES} />;
+    return (
+      <StatusIndicator status="loading" message={MESSAGES.LOADING_WORKTREES} />
+    );
   }
 
   if (error) {
     return (
       <Box flexDirection="column">
-        <Text color={COLORS.ERROR}>{MESSAGES.GIT_ERROR_LIST}: {error}</Text>
+        <Text color={COLORS.ERROR}>
+          {MESSAGES.GIT_ERROR_LIST}: {error}
+        </Text>
         <Box marginTop={1}>
           <Text color={COLORS.MUTED}>Press any key to go back...</Text>
         </Box>
@@ -71,17 +74,17 @@ export function ListWorktrees({
   }
 
   const formatPath = (path: string): string => {
-    const home = process.env.HOME || '';
-    return path.replace(home, '~');
+    const home = process.env.HOME || "";
+    return path.replace(home, "~");
   };
 
   const getStatusIndicator = (worktree: GitWorktree): string => {
-    let indicator = '';
+    let indicator = "";
     if (worktree.isMain) {
       indicator += MESSAGES.LIST_MAIN_INDICATOR;
     }
     if (!worktree.isClean) {
-      indicator += worktree.isMain ? ' ' : '';
+      indicator += worktree.isMain ? " " : "";
       indicator += MESSAGES.LIST_DIRTY_INDICATOR;
     }
     return indicator;
@@ -97,21 +100,19 @@ export function ListWorktrees({
 
       <Box marginBottom={1}>
         <Text bold color={COLORS.MUTED}>
-          PATH                                       BRANCH
+          PATH BRANCH
         </Text>
       </Box>
 
       {worktrees.map((worktree, index) => {
         const path = formatPath(worktree.path);
-        
+
         return (
           <Box key={index}>
             <Text color={worktree.isMain ? COLORS.PRIMARY : undefined}>
               {path.padEnd(43)}
             </Text>
-            <Text color={COLORS.SUCCESS}>
-              {worktree.branch}
-            </Text>
+            <Text color={COLORS.SUCCESS}>{worktree.branch}</Text>
           </Box>
         );
       })}

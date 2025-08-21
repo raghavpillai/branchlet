@@ -1,14 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Text, useInput } from 'ink';
-import { SelectPrompt, StatusIndicator } from './common/index.js';
-import { CreateWorktree } from './create-worktree.js';
-import { ListWorktrees } from './list-worktrees.js';
-import { DeleteWorktree } from './delete-worktree.js';
-import { SettingsMenu } from './settings-menu.js';
+import { StatusIndicator } from './common/index.js';
+import { MainPanel, CreateWorktree, ListWorktrees, DeleteWorktree, SettingsMenu } from '../panels/index.js';
 import { WorktreeService } from '../services/index.js';
 import { getUserFriendlyErrorMessage } from '../utils/index.js';
 import { MESSAGES, COLORS } from '../constants/index.js';
-import type { AppMode, SelectOption } from '../types/index.js';
+import type { AppMode } from '../types/index.js';
 
 function WelcomeHeader({ mode }: { mode: AppMode }): JSX.Element {
   const cwd = process.cwd();
@@ -105,28 +102,6 @@ export function App({ initialMode = 'menu', onExit }: AppProps): JSX.Element {
     }
   });
 
-  const getMenuOptions = (): SelectOption<AppMode | 'exit'>[] => [
-    {
-      label: MESSAGES.MENU_CREATE,
-      value: 'create'
-    },
-    {
-      label: MESSAGES.MENU_LIST,
-      value: 'list'
-    },
-    {
-      label: MESSAGES.MENU_DELETE,
-      value: 'delete'
-    },
-    {
-      label: MESSAGES.MENU_SETTINGS,
-      value: 'settings'
-    },
-    {
-      label: MESSAGES.MENU_EXIT,
-      value: 'exit'
-    }
-  ];
 
   const handleMenuSelect = (value: AppMode | 'exit', selectedIndex?: number): void => {
     if (selectedIndex !== undefined) {
@@ -172,9 +147,7 @@ export function App({ initialMode = 'menu', onExit }: AppProps): JSX.Element {
 
       {mode === 'menu' && (
         <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED} dimColor>
-          <SelectPrompt
-            label={MESSAGES.MENU_TITLE}
-            options={getMenuOptions()}
+          <MainPanel
             onSelect={handleMenuSelect}
             onCancel={handleExit}
             defaultIndex={lastMenuIndex}

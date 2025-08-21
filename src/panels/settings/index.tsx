@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text } from 'ink';
-import { SelectPrompt, InputPrompt, StatusIndicator } from './common/index.js';
-import { WorktreeService } from '../services/index.js';
-import { COLORS } from '../constants/index.js';
-import type { WorktreeConfig, SelectOption } from '../types/index.js';
+import { SelectPrompt, InputPrompt, StatusIndicator } from '../../components/common/index.js';
+import { WorktreeService } from '../../services/index.js';
+import { COLORS } from '../../constants/index.js';
+import type { WorktreeConfig, SelectOption } from '../../types/index.js';
 
 interface SettingsMenuProps {
   worktreeService: WorktreeService;
