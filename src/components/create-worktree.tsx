@@ -64,11 +64,10 @@ export function CreateWorktree({
   };
 
   const handleSourceBranchSelect = (sourceBranch: string): void => {
-    const suggestedBranchName = `feature/${state.directoryName}`;
     setState(prev => ({
       ...prev,
       sourceBranch,
-      newBranch: suggestedBranchName,
+      newBranch: '',
       step: 'new-branch'
     }));
   };
@@ -179,7 +178,6 @@ export function CreateWorktree({
         <InputPrompt
           label={MESSAGES.CREATE_NEW_BRANCH_PROMPT}
           placeholder={MESSAGES.CREATE_NEW_BRANCH_PLACEHOLDER}
-          defaultValue={state.newBranch}
           validate={validateBranchName}
           onSubmit={handleNewBranchSubmit}
           onCancel={onCancel}

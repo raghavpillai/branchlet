@@ -14,6 +14,10 @@ export function InputPrompt({
   const [value, setValue] = useState(defaultValue);
   const [error, setError] = useState<string>();
 
+  // Real-time validation
+  const currentError = validate?.(value);
+  const isValid = !currentError;
+
   useInput((input, key) => {
     if (key.escape) {
       onCancel?.();
@@ -21,9 +25,8 @@ export function InputPrompt({
     }
 
     if (key.return) {
-      const validationError = validate?.(value);
-      if (validationError) {
-        setError(validationError);
+      if (currentError) {
+        setError(currentError);
         return;
       }
       
@@ -50,7 +53,12 @@ export function InputPrompt({
         <Text>{label}</Text>
       </Box>
       
-      <Box borderStyle="single" paddingX={1} paddingY={0}>
+      <Box 
+        borderStyle="round" 
+        {...(value ? { borderColor: isValid ? COLORS.SUCCESS : COLORS.ERROR } : {})}
+        paddingX={1} 
+        paddingY={0}
+      >
         <Text>{value}</Text>
         {!value && placeholder && (
           <Text color={COLORS.MUTED} dimColor>
@@ -60,9 +68,9 @@ export function InputPrompt({
         <Text>{'|'}</Text>
       </Box>
 
-      {error && (
+      {(error || (value && currentError)) && (
         <Box marginTop={1}>
-          <Text color={COLORS.ERROR}>{error}</Text>
+          <Text color={COLORS.ERROR}>{error || currentError}</Text>
         </Box>
       )}
 
