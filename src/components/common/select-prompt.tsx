@@ -57,7 +57,7 @@ export function SelectPrompt<T = string>({
         const marker = isSelected ? "> " : "  "
 
         return (
-          <Box key={option.value} marginLeft={1}>
+          <Box key={option.value as React.Key} marginLeft={1}>
             <Text {...(isSelected ? { color: COLORS.PRIMARY } : {})}>
               {marker}
               {option.label}

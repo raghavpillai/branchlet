@@ -104,7 +104,7 @@ export function ListWorktrees({ worktreeService, onBack }: ListWorktreesProps): 
 
         return (
           <Box key={worktree.path}>
-            <Text color={worktree.isMain ? COLORS.PRIMARY : undefined}>{path.padEnd(43)}</Text>
+            <Text {...(worktree.isMain ? { color: COLORS.PRIMARY } : {})}>{path.padEnd(43)}</Text>
             <Text color={COLORS.SUCCESS}>{worktree.branch}</Text>
           </Box>
         )

@@ -204,7 +204,7 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
       <WelcomeHeader mode={mode} />
 
       {mode === "menu" && (
-        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED} dimColor>
+        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED}>
           <MainPanel
             onSelect={handleMenuSelect}
             onCancel={handleExit}
@@ -214,7 +214,7 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
       )}
 
       {mode === "create" && (
-        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED} dimColor>
+        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED}>
           <CreateWorktree
             worktreeService={worktreeService}
             onComplete={handleBackToMenu}
@@ -224,13 +224,13 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
       )}
 
       {mode === "list" && (
-        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED} dimColor>
+        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED}>
           <ListWorktrees worktreeService={worktreeService} onBack={handleBackToMenu} />
         </Box>
       )}
 
       {mode === "delete" && (
-        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED} dimColor>
+        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED}>
           <DeleteWorktree
             worktreeService={worktreeService}
             onComplete={handleBackToMenu}
@@ -240,7 +240,7 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
       )}
 
       {mode === "settings" && (
-        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED} dimColor>
+        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED}>
           <SettingsMenu worktreeService={worktreeService} onBack={handleBackToMenu} />
         </Box>
       )}

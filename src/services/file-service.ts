@@ -72,7 +72,7 @@ async function copyDirectory(
       const stats = await stat(sourcePath)
 
       if (stats.isDirectory()) {
-        await FileService.copyDirectory(sourcePath, targetPath, result)
+        await copyDirectory(sourcePath, targetPath, result)
       } else {
         await copyFile(sourcePath, targetPath)
         result.copied.push(relative(process.cwd(), targetPath))
@@ -96,21 +96,24 @@ export async function executePostCreateCommands(
 
   for (let i = 0; i < commands.length; i++) {
     const command = commands[i]
-    if (!command.trim()) continue
+    if (!command?.trim()) continue
 
-    onProgress?.(command, i + 1, commands.length)
+    onProgress?.(command!, i + 1, commands.length)
 
-    const resolvedCommand = resolveTemplate(command, variables)
+    const resolvedCommand = resolveTemplate(command!, variables)
     const result = await executeCommand(resolvedCommand, variables.WORKTREE_PATH)
 
-    allOutput += `Command ${i + 1}: ${command}\n${result.output}\n\n`
+    allOutput += `Command ${i + 1}: ${command!}\n${result.output}\n\n`
 
     if (!result.success) {
-      return {
-        success: false,
+      const errorResult = {
+        success: false as const,
         output: allOutput,
-        error: result.error,
       }
+      if (result.error) {
+        return { ...errorResult, error: result.error }
+      }
+      return errorResult
     }
   }
 
@@ -143,7 +146,7 @@ async function executeCommand(
       resolve({
         success: code === 0,
         output: stdout,
-        error: code !== 0 ? stderr : undefined,
+        ...(code !== 0 && stderr ? { error: stderr } : {}),
       })
     })
 

@@ -25,7 +25,7 @@ export function StatusIndicator({
   const getStatusIcon = (): string => {
     switch (status) {
       case "loading":
-        return spinner ? SPINNER_FRAMES[frameIndex] : "[LOADING]"
+        return spinner ? (SPINNER_FRAMES[frameIndex] ?? "[LOADING]") : "[LOADING]"
       case "success":
         return "[SUCCESS]"
       case "error":

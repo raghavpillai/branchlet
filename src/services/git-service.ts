@@ -88,9 +88,11 @@ export class GitService {
 
     if (worktrees.length > 0) {
       const firstWorktree = worktrees[0]
-      const gitRoot = this.gitRoot
-      if (firstWorktree.path === gitRoot || firstWorktree.path === gitRoot.replace(/\/$/, "")) {
-        firstWorktree.isMain = true
+      if (firstWorktree) {
+        const gitRoot = this.gitRoot
+        if (firstWorktree.path === gitRoot || firstWorktree.path === gitRoot.replace(/\/$/, "")) {
+          firstWorktree.isMain = true
+        }
       }
     }
 
@@ -129,9 +131,9 @@ export class GitService {
       const [name, commit, dateStr] = line.split("|")
       if (name) {
         branches.push({
-          name,
-          commit,
-          lastUsed: new Date(dateStr),
+          name: name!,
+          commit: commit!,
+          lastUsed: new Date(dateStr!),
           isCurrent: name === currentBranch,
           isDefault: name === defaultBranch,
           isRemote: false,
