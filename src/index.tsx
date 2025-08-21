@@ -1,46 +1,45 @@
 #!/usr/bin/env node
-import React from 'react';
-import { render } from 'ink';
-import minimist from 'minimist';
-import { App } from './components/app.js';
-import { MESSAGES } from './constants/index.js';
-import type { AppMode } from './types/index.js';
+import { render } from "ink"
+import minimist from "minimist"
+import { App } from "./components/app.js"
+import { MESSAGES } from "./constants/index.js"
+import type { AppMode } from "./types/index.js"
 
 function parseArguments(): { mode: AppMode; help: boolean } {
   const argv = minimist(process.argv.slice(2), {
-    string: ['mode'],
-    boolean: ['help', 'version'],
+    string: ["mode"],
+    boolean: ["help", "version"],
     alias: {
-      h: 'help',
-      v: 'version',
-      m: 'mode'
-    }
-  });
+      h: "help",
+      v: "version",
+      m: "mode",
+    },
+  })
 
   if (argv.help) {
-    return { mode: 'menu', help: true };
+    return { mode: "menu", help: true }
   }
 
   if (argv.version) {
-    console.log('Brancher v0.1.0');
-    process.exit(0);
+    console.log("Brancher v0.1.0")
+    process.exit(0)
   }
 
-  const validModes: AppMode[] = ['menu', 'create', 'list', 'delete', 'settings'];
-  let mode: AppMode = 'menu';
+  const validModes: AppMode[] = ["menu", "create", "list", "delete", "settings"]
+  let mode: AppMode = "menu"
 
   if (argv.mode && validModes.includes(argv.mode as AppMode)) {
-    mode = argv.mode as AppMode;
+    mode = argv.mode as AppMode
   }
 
   if (argv._.length > 0) {
-    const command = argv._[0];
+    const command = argv._[0]
     if (validModes.includes(command as AppMode)) {
-      mode = command as AppMode;
+      mode = command as AppMode
     }
   }
 
-  return { mode, help: false };
+  return { mode, help: false }
 }
 
 function showHelp(): void {
@@ -77,51 +76,51 @@ Configuration:
   4. Global config in ~/.config/brancher/
 
 For more information, visit: https://github.com/your-username/brancher
-`);
+`)
 }
 
 function main(): void {
-  const { mode, help } = parseArguments();
+  const { mode, help } = parseArguments()
 
   if (help) {
-    showHelp();
-    process.exit(0);
+    showHelp()
+    process.exit(0)
   }
 
-  let hasExited = false;
+  let hasExited = false
 
   const { unmount } = render(
-    <App 
+    <App
       initialMode={mode}
       onExit={() => {
         if (!hasExited) {
-          hasExited = true;
-          console.log(MESSAGES.EXIT);
-          unmount();
-          process.exit(0);
+          hasExited = true
+          console.log(MESSAGES.EXIT)
+          unmount()
+          process.exit(0)
         }
       }}
     />
-  );
+  )
 
-  process.on('SIGINT', () => {
+  process.on("SIGINT", () => {
     if (!hasExited) {
-      hasExited = true;
-      console.log(`\n${MESSAGES.EXIT}`);
-      unmount();
-      process.exit(0);
+      hasExited = true
+      console.log(`\n${MESSAGES.EXIT}`)
+      unmount()
+      process.exit(0)
     }
-  });
+  })
 
-  process.on('SIGTERM', () => {
+  process.on("SIGTERM", () => {
     if (!hasExited) {
-      hasExited = true;
-      unmount();
-      process.exit(0);
+      hasExited = true
+      unmount()
+      process.exit(0)
     }
-  });
+  })
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  main();
+  main()
 }

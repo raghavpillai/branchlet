@@ -1,36 +1,36 @@
-import { SelectPrompt } from '../../components/common/index.js';
-import { MESSAGES } from '../../constants/index.js';
-import type { AppMode, SelectOption } from '../../types/index.js';
+import { SelectPrompt } from "../../components/common/index.js"
+import { MESSAGES } from "../../constants/index.js"
+import type { AppMode, SelectOption } from "../../types/index.js"
 
 interface MainPanelProps {
-  onSelect: (value: AppMode | 'exit', selectedIndex?: number) => void;
-  onCancel: () => void;
-  defaultIndex?: number;
+  onSelect: (value: AppMode | "exit", selectedIndex?: number) => void
+  onCancel: () => void
+  defaultIndex?: number
 }
 
 export function MainPanel({ onSelect, onCancel, defaultIndex = 0 }: MainPanelProps): JSX.Element {
-  const getMenuOptions = (): SelectOption<AppMode | 'exit'>[] => [
+  const getMenuOptions = (): SelectOption<AppMode | "exit">[] => [
     {
       label: MESSAGES.MENU_CREATE,
-      value: 'create'
+      value: "create",
     },
     {
       label: MESSAGES.MENU_LIST,
-      value: 'list'
+      value: "list",
     },
     {
       label: MESSAGES.MENU_DELETE,
-      value: 'delete'
+      value: "delete",
     },
     {
       label: MESSAGES.MENU_SETTINGS,
-      value: 'settings'
+      value: "settings",
     },
     {
       label: MESSAGES.MENU_EXIT,
-      value: 'exit'
-    }
-  ];
+      value: "exit",
+    },
+  ]
 
   return (
     <SelectPrompt
@@ -40,5 +40,5 @@ export function MainPanel({ onSelect, onCancel, defaultIndex = 0 }: MainPanelPro
       onCancel={onCancel}
       defaultIndex={defaultIndex}
     />
-  );
+  )
 }

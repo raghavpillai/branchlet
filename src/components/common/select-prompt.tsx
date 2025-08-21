@@ -1,54 +1,50 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Text, useInput } from 'ink';
-import type { SelectPromptProps, SelectOption } from '../../types/index.js';
-import { COLORS } from '../../constants/index.js';
+import { Box, Text, useInput } from "ink"
+import { useEffect, useState } from "react"
+import { COLORS } from "../../constants/index.js"
+import type { SelectPromptProps } from "../../types/index.js"
 
 export function SelectPrompt<T = string>({
   label,
   options,
   onSelect,
   onCancel,
-  defaultIndex = 0
+  defaultIndex = 0,
 }: SelectPromptProps<T>): JSX.Element {
-  const [selectedIndex, setSelectedIndex] = useState(defaultIndex);
+  const [selectedIndex, setSelectedIndex] = useState(defaultIndex)
 
   useEffect(() => {
-    setSelectedIndex(Math.max(0, Math.min(defaultIndex, options.length - 1)));
-  }, [defaultIndex, options.length]);
+    setSelectedIndex(Math.max(0, Math.min(defaultIndex, options.length - 1)))
+  }, [defaultIndex, options.length])
 
   useInput((input, key) => {
     if (key.escape) {
-      onCancel?.();
-      return;
+      onCancel?.()
+      return
     }
 
     if (key.return) {
-      const selectedOption = options[selectedIndex];
+      const selectedOption = options[selectedIndex]
       if (selectedOption) {
-        onSelect(selectedOption.value, selectedIndex);
+        onSelect(selectedOption.value, selectedIndex)
       }
-      return;
+      return
     }
 
     if (key.upArrow) {
-      setSelectedIndex(prev => 
-        prev === 0 ? options.length - 1 : prev - 1
-      );
-      return;
+      setSelectedIndex((prev) => (prev === 0 ? options.length - 1 : prev - 1))
+      return
     }
 
     if (key.downArrow) {
-      setSelectedIndex(prev => 
-        prev === options.length - 1 ? 0 : prev + 1
-      );
-      return;
+      setSelectedIndex((prev) => (prev === options.length - 1 ? 0 : prev + 1))
+      return
     }
 
-    const numericInput = parseInt(input, 10);
-    if (!isNaN(numericInput) && numericInput >= 1 && numericInput <= options.length) {
-      setSelectedIndex(numericInput - 1);
+    const numericInput = Number.parseInt(input, 10)
+    if (!Number.isNaN(numericInput) && numericInput >= 1 && numericInput <= options.length) {
+      setSelectedIndex(numericInput - 1)
     }
-  });
+  })
 
   return (
     <Box flexDirection="column">
@@ -57,21 +53,23 @@ export function SelectPrompt<T = string>({
       </Box>
 
       {options.map((option, index) => {
-        const isSelected = index === selectedIndex;
-        const marker = isSelected ? '> ' : '  ';
-        
+        const isSelected = index === selectedIndex
+        const marker = isSelected ? "> " : "  "
+
         return (
-          <Box key={index} marginLeft={1}>
+          <Box key={option.value} marginLeft={1}>
             <Text {...(isSelected ? { color: COLORS.PRIMARY } : {})}>
-              {marker}{option.label}
+              {marker}
+              {option.label}
             </Text>
             {option.description && (
               <Text color={COLORS.MUTED} dimColor>
-                {' '}({option.description})
+                {" "}
+                ({option.description})
               </Text>
             )}
           </Box>
-        );
+        )
       })}
 
       <Box marginTop={1}>
@@ -80,5 +78,5 @@ export function SelectPrompt<T = string>({
         </Text>
       </Box>
     </Box>
-  );
+  )
 }
