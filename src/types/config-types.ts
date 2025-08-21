@@ -2,7 +2,7 @@ export interface WorktreeConfig {
   worktreeCopyPatterns: string[]
   worktreeCopyIgnores: string[]
   worktreePathTemplate: string
-  postCreateCmd: string
+  postCreateCmd: string[]
   terminalCommand: string
 }
 

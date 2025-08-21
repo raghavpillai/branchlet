@@ -83,19 +83,47 @@ export class FileService {
     }
   }
 
-  async executePostCreateCommand(
-    command: string,
-    variables: TemplateVariables
+  async executePostCreateCommands(
+    commands: string[],
+    variables: TemplateVariables,
+    onProgress?: (command: string, index: number, total: number) => void
   ): Promise<{ success: boolean; output: string; error?: string }> {
-    if (!command.trim()) {
+    if (commands.length === 0) {
       return { success: true, output: "" }
     }
 
-    const resolvedCommand = resolveTemplate(command, variables)
+    let allOutput = ""
+    
+    for (let i = 0; i < commands.length; i++) {
+      const command = commands[i]
+      if (!command.trim()) continue
+      
+      onProgress?.(command, i + 1, commands.length)
+      
+      const resolvedCommand = resolveTemplate(command, variables)
+      const result = await this.executeCommand(resolvedCommand, variables.WORKTREE_PATH)
+      
+      allOutput += `Command ${i + 1}: ${command}\n${result.output}\n\n`
+      
+      if (!result.success) {
+        return {
+          success: false,
+          output: allOutput,
+          error: result.error
+        }
+      }
+    }
 
+    return { success: true, output: allOutput }
+  }
+
+  private async executeCommand(
+    command: string,
+    cwd: string
+  ): Promise<{ success: boolean; output: string; error?: string }> {
     return new Promise((resolve) => {
-      const child = spawn(resolvedCommand, {
-        cwd: variables.WORKTREE_PATH,
+      const child = spawn(command, {
+        cwd,
         stdio: "pipe",
         shell: true,
       })

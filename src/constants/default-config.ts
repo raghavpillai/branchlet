@@ -19,7 +19,7 @@ export const DEFAULT_CONFIG: WorktreeConfig = {
     "**/target/**",
   ],
   worktreePathTemplate: "$BASE_PATH.worktree",
-  postCreateCmd: "",
+  postCreateCmd: [],
   terminalCommand: "",
 }
 

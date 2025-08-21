@@ -11,7 +11,7 @@ import {
 import { WorktreeService } from "../services/index.js"
 import type { AppMode } from "../types/index.js"
 import { getUserFriendlyErrorMessage } from "../utils/index.js"
-import { StatusIndicator } from "./common/index.js"
+import { ConfirmDialog, StatusIndicator } from "./common/index.js"
 
 function WelcomeHeader({ mode }: { mode: AppMode }): JSX.Element {
   const cwd = process.cwd()
@@ -64,6 +64,7 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
   const [error, setError] = useState<string>()
   const [loading, setLoading] = useState(true)
   const [lastMenuIndex, setLastMenuIndex] = useState(0)
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
 
   useEffect(() => {
     initializeService()

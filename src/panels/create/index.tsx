@@ -1,6 +1,7 @@
 import { Box, Text, useInput } from "ink"
 import { useEffect, useState } from "react"
 import {
+  CommandProgress,
   ConfirmDialog,
   InputPrompt,
   SelectPrompt,
@@ -119,12 +120,55 @@ export function CreateWorktree({
       )
       const parentDir = worktreePath.replace(`/${state.directoryName}`, "")
 
-      await worktreeService.createWorktree({
+      // Create the worktree first
+      const gitService = worktreeService.getGitService()
+      await gitService.createWorktree({
         name: state.directoryName,
         sourceBranch: state.sourceBranch,
         newBranch: state.newBranch,
         basePath: parentDir,
       })
+
+      // Copy files
+      if (config.worktreeCopyPatterns.length > 0) {
+        const fileService = worktreeService.getFileService()
+        await fileService.copyFiles(gitRoot, worktreePath, config)
+      }
+
+      // Run post-create commands if any
+      if (config.postCreateCmd.length > 0) {
+        setState((prev) => ({ 
+          ...prev, 
+          step: "running-commands",
+          commandProgress: { current: 0, total: config.postCreateCmd.length }
+        }))
+
+        const fileService = worktreeService.getFileService()
+        const variables = {
+          BASE_PATH: gitRoot.split('/').pop() || '',
+          WORKTREE_PATH: worktreePath,
+          BRANCH_NAME: state.newBranch,
+          SOURCE_BRANCH: state.sourceBranch,
+        }
+
+        await fileService.executePostCreateCommands(
+          config.postCreateCmd,
+          variables,
+          (command, current, total) => {
+            setState((prev) => ({ 
+              ...prev, 
+              currentCommand: command,
+              commandProgress: { current, total }
+            }))
+          }
+        )
+      }
+
+      // Open terminal if configured
+      if (config.terminalCommand) {
+        const fileService = worktreeService.getFileService()
+        await fileService.openTerminal(config.terminalCommand, worktreePath)
+      }
 
       setState((prev) => ({ ...prev, step: "success" }))
 
@@ -222,6 +266,15 @@ export function CreateWorktree({
 
     case "creating":
       return <StatusIndicator status="loading" message={MESSAGES.CREATE_CREATING} />
+
+    case "running-commands":
+      return (
+        <CommandProgress
+          command={state.currentCommand || ""}
+          currentIndex={state.commandProgress?.current || 0}
+          totalCommands={state.commandProgress?.total || 0}
+        />
+      )
 
     case "success":
       return <StatusIndicator status="success" message={MESSAGES.CREATE_SUCCESS} spinner={false} />

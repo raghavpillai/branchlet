@@ -54,7 +54,7 @@ export class WorktreeService {
       await this.fileService.copyFiles(gitRoot, worktreePath, config)
     }
 
-    if (config.postCreateCmd) {
+    if (config.postCreateCmd.length > 0) {
       const variables: TemplateVariables = {
         BASE_PATH: getRepositoryBaseName(gitRoot),
         WORKTREE_PATH: worktreePath,
@@ -62,7 +62,7 @@ export class WorktreeService {
         SOURCE_BRANCH: options.sourceBranch,
       }
 
-      await this.fileService.executePostCreateCommand(config.postCreateCmd, variables)
+      await this.fileService.executePostCreateCommands(config.postCreateCmd, variables)
     }
 
     if (config.terminalCommand) {

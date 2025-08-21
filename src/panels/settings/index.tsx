@@ -91,9 +91,9 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JS
       description: config?.worktreePathTemplate || "",
     },
     {
-      label: "Post-Create Command",
+      label: "Post-Create Commands",
       value: "post-cmd", 
-      description: config?.postCreateCmd || "(none)",
+      description: `${config?.postCreateCmd.length || 0} commands`,
     },
     {
       label: "Terminal Command",
@@ -252,15 +252,23 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JS
       return (
         <Box flexDirection="column">
           <Box marginBottom={1}>
-            <Text bold color={COLORS.INFO}>Post-Create Command</Text>
+            <Text bold color={COLORS.INFO}>Post-Create Commands</Text>
           </Box>
           
           <Box marginBottom={2}>
-            <Text color={COLORS.MUTED}>Command executed after creating a worktree:</Text>
+            <Text color={COLORS.MUTED}>Commands executed after creating a worktree (in order):</Text>
           </Box>
 
-          <Box marginLeft={2} marginBottom={2}>
-            <Text color={COLORS.SUCCESS}>{config?.postCreateCmd || "(none)"}</Text>
+          <Box flexDirection="column" marginLeft={2} marginBottom={2}>
+            {config?.postCreateCmd.length === 0 ? (
+              <Text color={COLORS.MUTED}>(none)</Text>
+            ) : (
+              config?.postCreateCmd.map((command, index) => (
+                <Text key={command}>
+                  <Text color={COLORS.MUTED}>{index + 1}.</Text> {command}
+                </Text>
+              ))
+            )}
           </Box>
 
           <Box marginBottom={2}>

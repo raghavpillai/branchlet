@@ -11,7 +11,7 @@ export const WorktreeConfigSchema = z.object({
     "**/.DS_Store",
   ]),
   worktreePathTemplate: z.string().default("$BASE_PATH.worktree"),
-  postCreateCmd: z.string().default(""),
+  postCreateCmd: z.array(z.string()).default([]),
   terminalCommand: z.string().default(""),
 })
 
