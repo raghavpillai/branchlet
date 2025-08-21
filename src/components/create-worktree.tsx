@@ -80,6 +80,22 @@ export function CreateWorktree({
     }));
   };
 
+  const validateNewBranchName = (name: string): string | undefined => {
+    // First check basic branch name format
+    const formatError = validateBranchName(name);
+    if (formatError) {
+      return formatError;
+    }
+
+    // Then check if branch already exists
+    const existingBranch = branches.find(branch => branch.name === name);
+    if (existingBranch) {
+      return 'Branch already exists';
+    }
+
+    return undefined;
+  };
+
   const handleConfirm = async (): Promise<void> => {
     try {
       setState(prev => ({ ...prev, step: 'creating' }));
@@ -178,7 +194,7 @@ export function CreateWorktree({
         <InputPrompt
           label={MESSAGES.CREATE_NEW_BRANCH_PROMPT}
           placeholder={MESSAGES.CREATE_NEW_BRANCH_PLACEHOLDER}
-          validate={validateBranchName}
+          validate={validateNewBranchName}
           onSubmit={handleNewBranchSubmit}
           onCancel={onCancel}
         />
