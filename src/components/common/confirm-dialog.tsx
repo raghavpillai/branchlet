@@ -58,26 +58,34 @@ export function ConfirmDialog({
       </Box>
 
       <Box marginBottom={2}>
-        <Text>{message}</Text>
+        {typeof message === 'string' ? <Text>{message}</Text> : message}
       </Box>
 
-      <Box justifyContent="center" columnGap={4}>
-        <Box>
+      <Box justifyContent="center" columnGap={2}>
+        <Box
+          borderStyle="round"
+          paddingX={2}
+          paddingY={0}
+          borderColor={COLORS.MUTED}
+        >
           <Text 
-            color={selectedOption === 'confirm' ? COLORS.PRIMARY : undefined}
-            inverse={selectedOption === 'confirm'}
+            color={selectedOption === 'confirm' ? 'white' : COLORS.MUTED}
+            bold={selectedOption === 'confirm'}
           >
-            {selectedOption === 'confirm' ? '> ' : '  '}
             {confirmLabel}
           </Text>
         </Box>
 
-        <Box>
+        <Box
+          borderStyle="round"
+          paddingX={2}
+          paddingY={0}
+          borderColor={COLORS.MUTED}
+        >
           <Text 
-            color={selectedOption === 'cancel' ? COLORS.PRIMARY : undefined}
-            inverse={selectedOption === 'cancel'}
+            color={selectedOption === 'cancel' ? 'white' : COLORS.MUTED}
+            bold={selectedOption === 'cancel'}
           >
-            {selectedOption === 'cancel' ? '> ' : '  '}
             {cancelLabel}
           </Text>
         </Box>

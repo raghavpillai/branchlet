@@ -1,3 +1,5 @@
+import React from 'react';
+
 export type AppMode = 'menu' | 'create' | 'list' | 'delete' | 'settings';
 
 export interface SelectOption<T = string> {
@@ -26,7 +28,7 @@ export interface SelectPromptProps<T = string> {
 
 export interface ConfirmDialogProps {
   title: string;
-  message: string;
+  message: React.ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: () => void;

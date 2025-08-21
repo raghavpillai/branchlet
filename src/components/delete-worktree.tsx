@@ -152,7 +152,14 @@ export function DeleteWorktree({
       return (
         <ConfirmDialog
           title={MESSAGES.DELETE_CONFIRM_TITLE}
-          message={`Delete worktree at '${state.selectedWorktree}'?\n${warningMessage}`}
+          message={
+            <Box flexDirection="column">
+              <Text>
+                Delete worktree at <Text bold>'{state.selectedWorktree}'</Text>?
+              </Text>
+              <Text>{warningMessage}</Text>
+            </Box>
+          }
           variant={hasChanges ? 'danger' : 'warning'}
           onConfirm={handleConfirm}
           onCancel={() => setState(prev => ({ ...prev, step: 'select' }))}
