@@ -99,13 +99,36 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
       handleExit()
     }
 
-    if (error && !loading) {
+    if (error && !loading && !showResetConfirm) {
+      if (input?.toLowerCase() === "r") {
+        setShowResetConfirm(true)
+        return
+      }
+      
       setError(undefined)
       if (mode !== "menu") {
         setMode("menu")
       }
     }
   })
+
+  const handleResetConfig = async (): Promise<void> => {
+    try {
+      setShowResetConfirm(false)
+      setLoading(true)
+      
+      // Create a temporary config service to reset
+      const { ConfigService } = await import("../services/config-service.js")
+      const tempConfigService = new ConfigService()
+      await tempConfigService.createGlobalConfig()
+      
+      // Reinitialize the service
+      await initializeService()
+    } catch (err) {
+      setError(`Failed to reset configuration: ${err}`)
+      setLoading(false)
+    }
+  }
 
   const handleMenuSelect = (value: AppMode | "exit", selectedIndex?: number): void => {
     if (selectedIndex !== undefined) {
@@ -128,13 +151,41 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
   }
 
   if (error) {
+    if (showResetConfirm) {
+      return (
+        <Box flexDirection="column">
+          <WelcomeHeader mode={mode} />
+          <ConfirmDialog
+            title="Reset Configuration"
+            message="This will reset all settings to defaults and overwrite your current configuration file. Are you sure?"
+            variant="warning"
+            onConfirm={handleResetConfig}
+            onCancel={() => setShowResetConfirm(false)}
+          />
+        </Box>
+      )
+    }
+
+    const isConfigError = error.toLowerCase().includes("configuration")
+    
     return (
       <Box flexDirection="column">
         <WelcomeHeader mode={mode} />
         <Text color={COLORS.ERROR}>{error}</Text>
-        <Box marginTop={1}>
-          <Text color={COLORS.MUTED}>Press any key to retry or Ctrl+C to exit</Text>
-        </Box>
+        
+        {isConfigError && (
+          <Box marginTop={1}>
+            <Text color={COLORS.MUTED}>
+              Press 'r' to reset settings, any other key to retry, or Ctrl+C to exit
+            </Text>
+          </Box>
+        )}
+        
+        {!isConfigError && (
+          <Box marginTop={1}>
+            <Text color={COLORS.MUTED}>Press any key to retry or Ctrl+C to exit</Text>
+          </Box>
+        )}
       </Box>
     )
   }
