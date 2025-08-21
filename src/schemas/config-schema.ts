@@ -10,11 +10,11 @@ export const WorktreeConfigSchema = z.object({
   terminalCommand: z.string().default(""),
 })
 
-export type WorktreeConfigOutput = z.output<typeof WorktreeConfigSchema>
+export type WorktreeConfig = z.infer<typeof WorktreeConfigSchema>
 
 export function validateConfig(config: unknown): {
   success: boolean
-  data?: WorktreeConfigOutput
+  data?: WorktreeConfig
   error?: string
 } {
   try {

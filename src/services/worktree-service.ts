@@ -86,5 +86,4 @@ export class WorktreeService {
   getConfigService(): ConfigService {
     return this.configService
   }
-
 }

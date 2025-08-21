@@ -1,27 +1,6 @@
-import type { WorktreeConfig } from "../types/index.js"
+import { WorktreeConfigSchema } from "../schemas/config-schema.js"
 
-export const DEFAULT_CONFIG: WorktreeConfig = {
-  worktreeCopyPatterns: [".env", ".vscode/**"],
-  worktreeCopyIgnores: [
-    "**/node_modules/**",
-    "**/dist/**",
-    "**/.git/**",
-    "**/.svn/**",
-    "**/.hg/**",
-    "**/CVS/**",
-    "**/Thumbs.db",
-    "**/.DS_Store",
-    "**/coverage/**",
-    "**/build/**",
-    "**/out/**",
-    "**/.next/**",
-    "**/.nuxt/**",
-    "**/target/**",
-  ],
-  worktreePathTemplate: "$BASE_PATH.worktree",
-  postCreateCmd: [],
-  terminalCommand: "",
-}
+export const DEFAULT_CONFIG = WorktreeConfigSchema.parse({})
 
 export const LOCAL_CONFIG_FILE_NAME = ".brancher.json"
 

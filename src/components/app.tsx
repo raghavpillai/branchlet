@@ -8,11 +8,11 @@ import {
   MainPanel,
   SettingsMenu,
 } from "../panels/index.js"
+import { ConfigService } from "../services/config-service.js"
 import { WorktreeService } from "../services/index.js"
 import type { AppMode } from "../types/index.js"
 import { getUserFriendlyErrorMessage } from "../utils/index.js"
 import { ConfirmDialog, StatusIndicator } from "./common/index.js"
-import { ConfigService } from "../services/config-service.js"
 
 function WelcomeHeader({ mode }: { mode: AppMode }): JSX.Element {
   const cwd = process.cwd()

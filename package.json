@@ -16,15 +16,7 @@
     "format": "biome format --write src/",
     "check": "biome check --write src/"
   },
-  "keywords": [
-    "git",
-    "worktree",
-    "cli",
-    "codegen",
-    "claude",
-    "ai",
-    "codex"
-  ],
+  "keywords": ["git", "worktree", "cli", "codegen", "claude", "ai", "codex"],
   "author": {
     "name": "Raghav Pillai",
     "email": "me@raghav.sh",

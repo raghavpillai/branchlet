@@ -1,10 +1,4 @@
-export interface WorktreeConfig {
-  worktreeCopyPatterns: string[]
-  worktreeCopyIgnores: string[]
-  worktreePathTemplate: string
-  postCreateCmd: string[]
-  terminalCommand: string
-}
+import type { WorktreeConfig } from "../schemas/config-schema.js"
 
 export interface ConfigFile {
   config: WorktreeConfig

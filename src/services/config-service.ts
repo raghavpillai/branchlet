@@ -1,13 +1,17 @@
 import { access, mkdir, readFile, writeFile } from "node:fs/promises"
 import { dirname, join } from "node:path"
 import {
-  LOCAL_CONFIG_FILE_NAME,
   DEFAULT_CONFIG,
   GLOBAL_CONFIG_DIR,
   GLOBAL_CONFIG_FILE,
+  LOCAL_CONFIG_FILE_NAME,
 } from "../constants/index"
-import { validateConfig, WorktreeConfigSchema } from "../schemas/config-schema.js"
-import type { ConfigFile, WorktreeConfig } from "../types/index"
+import {
+  type WorktreeConfig,
+  WorktreeConfigSchema,
+  validateConfig,
+} from "../schemas/config-schema.js"
+import type { ConfigFile } from "../types/index"
 import { ConfigError } from "../utils/index"
 
 export class ConfigService {

@@ -1,10 +1,11 @@
 import { Box, Text, useInput } from "ink"
 import { useEffect, useState } from "react"
 import { SelectPrompt, StatusIndicator } from "../../components/common/index.js"
-import { COLORS } from "../../constants/index.js"
 import { GLOBAL_CONFIG_FILE } from "../../constants/default-config.js"
+import { COLORS } from "../../constants/index.js"
+import type { WorktreeConfig } from "../../schemas/config-schema.js"
 import type { WorktreeService } from "../../services/index.js"
-import type { SelectOption, WorktreeConfig } from "../../types/index.js"
+import type { SelectOption } from "../../types/index.js"
 
 interface SettingsMenuProps {
   worktreeService: WorktreeService
