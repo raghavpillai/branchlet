@@ -22,10 +22,6 @@ export function App({ initialMode = "menu", onExit }: AppProps) {
   const [lastMenuIndex, setLastMenuIndex] = useState(0)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
 
-  useEffect(() => {
-    initializeService()
-  }, [initializeService])
-
   const initializeService = async (): Promise<void> => {
     try {
       setLoading(true)
@@ -93,6 +89,10 @@ export function App({ initialMode = "menu", onExit }: AppProps) {
       setMode(value)
     }
   }
+
+  useEffect(() => {
+    initializeService()
+  }, [initializeService])
 
   if (loading) {
     return <LoadingState mode={mode} />
