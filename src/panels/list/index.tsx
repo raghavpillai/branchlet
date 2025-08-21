@@ -1,5 +1,5 @@
 import { Box, Text, useInput } from "ink"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { StatusIndicator } from "../../components/common/index.js"
 import { COLORS, MESSAGES } from "../../constants/index.js"
 import type { WorktreeService } from "../../services/index.js"
@@ -15,17 +15,7 @@ export function ListWorktrees({ worktreeService, onBack }: ListWorktreesProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string>()
 
-  useEffect(() => {
-    loadWorktrees()
-  }, [loadWorktrees])
-
-  useInput((input, key) => {
-    if (key.escape || key.return || input) {
-      onBack()
-    }
-  })
-
-  const loadWorktrees = async (): Promise<void> => {
+  const loadWorktrees = useCallback(async (): Promise<void> => {
     try {
       setLoading(true)
       setError(undefined)
@@ -38,7 +28,17 @@ export function ListWorktrees({ worktreeService, onBack }: ListWorktreesProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [worktreeService])
+
+  useEffect(() => {
+    loadWorktrees()
+  }, [loadWorktrees])
+
+  useInput((input, key) => {
+    if (key.escape || key.return || input) {
+      onBack()
+    }
+  })
 
   if (loading) {
     return <StatusIndicator status="loading" message={MESSAGES.LOADING_WORKTREES} />

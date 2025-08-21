@@ -1,5 +1,5 @@
 import { Box, Text, useInput } from "ink"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { ConfirmDialog, SelectPrompt, StatusIndicator } from "../../components/common/index.js"
 import { COLORS, MESSAGES } from "../../constants/index.js"
 import type { WorktreeService } from "../../services/index.js"
@@ -19,19 +19,7 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
   const [worktrees, setWorktrees] = useState<GitWorktree[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadWorktrees()
-  }, [loadWorktrees])
-
-  useInput((input, key) => {
-    if (state.error || worktrees.length === 0) {
-      if (key.escape || key.return || input) {
-        onCancel()
-      }
-    }
-  })
-
-  const loadWorktrees = async (): Promise<void> => {
+  const loadWorktrees = useCallback(async (): Promise<void> => {
     try {
       setLoading(true)
       const gitService = worktreeService.getGitService()
@@ -47,7 +35,19 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
     } finally {
       setLoading(false)
     }
-  }
+  }, [worktreeService])
+
+  useEffect(() => {
+    loadWorktrees()
+  }, [loadWorktrees])
+
+  useInput((input, key) => {
+    if (state.error || worktrees.length === 0) {
+      if (key.escape || key.return || input) {
+        onCancel()
+      }
+    }
+  })
 
   const handleWorktreeSelect = (path: string): void => {
     setState((prev) => ({

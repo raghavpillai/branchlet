@@ -22,7 +22,7 @@ export function App({ initialMode = "menu", onExit }: AppProps) {
   const [lastMenuIndex, setLastMenuIndex] = useState(0)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
 
-  const initializeService = async (): Promise<void> => {
+  const initializeService = useCallback(async (): Promise<void> => {
     try {
       setLoading(true)
       setError(undefined)
@@ -36,7 +36,7 @@ export function App({ initialMode = "menu", onExit }: AppProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   const handleExit = useCallback((): void => {
     onExit?.()

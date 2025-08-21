@@ -1,5 +1,5 @@
 import { Box, Text, useInput } from "ink"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
   CommandProgress,
   ConfirmDialog,
@@ -34,6 +34,22 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
   const [branches, setBranches] = useState<GitBranch[]>([])
   const [loading, setLoading] = useState(false)
 
+  const loadBranches = useCallback(async (): Promise<void> => {
+    try {
+      setLoading(true)
+      const gitService = worktreeService.getGitService()
+      const repoInfo = await gitService.getRepositoryInfo()
+      setBranches(repoInfo.branches)
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        error: `Failed to load branches: ${error}`,
+      }))
+    } finally {
+      setLoading(false)
+    }
+  }, [worktreeService])
+
   useEffect(() => {
     loadBranches()
   }, [loadBranches])
@@ -48,22 +64,6 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
       }
     }
   })
-
-  const loadBranches = async (): Promise<void> => {
-    try {
-      setLoading(true)
-      const gitService = worktreeService.getGitService()
-      const repoInfo = await gitService.getRepositoryInfo()
-      setBranches(repoInfo.branches)
-    } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        error: `Failed to load branches: ${error}`,
-      }))
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleDirectorySubmit = (directoryName: string): void => {
     setState((prev) => ({

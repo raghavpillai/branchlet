@@ -1,5 +1,5 @@
 import { Box, Text, useInput } from "ink"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { SelectPrompt, StatusIndicator } from "../../components/common/index.js"
 import { GLOBAL_CONFIG_FILE } from "../../constants/default-config.js"
 import { COLORS } from "../../constants/index.js"
@@ -26,10 +26,6 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
   const [error, setError] = useState<string>()
   const [step, setStep] = useState<SettingsStep>("menu")
 
-  useEffect(() => {
-    loadConfig()
-  }, [loadConfig])
-
   useInput((input, key) => {
     if (error && input?.toLowerCase() === "r") {
       resetConfig()
@@ -50,7 +46,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
     }
   })
 
-  const loadConfig = async (): Promise<void> => {
+  const loadConfig = useCallback(async (): Promise<void> => {
     try {
       setLoading(true)
       const configService = worktreeService.getConfigService()
@@ -61,7 +57,11 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [worktreeService])
+
+  useEffect(() => {
+    loadConfig()
+  }, [loadConfig])
 
   const resetConfig = async (): Promise<void> => {
     try {
