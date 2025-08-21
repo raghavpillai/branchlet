@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { zodToJsonSchema } from "zod-to-json-schema"
 
 export const WorktreeConfigSchema = z.object({
   worktreeCopyPatterns: z.array(z.string()).default([".env", ".vscode/**"]),
@@ -32,4 +33,11 @@ export function validateConfig(config: unknown): {
     }
     return { success: false, error: String(error) }
   }
+}
+
+export function generateJsonSchema(): object {
+  return zodToJsonSchema(WorktreeConfigSchema, {
+    name: "BrancherConfig",
+    description: "Configuration schema for Brancher - Git Worktree Manager"
+  })
 }

@@ -6,7 +6,7 @@ import {
   GLOBAL_CONFIG_DIR,
   GLOBAL_CONFIG_FILE,
 } from "../constants/index"
-import { validateConfig, WorktreeConfigSchema } from "../schemas/config-schema.js"
+import { generateJsonSchema, validateConfig, WorktreeConfigSchema } from "../schemas/config-schema.js"
 import type { ConfigFile, ConfigValidation, WorktreeConfig } from "../types/index"
 import { ConfigError } from "../utils/index"
 
@@ -174,6 +174,11 @@ export class ConfigService {
       await mkdir(GLOBAL_CONFIG_DIR, { recursive: true })
       const defaultConfig = WorktreeConfigSchema.parse(DEFAULT_CONFIG)
       await writeFile(GLOBAL_CONFIG_FILE, JSON.stringify(defaultConfig, null, 2), "utf-8")
+      
+      // Also create a JSON schema file for IDE support
+      const schema = generateJsonSchema()
+      const schemaPath = `${GLOBAL_CONFIG_DIR}/settings.schema.json`
+      await writeFile(schemaPath, JSON.stringify(schema, null, 2), "utf-8")
     }
   }
 

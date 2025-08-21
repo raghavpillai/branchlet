@@ -37,7 +37,8 @@
     "minimist": "^1.2.8",
     "glob": "^10.3.10",
     "minimatch": "^9.0.3",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "zod-to-json-schema": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
