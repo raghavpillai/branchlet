@@ -12,6 +12,7 @@ import { WorktreeService } from "../services/index.js"
 import type { AppMode } from "../types/index.js"
 import { getUserFriendlyErrorMessage } from "../utils/index.js"
 import { ConfirmDialog, StatusIndicator } from "./common/index.js"
+import { ConfigService } from "../services/config-service.js"
 
 function WelcomeHeader({ mode }: { mode: AppMode }): JSX.Element {
   const cwd = process.cwd()
@@ -24,7 +25,11 @@ function WelcomeHeader({ mode }: { mode: AppMode }): JSX.Element {
     if (mode === "menu") {
       return (
         <Text>
-          🌳 Welcome to <Text bold color={COLORS.PRIMARY}>Brancher</Text>!
+          🌳 Welcome to{" "}
+          <Text bold color={COLORS.PRIMARY}>
+            Brancher
+          </Text>
+          !
         </Text>
       )
     }
@@ -38,7 +43,10 @@ function WelcomeHeader({ mode }: { mode: AppMode }): JSX.Element {
 
     return (
       <Text>
-        🌳 Brancher - <Text bold color={COLORS.PRIMARY}>{modeLabels[mode] || mode}</Text>
+        🌳 Brancher -{" "}
+        <Text bold color={COLORS.PRIMARY}>
+          {modeLabels[mode] || mode}
+        </Text>
       </Text>
     )
   }
@@ -104,7 +112,7 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
         setShowResetConfirm(true)
         return
       }
-      
+
       setError(undefined)
       if (mode !== "menu") {
         setMode("menu")
@@ -116,12 +124,11 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
     try {
       setShowResetConfirm(false)
       setLoading(true)
-      
+
       // Create a temporary config service to reset
-      const { ConfigService } = await import("../services/config-service.js")
       const tempConfigService = new ConfigService()
       await tempConfigService.createGlobalConfig()
-      
+
       // Reinitialize the service
       await initializeService()
     } catch (err) {
@@ -167,12 +174,12 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
     }
 
     const isConfigError = error.toLowerCase().includes("configuration")
-    
+
     return (
       <Box flexDirection="column">
         <WelcomeHeader mode={mode} />
         <Text color={COLORS.ERROR}>{error}</Text>
-        
+
         {isConfigError && (
           <Box marginTop={1}>
             <Text color={COLORS.MUTED}>
@@ -180,7 +187,7 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
             </Text>
           </Box>
         )}
-        
+
         {!isConfigError && (
           <Box marginTop={1}>
             <Text color={COLORS.MUTED}>Press any key to retry or Ctrl+C to exit</Text>

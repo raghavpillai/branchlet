@@ -137,15 +137,15 @@ export function CreateWorktree({
 
       // Run post-create commands if any
       if (config.postCreateCmd.length > 0) {
-        setState((prev) => ({ 
-          ...prev, 
+        setState((prev) => ({
+          ...prev,
           step: "running-commands",
-          commandProgress: { current: 0, total: config.postCreateCmd.length }
+          commandProgress: { current: 0, total: config.postCreateCmd.length },
         }))
 
         const fileService = worktreeService.getFileService()
         const variables = {
-          BASE_PATH: gitRoot.split('/').pop() || '',
+          BASE_PATH: gitRoot.split("/").pop() || "",
           WORKTREE_PATH: worktreePath,
           BRANCH_NAME: state.newBranch,
           SOURCE_BRANCH: state.sourceBranch,
@@ -155,10 +155,10 @@ export function CreateWorktree({
           config.postCreateCmd,
           variables,
           (command, current, total) => {
-            setState((prev) => ({ 
-              ...prev, 
+            setState((prev) => ({
+              ...prev,
               currentCommand: command,
-              commandProgress: { current, total }
+              commandProgress: { current, total },
             }))
           }
         )

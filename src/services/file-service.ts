@@ -93,23 +93,23 @@ export class FileService {
     }
 
     let allOutput = ""
-    
+
     for (let i = 0; i < commands.length; i++) {
       const command = commands[i]
       if (!command.trim()) continue
-      
+
       onProgress?.(command, i + 1, commands.length)
-      
+
       const resolvedCommand = resolveTemplate(command, variables)
       const result = await this.executeCommand(resolvedCommand, variables.WORKTREE_PATH)
-      
+
       allOutput += `Command ${i + 1}: ${command}\n${result.output}\n\n`
-      
+
       if (!result.success) {
         return {
           success: false,
           output: allOutput,
-          error: result.error
+          error: result.error,
         }
       }
     }

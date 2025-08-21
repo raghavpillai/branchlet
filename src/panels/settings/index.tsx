@@ -11,12 +11,12 @@ interface SettingsMenuProps {
   onBack: () => void
 }
 
-type SettingsStep = 
-  | "menu" 
-  | "copy-patterns" 
-  | "ignore-patterns" 
-  | "path-template" 
-  | "post-cmd" 
+type SettingsStep =
+  | "menu"
+  | "copy-patterns"
+  | "ignore-patterns"
+  | "path-template"
+  | "post-cmd"
   | "terminal-cmd"
 
 export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JSX.Element {
@@ -34,7 +34,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JS
       resetConfig()
       return
     }
-    
+
     if (key.escape) {
       if (step === "menu") {
         onBack()
@@ -43,7 +43,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JS
       }
       return
     }
-    
+
     if (step !== "menu" && (key.return || input)) {
       setStep("menu")
     }
@@ -81,7 +81,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JS
       description: `${config?.worktreeCopyPatterns.length || 0} patterns`,
     },
     {
-      label: "Ignore Patterns", 
+      label: "Ignore Patterns",
       value: "ignore-patterns",
       description: `${config?.worktreeCopyIgnores.length || 0} patterns`,
     },
@@ -92,7 +92,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JS
     },
     {
       label: "Post-Create Commands",
-      value: "post-cmd", 
+      value: "post-cmd",
       description: `${config?.postCreateCmd.length || 0} commands`,
     },
     {
@@ -116,14 +116,17 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JS
         <Box marginBottom={2}>
           <Text color={COLORS.ERROR}>Configuration Error</Text>
         </Box>
-        
+
         <Box marginBottom={2}>
           <Text>{error}</Text>
         </Box>
 
         <Box marginBottom={2}>
           <Text>
-            Please edit the configuration file at: <Text bold color={COLORS.PRIMARY}>{GLOBAL_CONFIG_FILE}</Text>
+            Please edit the configuration file at:{" "}
+            <Text bold color={COLORS.PRIMARY}>
+              {GLOBAL_CONFIG_FILE}
+            </Text>
           </Text>
         </Box>
 
@@ -153,7 +156,10 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JS
         <Box flexDirection="column">
           <Box marginBottom={2}>
             <Text>
-              Configuration file: <Text bold color={COLORS.PRIMARY}>{GLOBAL_CONFIG_FILE}</Text>
+              Configuration file:{" "}
+              <Text bold color={COLORS.PRIMARY}>
+                {GLOBAL_CONFIG_FILE}
+              </Text>
             </Text>
           </Box>
 
@@ -170,9 +176,11 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JS
       return (
         <Box flexDirection="column">
           <Box marginBottom={1}>
-            <Text bold color={COLORS.INFO}>Copy Patterns</Text>
+            <Text bold color={COLORS.INFO}>
+              Copy Patterns
+            </Text>
           </Box>
-          
+
           <Box marginBottom={2}>
             <Text color={COLORS.MUTED}>Files/patterns copied to new worktrees:</Text>
           </Box>
@@ -195,16 +203,20 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JS
       return (
         <Box flexDirection="column">
           <Box marginBottom={1}>
-            <Text bold color={COLORS.INFO}>Ignore Patterns</Text>
+            <Text bold color={COLORS.INFO}>
+              Ignore Patterns
+            </Text>
           </Box>
-          
+
           <Box marginBottom={2}>
             <Text color={COLORS.MUTED}>Files/patterns excluded from copying:</Text>
           </Box>
 
           <Box flexDirection="column" marginLeft={2} marginBottom={2}>
             {config?.worktreeCopyIgnores.map((pattern) => (
-              <Text key={pattern} color={COLORS.MUTED}>• {pattern}</Text>
+              <Text key={pattern} color={COLORS.MUTED}>
+                • {pattern}
+              </Text>
             ))}
           </Box>
 
@@ -220,9 +232,11 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JS
       return (
         <Box flexDirection="column">
           <Box marginBottom={1}>
-            <Text bold color={COLORS.INFO}>Worktree Path Template</Text>
+            <Text bold color={COLORS.INFO}>
+              Worktree Path Template
+            </Text>
           </Box>
-          
+
           <Box marginBottom={2}>
             <Text color={COLORS.MUTED}>Template for worktree directory paths:</Text>
           </Box>
@@ -252,11 +266,15 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JS
       return (
         <Box flexDirection="column">
           <Box marginBottom={1}>
-            <Text bold color={COLORS.INFO}>Post-Create Commands</Text>
+            <Text bold color={COLORS.INFO}>
+              Post-Create Commands
+            </Text>
           </Box>
-          
+
           <Box marginBottom={2}>
-            <Text color={COLORS.MUTED}>Commands executed after creating a worktree (in order):</Text>
+            <Text color={COLORS.MUTED}>
+              Commands executed after creating a worktree (in order):
+            </Text>
           </Box>
 
           <Box flexDirection="column" marginLeft={2} marginBottom={2}>
@@ -292,9 +310,11 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JS
       return (
         <Box flexDirection="column">
           <Box marginBottom={1}>
-            <Text bold color={COLORS.INFO}>Terminal Command</Text>
+            <Text bold color={COLORS.INFO}>
+              Terminal Command
+            </Text>
           </Box>
-          
+
           <Box marginBottom={2}>
             <Text color={COLORS.MUTED}>Command to open terminal in new worktree:</Text>
           </Box>

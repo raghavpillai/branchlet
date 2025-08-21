@@ -43,7 +43,14 @@ export interface StatusIndicatorProps {
 }
 
 export interface CreateWorktreeState {
-  step: "directory" | "source-branch" | "new-branch" | "confirm" | "creating" | "running-commands" | "success"
+  step:
+    | "directory"
+    | "source-branch"
+    | "new-branch"
+    | "confirm"
+    | "creating"
+    | "running-commands"
+    | "success"
   directoryName: string
   sourceBranch: string
   newBranch: string

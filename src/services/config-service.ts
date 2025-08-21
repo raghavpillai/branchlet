@@ -6,7 +6,7 @@ import {
   GLOBAL_CONFIG_DIR,
   GLOBAL_CONFIG_FILE,
 } from "../constants/index"
-import { generateJsonSchema, validateConfig, WorktreeConfigSchema } from "../schemas/config-schema.js"
+import { validateConfig, WorktreeConfigSchema } from "../schemas/config-schema.js"
 import type { ConfigFile, ConfigValidation, WorktreeConfig } from "../types/index"
 import { ConfigError } from "../utils/index"
 
@@ -30,10 +30,7 @@ export class ConfigService {
 
         const validation = validateConfig(parsed)
         if (!validation.success) {
-          throw new ConfigError(
-            `Invalid configuration: ${validation.error}`,
-            configFile.path
-          )
+          throw new ConfigError(`Invalid configuration: ${validation.error}`, configFile.path)
         }
 
         this.config = validation.data || DEFAULT_CONFIG
@@ -90,7 +87,11 @@ export class ConfigService {
     const warnings: string[] = []
 
     if (!config || typeof config !== "object") {
-      return { isValid: false, errors: ["Configuration must be an object"], warnings: [] }
+      return {
+        isValid: false,
+        errors: ["Configuration must be an object"],
+        warnings: [],
+      }
     }
 
     const cfg = config as Record<string, unknown>
@@ -174,16 +175,18 @@ export class ConfigService {
       await mkdir(GLOBAL_CONFIG_DIR, { recursive: true })
       const defaultConfig = WorktreeConfigSchema.parse(DEFAULT_CONFIG)
       await writeFile(GLOBAL_CONFIG_FILE, JSON.stringify(defaultConfig, null, 2), "utf-8")
-      
-      // Also create a JSON schema file for IDE support
-      const schema = generateJsonSchema()
-      const schemaPath = `${GLOBAL_CONFIG_DIR}/settings.schema.json`
-      await writeFile(schemaPath, JSON.stringify(schema, null, 2), "utf-8")
     }
   }
 
   async createGlobalConfig(): Promise<string> {
-    await this.saveConfig(DEFAULT_CONFIG, GLOBAL_CONFIG_FILE)
+    // Force overwrite with new format, bypassing validation of old format
+    await mkdir(GLOBAL_CONFIG_DIR, { recursive: true })
+    const defaultConfig = WorktreeConfigSchema.parse(DEFAULT_CONFIG)
+    await writeFile(GLOBAL_CONFIG_FILE, JSON.stringify(defaultConfig, null, 2), "utf-8")
+
+    // Update internal state
+    this.config = defaultConfig
+    this.configPath = GLOBAL_CONFIG_FILE
     return GLOBAL_CONFIG_FILE
   }
 
