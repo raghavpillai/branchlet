@@ -93,7 +93,6 @@ function main(): void {
       onExit={() => {
         if (!hasExited) {
           hasExited = true
-          console.log(MESSAGES.EXIT)
           unmount()
           process.exit(0)
         }
@@ -104,7 +103,6 @@ function main(): void {
   process.on("SIGINT", () => {
     if (!hasExited) {
       hasExited = true
-      console.log(`\n${MESSAGES.EXIT}`)
       unmount()
       process.exit(0)
     }
