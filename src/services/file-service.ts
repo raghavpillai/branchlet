@@ -194,20 +194,4 @@ export class FileService {
     })
   }
 
-  async validatePath(path: string): Promise<{ exists: boolean; isWritable: boolean }> {
-    try {
-      const exists = await fileExists(path)
-
-      if (!exists) {
-        return { exists: false, isWritable: false }
-      }
-
-      const stats = await stat(path)
-      const isWritable = !!(stats.mode & 0o200)
-
-      return { exists: true, isWritable }
-    } catch {
-      return { exists: false, isWritable: false }
-    }
-  }
 }

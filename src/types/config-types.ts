@@ -12,11 +12,6 @@ export interface ConfigFile {
   isGlobal: boolean
 }
 
-export interface ConfigValidation {
-  isValid: boolean
-  errors: string[]
-  warnings: string[]
-}
 
 export interface TemplateVariables {
   BASE_PATH: string

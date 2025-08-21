@@ -20,20 +20,6 @@ export function getRepositoryRoot(path?: string): string {
   return resolve(path || process.cwd())
 }
 
-export function getWorktreeBasePath(gitRoot: string, template: string): string {
-  const baseName = getRepositoryBaseName(gitRoot)
-  const parentDir = dirname(gitRoot)
-
-  const variables: TemplateVariables = {
-    BASE_PATH: baseName,
-    WORKTREE_PATH: "",
-    BRANCH_NAME: "",
-    SOURCE_BRANCH: "",
-  }
-
-  const resolvedTemplate = resolveTemplate(template, variables)
-  return join(parentDir, resolvedTemplate)
-}
 
 export function getWorktreePath(
   gitRoot: string,

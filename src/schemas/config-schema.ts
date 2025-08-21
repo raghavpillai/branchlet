@@ -10,7 +10,6 @@ export const WorktreeConfigSchema = z.object({
   terminalCommand: z.string().default(""),
 })
 
-export type WorktreeConfigInput = z.input<typeof WorktreeConfigSchema>
 export type WorktreeConfigOutput = z.output<typeof WorktreeConfigSchema>
 
 export function validateConfig(config: unknown): {

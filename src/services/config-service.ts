@@ -12,7 +12,6 @@ import {
 } from "../schemas/config-schema.js";
 import type {
   ConfigFile,
-  ConfigValidation,
   WorktreeConfig,
 } from "../types/index";
 import { ConfigError } from "../utils/index";
