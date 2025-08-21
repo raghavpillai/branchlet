@@ -34,7 +34,9 @@ export function ListWorktrees({
       setError(undefined);
       const gitService = worktreeService.getGitService();
       const repoInfo = await gitService.getRepositoryInfo();
-      setWorktrees(repoInfo.worktrees);
+      // Filter out the main worktree from display
+      const additionalWorktrees = repoInfo.worktrees.filter(wt => !wt.isMain);
+      setWorktrees(additionalWorktrees);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -85,9 +87,6 @@ export function ListWorktrees({
     return indicator;
   };
 
-  const longestPath = Math.max(...worktrees.map(wt => formatPath(wt.path).length));
-  const longestBranch = Math.max(...worktrees.map(wt => wt.branch.length));
-
   return (
     <Box flexDirection="column">
       <Box marginBottom={1}>
@@ -98,24 +97,20 @@ export function ListWorktrees({
 
       <Box marginBottom={1}>
         <Text bold color={COLORS.MUTED}>
-          {'PATH'.padEnd(longestPath + 2)} {'BRANCH'.padEnd(longestBranch + 2)} STATUS
+          PATH                                       BRANCH
         </Text>
       </Box>
 
       {worktrees.map((worktree, index) => {
         const path = formatPath(worktree.path);
-        const statusIndicator = getStatusIndicator(worktree);
         
         return (
           <Box key={index}>
             <Text color={worktree.isMain ? COLORS.PRIMARY : undefined}>
-              {path.padEnd(longestPath + 2)}
+              {path.padEnd(43)}
             </Text>
             <Text color={COLORS.SUCCESS}>
-              {worktree.branch.padEnd(longestBranch + 2)}
-            </Text>
-            <Text color={worktree.isClean ? COLORS.SUCCESS : COLORS.WARNING}>
-              {statusIndicator}
+              {worktree.branch}
             </Text>
           </Box>
         );

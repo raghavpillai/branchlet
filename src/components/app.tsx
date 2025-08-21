@@ -10,6 +10,48 @@ import { getUserFriendlyErrorMessage } from '../utils/index.js';
 import { MESSAGES, COLORS } from '../constants/index.js';
 import type { AppMode, SelectOption } from '../types/index.js';
 
+function WelcomeHeader({ mode }: { mode: AppMode }): JSX.Element {
+  const cwd = process.cwd();
+  const formatPath = (path: string): string => {
+    const home = process.env.HOME || '';
+    return path.replace(home, '~');
+  };
+
+  const getHeaderText = (): JSX.Element => {
+    if (mode === 'menu') {
+      return (
+        <Text>
+          🌳 Welcome to <Text bold>Brancher</Text>!
+        </Text>
+      );
+    }
+
+    const modeLabels = {
+      create: 'Create',
+      list: 'List', 
+      delete: 'Delete',
+      settings: 'Settings'
+    };
+
+    return (
+      <Text>
+        🌳 <Text bold>Brancher</Text> - {modeLabels[mode] || mode}
+      </Text>
+    );
+  };
+
+  return (
+    <Box borderStyle="single" paddingX={1} paddingY={0} marginBottom={1}>
+      <Box flexDirection="column">
+        {getHeaderText()}
+        <Text color={COLORS.MUTED}>
+          cwd: {formatPath(cwd)}
+        </Text>
+      </Box>
+    </Box>
+  );
+}
+
 interface AppProps {
   initialMode?: AppMode;
   onExit?: () => void;
@@ -96,9 +138,7 @@ export function App({ initialMode = 'menu', onExit }: AppProps): JSX.Element {
   if (loading) {
     return (
       <Box flexDirection="column">
-        <Box marginBottom={1}>
-          <Text bold color={COLORS.PRIMARY}>{MESSAGES.WELCOME}</Text>
-        </Box>
+        <WelcomeHeader mode={mode} />
         <StatusIndicator status="loading" message={MESSAGES.LOADING_GIT_INFO} />
       </Box>
     );
@@ -107,9 +147,7 @@ export function App({ initialMode = 'menu', onExit }: AppProps): JSX.Element {
   if (error) {
     return (
       <Box flexDirection="column">
-        <Box marginBottom={1}>
-          <Text bold color={COLORS.PRIMARY}>{MESSAGES.WELCOME}</Text>
-        </Box>
+        <WelcomeHeader mode={mode} />
         <Text color={COLORS.ERROR}>{error}</Text>
         <Box marginTop={1}>
           <Text color={COLORS.MUTED}>Press any key to retry or Ctrl+C to exit</Text>
@@ -126,9 +164,7 @@ export function App({ initialMode = 'menu', onExit }: AppProps): JSX.Element {
 
   return (
     <Box flexDirection="column">
-      <Box marginBottom={1}>
-        <Text bold color={COLORS.PRIMARY}>{MESSAGES.WELCOME}</Text>
-      </Box>
+      <WelcomeHeader mode={mode} />
 
       {mode === 'menu' && (
         <SelectPrompt

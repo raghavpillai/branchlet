@@ -46,12 +46,11 @@ export function InputPrompt({
 
   return (
     <Box flexDirection="column">
-      <Box marginBottom={1}>
+      <Box marginBottom={0}>
         <Text>{label}</Text>
       </Box>
       
-      <Box>
-        <Text color={COLORS.MUTED}>{'> '}</Text>
+      <Box borderStyle="single" paddingX={1} paddingY={0}>
         <Text>{value}</Text>
         {!value && placeholder && (
           <Text color={COLORS.MUTED} dimColor>

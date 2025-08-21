@@ -74,6 +74,15 @@ export class GitService {
       worktrees.push(currentWorktree as GitWorktree);
     }
 
+    // Mark the first worktree as main if it's the git root
+    if (worktrees.length > 0) {
+      const firstWorktree = worktrees[0];
+      const gitRoot = this.gitRoot;
+      if (firstWorktree.path === gitRoot || firstWorktree.path === gitRoot.replace(/\/$/, '')) {
+        firstWorktree.isMain = true;
+      }
+    }
+
     for (const worktree of worktrees) {
       worktree.isClean = await this.isWorktreeClean(worktree.path);
       if (!worktree.branch) {
