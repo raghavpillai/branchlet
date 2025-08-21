@@ -8,6 +8,7 @@ import {
   StatusIndicator,
 } from "../../components/common/index.js"
 import { COLORS, MESSAGES } from "../../constants/index.js"
+import { copyFiles, executePostCreateCommands, openTerminal } from "../../services/file-service.js"
 import type { WorktreeService } from "../../services/index.js"
 import type { CreateWorktreeState, GitBranch, SelectOption } from "../../types/index.js"
 import {
@@ -129,8 +130,7 @@ export function CreateWorktree({
       })
 
       if (config.worktreeCopyPatterns.length > 0) {
-        const fileService = worktreeService.getFileService()
-        await fileService.copyFiles(gitRoot, worktreePath, config)
+        await copyFiles(gitRoot, worktreePath, config)
       }
 
       if (config.postCreateCmd.length > 0) {
@@ -140,7 +140,6 @@ export function CreateWorktree({
           commandProgress: { current: 0, total: config.postCreateCmd.length },
         }))
 
-        const fileService = worktreeService.getFileService()
         const variables = {
           BASE_PATH: gitRoot.split("/").pop() || "",
           WORKTREE_PATH: worktreePath,
@@ -148,7 +147,7 @@ export function CreateWorktree({
           SOURCE_BRANCH: state.sourceBranch,
         }
 
-        await fileService.executePostCreateCommands(
+        await executePostCreateCommands(
           config.postCreateCmd,
           variables,
           (command, current, total) => {
@@ -162,8 +161,7 @@ export function CreateWorktree({
       }
 
       if (config.terminalCommand) {
-        const fileService = worktreeService.getFileService()
-        await fileService.openTerminal(config.terminalCommand, worktreePath)
+        await openTerminal(config.terminalCommand, worktreePath)
       }
 
       setState((prev) => ({ ...prev, step: "success" }))

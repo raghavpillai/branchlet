@@ -5,12 +5,11 @@ import type { TemplateVariables, WorktreeConfig } from "../types/index.js"
 import { fileExists, isDirectory, matchFiles, shouldIgnoreFile } from "../utils/file-patterns.js"
 import { resolveTemplate } from "../utils/path-utils.js"
 
-export class FileService {
-  async copyFiles(
-    sourceDir: string,
-    targetDir: string,
-    config: WorktreeConfig
-  ): Promise<{ copied: string[]; skipped: string[]; errors: string[] }> {
+export async function copyFiles(
+  sourceDir: string,
+  targetDir: string,
+  config: WorktreeConfig
+): Promise<{ copied: string[]; skipped: string[]; errors: string[] }> {
     const result = {
       copied: [] as string[],
       skipped: [] as string[],
@@ -40,7 +39,7 @@ export class FileService {
           }
 
           if (await isDirectory(sourcePath)) {
-            await this.copyDirectory(sourcePath, targetPath, result)
+            await copyDirectory(sourcePath, targetPath, result)
           } else {
             await mkdir(dirname(targetPath), { recursive: true })
             await copyFile(sourcePath, targetPath)
@@ -57,11 +56,11 @@ export class FileService {
     return result
   }
 
-  private async copyDirectory(
-    sourceDir: string,
-    targetDir: string,
-    result: { copied: string[]; skipped: string[]; errors: string[] }
-  ): Promise<void> {
+async function copyDirectory(
+  sourceDir: string,
+  targetDir: string,
+  result: { copied: string[]; skipped: string[]; errors: string[] }
+): Promise<void> {
     try {
       await mkdir(targetDir, { recursive: true })
       const entries = await readdir(sourceDir)
@@ -72,7 +71,7 @@ export class FileService {
         const stats = await stat(sourcePath)
 
         if (stats.isDirectory()) {
-          await this.copyDirectory(sourcePath, targetPath, result)
+          await FileService.copyDirectory(sourcePath, targetPath, result)
         } else {
           await copyFile(sourcePath, targetPath)
           result.copied.push(relative(process.cwd(), targetPath))
@@ -83,11 +82,11 @@ export class FileService {
     }
   }
 
-  async executePostCreateCommands(
-    commands: string[],
-    variables: TemplateVariables,
-    onProgress?: (command: string, index: number, total: number) => void
-  ): Promise<{ success: boolean; output: string; error?: string }> {
+export async function executePostCreateCommands(
+  commands: string[],
+  variables: TemplateVariables,
+  onProgress?: (command: string, index: number, total: number) => void
+): Promise<{ success: boolean; output: string; error?: string }> {
     if (commands.length === 0) {
       return { success: true, output: "" }
     }
@@ -101,7 +100,7 @@ export class FileService {
       onProgress?.(command, i + 1, commands.length)
 
       const resolvedCommand = resolveTemplate(command, variables)
-      const result = await this.executeCommand(resolvedCommand, variables.WORKTREE_PATH)
+      const result = await executeCommand(resolvedCommand, variables.WORKTREE_PATH)
 
       allOutput += `Command ${i + 1}: ${command}\n${result.output}\n\n`
 
@@ -117,10 +116,10 @@ export class FileService {
     return { success: true, output: allOutput }
   }
 
-  private async executeCommand(
-    command: string,
-    cwd: string
-  ): Promise<{ success: boolean; output: string; error?: string }> {
+async function executeCommand(
+  command: string,
+  cwd: string
+): Promise<{ success: boolean; output: string; error?: string }> {
     return new Promise((resolve) => {
       const child = spawn(command, {
         cwd,
@@ -157,10 +156,10 @@ export class FileService {
     })
   }
 
-  async openTerminal(
-    terminalCommand: string,
-    worktreePath: string
-  ): Promise<{ success: boolean; error?: string }> {
+export async function openTerminal(
+  terminalCommand: string,
+  worktreePath: string
+): Promise<{ success: boolean; error?: string }> {
     if (!terminalCommand.trim()) {
       return { success: true }
     }
@@ -193,4 +192,3 @@ export class FileService {
       resolve({ success: true })
     })
   }
-}

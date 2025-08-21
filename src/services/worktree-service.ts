@@ -2,18 +2,16 @@ import type { TemplateVariables, WorktreeCreateOptions } from "../types/index.js
 import { ValidationError } from "../utils/error-handlers.js"
 import { getRepositoryBaseName, getRepositoryRoot, getWorktreePath } from "../utils/path-utils.js"
 import { ConfigService } from "./config-service.js"
-import { FileService } from "./file-service.js"
+import { copyFiles, executePostCreateCommands, openTerminal } from "./file-service.js"
 import { GitService } from "./git-service.js"
 
 export class WorktreeService {
   private gitService: GitService
   private configService: ConfigService
-  private fileService: FileService
 
   constructor(gitRoot?: string) {
     this.gitService = new GitService(gitRoot)
     this.configService = new ConfigService()
-    this.fileService = new FileService()
   }
 
   async initialize(): Promise<void> {
@@ -51,7 +49,7 @@ export class WorktreeService {
     })
 
     if (config.worktreeCopyPatterns.length > 0) {
-      await this.fileService.copyFiles(gitRoot, worktreePath, config)
+      await copyFiles(gitRoot, worktreePath, config)
     }
 
     if (config.postCreateCmd.length > 0) {
@@ -62,11 +60,11 @@ export class WorktreeService {
         SOURCE_BRANCH: options.sourceBranch,
       }
 
-      await this.fileService.executePostCreateCommands(config.postCreateCmd, variables)
+      await executePostCreateCommands(config.postCreateCmd, variables)
     }
 
     if (config.terminalCommand) {
-      await this.fileService.openTerminal(config.terminalCommand, worktreePath)
+      await openTerminal(config.terminalCommand, worktreePath)
     }
   }
 
@@ -89,7 +87,4 @@ export class WorktreeService {
     return this.configService
   }
 
-  getFileService(): FileService {
-    return this.fileService
-  }
 }
