@@ -58,15 +58,12 @@ export function SelectPrompt<T = string>({
 
       {options.map((option, index) => {
         const isSelected = index === selectedIndex;
-        const marker = isSelected ? '>' : ' ';
+        const marker = isSelected ? '> ' : '  ';
         
         return (
           <Box key={index} marginLeft={1}>
             <Text {...(isSelected ? { color: COLORS.PRIMARY } : {})}>
-              {marker} 
-            </Text>
-            <Text {...(isSelected ? { color: COLORS.PRIMARY } : {})}>
-              {option.label}
+              {marker}{option.label}
             </Text>
             {option.description && (
               <Text color={COLORS.MUTED} dimColor>
