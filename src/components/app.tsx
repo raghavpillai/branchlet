@@ -9,13 +9,12 @@ import { AppRouter } from "./app-router.js"
 import { ErrorState } from "./error-state.js"
 import { LoadingState } from "./loading-state.js"
 
-
 interface AppProps {
   initialMode?: AppMode
   onExit?: () => void
 }
 
-export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
+export function App({ initialMode = "menu", onExit }: AppProps) {
   const [mode, setMode] = useState<AppMode>(initialMode)
   const [worktreeService, setWorktreeService] = useState<WorktreeService | null>(null)
   const [error, setError] = useState<string>()
@@ -25,7 +24,7 @@ export function App({ initialMode = "menu", onExit }: AppProps): JSX.Element {
 
   useEffect(() => {
     initializeService()
-  }, [])
+  }, [initializeService])
 
   const initializeService = async (): Promise<void> => {
     try {

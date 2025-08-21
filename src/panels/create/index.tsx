@@ -24,11 +24,7 @@ interface CreateWorktreeProps {
   onCancel: () => void
 }
 
-export function CreateWorktree({
-  worktreeService,
-  onComplete,
-  onCancel,
-}: CreateWorktreeProps): JSX.Element {
+export function CreateWorktree({ worktreeService, onComplete, onCancel }: CreateWorktreeProps) {
   const [state, setState] = useState<CreateWorktreeState>({
     step: "directory",
     directoryName: "",
@@ -40,7 +36,7 @@ export function CreateWorktree({
 
   useEffect(() => {
     loadBranches()
-  }, [])
+  }, [loadBranches])
 
   useInput((input, key) => {
     if (state.error) {

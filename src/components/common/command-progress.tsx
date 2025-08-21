@@ -8,11 +8,7 @@ interface CommandProgressProps {
   totalCommands: number
 }
 
-export function CommandProgress({
-  command,
-  currentIndex,
-  totalCommands,
-}: CommandProgressProps): JSX.Element {
+export function CommandProgress({ command, currentIndex, totalCommands }: CommandProgressProps) {
   return (
     <Box flexDirection="column">
       <Box marginBottom={1}>

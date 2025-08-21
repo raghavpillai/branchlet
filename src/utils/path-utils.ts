@@ -90,7 +90,7 @@ export function validateBranchName(name: string): string | undefined {
     return "Branch name cannot start with - or end with ."
   }
 
-  if (/[\s~^:?*\[\]\\@]/.test(name)) {
+  if (/[\s~^:?*[\]\\@]/.test(name)) {
     return "Branch name contains invalid characters"
   }
 

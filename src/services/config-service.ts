@@ -7,9 +7,9 @@ import {
   LOCAL_CONFIG_FILE_NAME,
 } from "../constants/index"
 import {
+  validateConfig,
   type WorktreeConfig,
   WorktreeConfigSchema,
-  validateConfig,
 } from "../schemas/config-schema.js"
 import type { ConfigFile } from "../types/index"
 import { ConfigError } from "../utils/index"

@@ -6,14 +6,14 @@ interface WelcomeHeaderProps {
   mode: AppMode
 }
 
-export function WelcomeHeader({ mode }: WelcomeHeaderProps): JSX.Element {
+export function WelcomeHeader({ mode }: WelcomeHeaderProps) {
   const cwd = process.cwd()
   const formatPath = (path: string): string => {
     const home = process.env.HOME || ""
     return path.replace(home, "~")
   }
 
-  const getHeaderText = (): JSX.Element => {
+  const getHeaderText = () => {
     if (mode === "menu") {
       return (
         <Text>

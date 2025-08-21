@@ -5,11 +5,7 @@ import type { StatusIndicatorProps } from "../../types/index.js"
 
 const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
 
-export function StatusIndicator({
-  status,
-  message,
-  spinner = true,
-}: StatusIndicatorProps): JSX.Element {
+export function StatusIndicator({ status, message, spinner = true }: StatusIndicatorProps) {
   const [frameIndex, setFrameIndex] = useState(0)
 
   useEffect(() => {

@@ -9,7 +9,7 @@ export function SelectPrompt<T = string>({
   onSelect,
   onCancel,
   defaultIndex = 0,
-}: SelectPromptProps<T>): JSX.Element {
+}: SelectPromptProps<T>) {
   const [selectedIndex, setSelectedIndex] = useState(defaultIndex)
 
   useEffect(() => {

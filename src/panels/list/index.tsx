@@ -10,14 +10,14 @@ interface ListWorktreesProps {
   onBack: () => void
 }
 
-export function ListWorktrees({ worktreeService, onBack }: ListWorktreesProps): JSX.Element {
+export function ListWorktrees({ worktreeService, onBack }: ListWorktreesProps) {
   const [worktrees, setWorktrees] = useState<GitWorktree[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string>()
 
   useEffect(() => {
     loadWorktrees()
-  }, [])
+  }, [loadWorktrees])
 
   useInput((input, key) => {
     if (key.escape || key.return || input) {

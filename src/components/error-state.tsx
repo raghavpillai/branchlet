@@ -18,7 +18,7 @@ export function ErrorState({
   showResetConfirm,
   onResetConfirm,
   onResetCancel,
-}: ErrorStateProps): JSX.Element {
+}: ErrorStateProps) {
   if (showResetConfirm) {
     return (
       <Box flexDirection="column">

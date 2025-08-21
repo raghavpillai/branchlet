@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import { render } from "ink"
 import minimist from "minimist"
+// Import version from package.json using import assertion
+import packageJson from "../package.json" with { type: "json" }
 import { App } from "./components/app.js"
 import { MESSAGES } from "./constants/index.js"
 import type { AppMode } from "./types/index.js"
 
-// Import version from package.json using import assertion
-import packageJson from "../package.json" with { type: "json" }
 const VERSION = packageJson.version
 
 function parseArguments(): { mode: AppMode; help: boolean } {

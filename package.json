@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "bun run src/index.tsx",
-    "build": "bun run typecheck && bun build src/index.tsx --outdir dist --target node --format esm --external react-devtools-core",
+    "build": "bun run typecheck && bun build src/index.tsx --outdir dist --target node --format esm --external yoga-wasm-web",
     "start": "node dist/index.js",
     "test": "bun test",
     "lint": "biome lint src/",
@@ -25,20 +25,21 @@
   },
   "license": "MIT",
   "dependencies": {
-    "ink": "^4.4.1",
-    "react": "^18.2.0",
+    "glob": "^11.0.3",
+    "ink": "^6.2.2",
+    "ink-spinner": "^5.0.0",
+    "minimatch": "^10.0.3",
     "minimist": "^1.2.8",
-    "glob": "^10.3.10",
-    "minimatch": "^9.0.3",
-    "zod": "^3.23.8",
-    "ink-spinner": "^5.0.0"
+    "react": "^19.1.1",
+    "react-devtools-core": "^6.1.5",
+    "zod": "^4.0.17"
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
-    "@types/react": "^18.2.48",
+    "@biomejs/biome": "^2.2.0",
     "@types/minimist": "^1.2.5",
-    "@biomejs/biome": "^1.9.4",
-    "typescript": "^5.3.3"
+    "@types/node": "^24.3.0",
+    "@types/react": "^19.1.10",
+    "typescript": "^5.9.2"
   },
   "engines": {
     "node": ">=18.0.0"

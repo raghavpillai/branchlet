@@ -11,11 +11,7 @@ interface DeleteWorktreeProps {
   onCancel: () => void
 }
 
-export function DeleteWorktree({
-  worktreeService,
-  onComplete,
-  onCancel,
-}: DeleteWorktreeProps): JSX.Element {
+export function DeleteWorktree({ worktreeService, onComplete, onCancel }: DeleteWorktreeProps) {
   const [state, setState] = useState<DeleteWorktreeState>({
     step: "select",
     force: false,
@@ -25,7 +21,7 @@ export function DeleteWorktree({
 
   useEffect(() => {
     loadWorktrees()
-  }, [])
+  }, [loadWorktrees])
 
   useInput((input, key) => {
     if (state.error || worktrees.length === 0) {

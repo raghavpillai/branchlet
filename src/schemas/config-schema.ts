@@ -22,8 +22,8 @@ export function validateConfig(config: unknown): {
     return { success: true, data: result }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errorMessages = error.errors
-        .map((err) => `${err.path.join(".")}: ${err.message}`)
+      const errorMessages = error.issues
+        .map((err: z.ZodIssue) => `${err.path.join(".")}: ${err.message}`)
         .join("; ")
       return { success: false, error: errorMessages }
     }

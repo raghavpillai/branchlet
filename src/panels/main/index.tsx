@@ -8,7 +8,7 @@ interface MainPanelProps {
   defaultIndex?: number
 }
 
-export function MainPanel({ onSelect, onCancel, defaultIndex = 0 }: MainPanelProps): JSX.Element {
+export function MainPanel({ onSelect, onCancel, defaultIndex = 0 }: MainPanelProps) {
   const getMenuOptions = (): SelectOption<AppMode | "exit">[] => [
     {
       label: MESSAGES.MENU_CREATE,

@@ -20,7 +20,7 @@ type SettingsStep =
   | "post-cmd"
   | "terminal-cmd"
 
-export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JSX.Element {
+export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
   const [config, setConfig] = useState<WorktreeConfig | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string>()
@@ -28,7 +28,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps): JS
 
   useEffect(() => {
     loadConfig()
-  }, [])
+  }, [loadConfig])
 
   useInput((input, key) => {
     if (error && input?.toLowerCase() === "r") {

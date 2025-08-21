@@ -1,5 +1,5 @@
-export { MainPanel } from "./main/index.js"
 export { CreateWorktree } from "./create/index.js"
-export { ListWorktrees } from "./list/index.js"
 export { DeleteWorktree } from "./delete/index.js"
+export { ListWorktrees } from "./list/index.js"
+export { MainPanel } from "./main/index.js"
 export { SettingsMenu } from "./settings/index.js"

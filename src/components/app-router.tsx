@@ -27,18 +27,14 @@ export function AppRouter({
   onMenuSelect,
   onBackToMenu,
   onExit,
-}: AppRouterProps): JSX.Element {
+}: AppRouterProps) {
   return (
     <Box flexDirection="column">
       <WelcomeHeader mode={mode} />
 
       {mode === "menu" && (
         <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED}>
-          <MainPanel
-            onSelect={onMenuSelect}
-            onCancel={onExit}
-            defaultIndex={lastMenuIndex}
-          />
+          <MainPanel onSelect={onMenuSelect} onCancel={onExit} defaultIndex={lastMenuIndex} />
         </Box>
       )}
 

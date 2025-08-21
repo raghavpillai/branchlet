@@ -11,7 +11,7 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
   variant = "default",
-}: ConfirmDialogProps): JSX.Element {
+}: ConfirmDialogProps) {
   const [selectedOption, setSelectedOption] = useState<"confirm" | "cancel">("cancel")
 
   const variantColors = {

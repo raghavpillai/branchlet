@@ -10,7 +10,7 @@ export function InputPrompt({
   validate,
   onSubmit,
   onCancel,
-}: InputPromptProps): JSX.Element {
+}: InputPromptProps) {
   const [value, setValue] = useState(defaultValue)
   const [error, setError] = useState<string>()
 

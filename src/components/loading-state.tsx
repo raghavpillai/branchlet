@@ -8,7 +8,7 @@ interface LoadingStateProps {
   mode: AppMode
 }
 
-export function LoadingState({ mode }: LoadingStateProps): JSX.Element {
+export function LoadingState({ mode }: LoadingStateProps) {
   return (
     <Box flexDirection="column">
       <WelcomeHeader mode={mode} />
