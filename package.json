@@ -1,6 +1,6 @@
 {
   "name": "branchlet",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "description": "CLI for creating and managing Git worktrees",
   "type": "module",
   "main": "dist/index.js",
@@ -24,6 +24,10 @@
     "url": "https://raghav.sh"
   },
   "license": "MIT",
+  "files": [
+    "dist/",
+    "README.md"
+  ],
   "dependencies": {
     "glob": "^11.0.3",
     "ink": "^6.2.2",

@@ -120,6 +120,5 @@ function main(): void {
   })
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main()
-}
+// Always run main when this file is executed
+main()

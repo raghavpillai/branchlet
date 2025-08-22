@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "brancher",
+      "name": "branchlet",
       "dependencies": {
         "glob": "^11.0.3",
         "ink": "^6.2.2",
@@ -11,16 +11,16 @@
         "minimist": "^1.2.8",
         "react": "^19.1.1",
         "react-devtools-core": "^6.1.5",
-        "zod": "^4.0.17",
+        "zod": "^4.0.17"
       },
       "devDependencies": {
         "@biomejs/biome": "^2.2.0",
         "@types/minimist": "^1.2.5",
         "@types/node": "^24.3.0",
         "@types/react": "^19.1.10",
-        "typescript": "^5.9.2",
-      },
-    },
+        "typescript": "^5.9.2"
+      }
+    }
   },
   "packages": {
     "@alcalzone/ansi-tokenize": ["@alcalzone/ansi-tokenize@0.2.0", "", { "dependencies": { "ansi-styles": "^6.2.1", "is-fullwidth-code-point": "^5.0.0" } }, "sha512-qI/5TaaaCZE4yeSZ83lu0+xi1r88JSxUjnH4OP/iZF7+KKZ75u3ee5isd0LxX+6N8U0npL61YrpbthILHB6BnA=="],
