@@ -4,7 +4,7 @@ export const WorktreeConfigSchema = z
   .object({
     worktreeCopyPatterns: z
       .array(z.string())
-      .default([".env", ".vscode/**"])
+      .default([".env*", ".vscode/**"])
       .describe("File patterns to copy to new worktrees (glob patterns supported)"),
     worktreeCopyIgnores: z
       .array(z.string())

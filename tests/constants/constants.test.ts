@@ -29,6 +29,17 @@ describe("constants", () => {
     test("should have meaningful template variables", () => {
       expect(DEFAULT_CONFIG.worktreePathTemplate).toContain("$BASE_PATH")
     })
+
+    test("should include .env* pattern by default", () => {
+      const patterns = DEFAULT_CONFIG.worktreeCopyPatterns
+      expect(patterns).toContain(".env*")
+    })
+
+    test("should support recursive directory patterns", () => {
+      const patterns = DEFAULT_CONFIG.worktreeCopyPatterns
+      const hasRecursivePattern = patterns.some(p => p.includes("**"))
+      expect(hasRecursivePattern).toBe(true)
+    })
   })
 
   describe("file and directory constants", () => {

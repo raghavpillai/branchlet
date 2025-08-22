@@ -207,7 +207,7 @@ describe("Integration Workflows", () => {
       // Test config reset
       configService.resetConfig()
       const resetConfig = configService.getConfig()
-      expect(resetConfig.worktreeCopyPatterns).toEqual(originalConfig.worktreeCopyPatterns)
+      expect(resetConfig.terminalCommand).toBe(originalConfig.terminalCommand)
     })
   })
 

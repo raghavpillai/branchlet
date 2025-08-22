@@ -18,6 +18,8 @@ export async function copyFiles(
   }
 
   try {
+    await mkdir(targetDir, { recursive: true })
+
     const filesToCopy = await matchFiles(
       sourceDir,
       config.worktreeCopyPatterns,
@@ -29,18 +31,13 @@ export async function copyFiles(
         const sourcePath = join(sourceDir, filePath)
         const targetPath = join(targetDir, filePath)
 
-        if (shouldIgnoreFile(filePath, config.worktreeCopyIgnores)) {
-          result.skipped.push(filePath)
-          continue
-        }
-
         if (!(await fileExists(sourcePath))) {
           result.skipped.push(filePath)
           continue
         }
 
         if (await isDirectory(sourcePath)) {
-          await copyDirectory(sourcePath, targetPath, result)
+          await copyDirectoryRecursive(sourcePath, targetPath, result, config.worktreeCopyIgnores)
         } else {
           await mkdir(dirname(targetPath), { recursive: true })
           await copyFile(sourcePath, targetPath)
@@ -51,16 +48,17 @@ export async function copyFiles(
       }
     }
   } catch (error) {
-    result.errors.push(`Failed to match files: ${error}`)
+    result.errors.push(`Failed to copy files: ${error}`)
   }
 
   return result
 }
 
-async function copyDirectory(
+async function copyDirectoryRecursive(
   sourceDir: string,
   targetDir: string,
-  result: { copied: string[]; skipped: string[]; errors: string[] }
+  result: { copied: string[]; skipped: string[]; errors: string[] },
+  ignorePatterns: string[]
 ): Promise<void> {
   try {
     await mkdir(targetDir, { recursive: true })
@@ -69,13 +67,24 @@ async function copyDirectory(
     for (const entry of entries) {
       const sourcePath = join(sourceDir, entry)
       const targetPath = join(targetDir, entry)
-      const stats = await stat(sourcePath)
+      const relativePath = relative(process.cwd(), sourcePath)
 
-      if (stats.isDirectory()) {
-        await copyDirectory(sourcePath, targetPath, result)
-      } else {
-        await copyFile(sourcePath, targetPath)
-        result.copied.push(relative(process.cwd(), targetPath))
+      if (shouldIgnoreFile(relativePath, ignorePatterns)) {
+        result.skipped.push(relativePath)
+        continue
+      }
+
+      try {
+        const stats = await stat(sourcePath)
+
+        if (stats.isDirectory()) {
+          await copyDirectoryRecursive(sourcePath, targetPath, result, ignorePatterns)
+        } else {
+          await copyFile(sourcePath, targetPath)
+          result.copied.push(relativePath)
+        }
+      } catch (error) {
+        result.errors.push(`${relativePath}: ${error}`)
       }
     }
   } catch (error) {
@@ -87,37 +96,38 @@ export async function executePostCreateCommands(
   commands: string[],
   variables: TemplateVariables,
   onProgress?: (command: string, index: number, total: number) => void
-): Promise<{ success: boolean; output: string; error?: string }> {
+): Promise<Array<{ command: string; success: boolean; output: string; error?: string }>> {
   if (commands.length === 0) {
-    return { success: true, output: "" }
+    return []
   }
 
-  let allOutput = ""
+  const results: Array<{ command: string; success: boolean; output: string; error?: string }> = []
 
   for (let i = 0; i < commands.length; i++) {
     const command = commands[i]
-    if (!command?.trim()) continue
+    if (!command?.trim()) {
+      results.push({
+        command: command || "",
+        success: true,
+        output: "",
+      })
+      continue
+    }
 
     onProgress?.(command, i + 1, commands.length)
 
     const resolvedCommand = resolveTemplate(command, variables)
     const result = await executeCommand(resolvedCommand, variables.WORKTREE_PATH)
 
-    allOutput += `Command ${i + 1}: ${command}\n${result.output}\n\n`
-
-    if (!result.success) {
-      const errorResult = {
-        success: false as const,
-        output: allOutput,
-      }
-      if (result.error) {
-        return { ...errorResult, error: result.error }
-      }
-      return errorResult
-    }
+    results.push({
+      command,
+      success: result.success,
+      output: result.output,
+      ...(result.error && { error: result.error }),
+    })
   }
 
-  return { success: true, output: allOutput }
+  return results
 }
 
 async function executeCommand(
@@ -163,9 +173,9 @@ async function executeCommand(
 export async function openTerminal(
   terminalCommand: string,
   worktreePath: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; command: string; error?: string }> {
   if (!terminalCommand.trim()) {
-    return { success: true }
+    return { success: true, command: "" }
   }
 
   const variables: TemplateVariables = {
@@ -188,11 +198,12 @@ export async function openTerminal(
     child.on("error", (error) => {
       resolve({
         success: false,
+        command: resolvedCommand,
         error: error.message,
       })
     })
 
     child.unref()
-    resolve({ success: true })
+    resolve({ success: true, command: resolvedCommand })
   })
 }
