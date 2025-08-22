@@ -63,7 +63,7 @@ export function SelectPrompt<T = string>({
               {option.label}
             </Text>
             {option.description && (
-              <Text color={COLORS.MUTED} dimColor>
+              <Text color={COLORS.MUTED} dimColor italic>
                 {" "}
                 ({option.description})
               </Text>

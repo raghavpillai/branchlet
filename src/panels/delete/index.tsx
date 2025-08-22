@@ -119,7 +119,7 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
         return path.replace(home, "~")
       }
 
-      const statusInfo = worktree.isClean ? "" : " (has changes)"
+      const statusInfo = worktree.isClean ? "" : "has changes"
 
       return {
         label: `${formatPath(worktree.path)} [${worktree.branch}]`,

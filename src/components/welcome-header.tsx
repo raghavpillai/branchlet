@@ -45,7 +45,7 @@ export function WelcomeHeader({ mode, gitRoot }: WelcomeHeaderProps) {
   }
 
   return (
-    <Box borderStyle="round" paddingX={1} paddingY={0} marginBottom={1}>
+    <Box borderStyle="round" paddingX={1} paddingY={0}>
       <Box flexDirection="column">
         {getHeaderText()}
         <Text color={COLORS.MUTED}>cwd: {formatPath(cwd)}</Text>
