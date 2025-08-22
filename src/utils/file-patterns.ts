@@ -7,14 +7,31 @@ export async function matchFiles(
   patterns: string[],
   ignorePatterns: string[] = []
 ): Promise<string[]> {
+  const normalizePatterns = (inputs: string[]): string[] => {
+    const expanded = new Set<string>()
+    for (const input of inputs) {
+      if (!input) continue
+      expanded.add(input)
+      const hasSlash = input.includes("/")
+      const hasGlobstar = input.includes("**")
+      if (!hasSlash && !hasGlobstar) {
+        expanded.add(`**/${input}`)
+      }
+    }
+    return Array.from(expanded)
+  }
+
+  const normalizedPatterns = normalizePatterns(patterns)
+  const normalizedIgnores = normalizePatterns(ignorePatterns)
+
   const allMatches = new Set<string>()
 
-  for (const pattern of patterns) {
+  for (const pattern of normalizedPatterns) {
     try {
       const matches = await glob(pattern, {
         cwd: baseDir,
         dot: true,
-        ignore: ignorePatterns,
+        ignore: normalizedIgnores,
         nodir: false,
       })
 

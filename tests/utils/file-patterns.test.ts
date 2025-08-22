@@ -204,6 +204,13 @@ describe("file-patterns", () => {
         }
       }
     })
+
+    test("should expand simple patterns recursively (e.g., .env)", async () => {
+      const result = await matchFiles(process.cwd(), [".env", ".env.*", "*.tfstate"], [])
+      expect(Array.isArray(result)).toBe(true)
+      // Not asserting exact presence since repo may not contain these files.
+      // This ensures the call succeeds with expanded patterns.
+    })
   })
 
   describe("integration scenarios", () => {

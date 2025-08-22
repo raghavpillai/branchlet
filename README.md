@@ -145,7 +145,7 @@ Create `.branchlet.json` in your project:
   "worktreePathTemplate": "worktrees/$BRANCH_NAME",
   "postCreateCmd": [
     "npm install",
-    "echo 'Worktree ready at $WORKTREE_PATH'"
+    "npm run db:populate"
   ],
   "terminalCommand": "code ."
 }
