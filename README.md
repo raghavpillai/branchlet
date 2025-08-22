@@ -5,6 +5,8 @@
 
 A CLI tool for creating and managing Git worktrees with an easy to use interface.
 
+![Branchlet Demo](assets/branchlet-demo.gif)
+
 ## Features
 
 - **Quick Commands**: Jump directly to specific actions via command line
