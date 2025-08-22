@@ -129,11 +129,11 @@ export class GitService {
 
     for (const line of lines) {
       const [name, commit, dateStr] = line.split("|")
-      if (name) {
+      if (name && commit && dateStr) {
         branches.push({
-          name: name!,
-          commit: commit!,
-          lastUsed: new Date(dateStr!),
+          name,
+          commit,
+          lastUsed: new Date(dateStr),
           isCurrent: name === currentBranch,
           isDefault: name === defaultBranch,
           isRemote: false,

@@ -98,12 +98,12 @@ export async function executePostCreateCommands(
     const command = commands[i]
     if (!command?.trim()) continue
 
-    onProgress?.(command!, i + 1, commands.length)
+    onProgress?.(command, i + 1, commands.length)
 
-    const resolvedCommand = resolveTemplate(command!, variables)
+    const resolvedCommand = resolveTemplate(command, variables)
     const result = await executeCommand(resolvedCommand, variables.WORKTREE_PATH)
 
-    allOutput += `Command ${i + 1}: ${command!}\n${result.output}\n\n`
+    allOutput += `Command ${i + 1}: ${command}\n${result.output}\n\n`
 
     if (!result.success) {
       const errorResult = {

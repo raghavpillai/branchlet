@@ -58,7 +58,7 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
     if (state.error) {
       if (key.escape || key.return || input) {
         setState((prev) => {
-          const { error, ...rest } = prev
+          const { error: _error, ...rest } = prev
           return rest
         })
       }
