@@ -24,7 +24,7 @@ function parseArguments(): { mode: AppMode; help: boolean } {
   }
 
   if (argv.version) {
-    console.log(`Brancher v${VERSION}`)
+    console.log(`Branchlet v${VERSION}`)
     process.exit(0)
   }
 
@@ -50,7 +50,7 @@ function showHelp(): void {
 ${MESSAGES.WELCOME}
 
 Usage:
-  brancher [command] [options]
+  branchlet [command] [options]
 
 Commands:
   create     Create a new worktree
@@ -65,16 +65,16 @@ Options:
   -m, --mode     Set initial mode
 
 Examples:
-  brancher                # Start interactive menu
-  brancher create         # Go directly to create worktree flow
-  brancher list           # List all worktrees
-  brancher delete         # Go directly to delete worktree flow
-  brancher settings       # Open settings menu
+  branchlet                # Start interactive menu
+  branchlet create         # Go directly to create worktree flow
+  branchlet list           # List all worktrees
+  branchlet delete         # Go directly to delete worktree flow
+  branchlet settings       # Open settings menu
 
 Configuration:
   The tool looks for configuration files in the following order:
-  1. .brancher.json in current directory
-  2. ~/.brancher/settings.json (global config)
+  1. .branchlet.json in current directory
+  2. ~/.branchlet/settings.json (global config)
 
 For more information, visit: https://github.com/raghavpillai/git-worktree-manager
 `)

@@ -19,7 +19,7 @@ export function WelcomeHeader({ mode }: WelcomeHeaderProps) {
         <Text>
           🌳 Welcome to{" "}
           <Text bold color={COLORS.PRIMARY}>
-            Brancher
+            Branchlet
           </Text>
           !
         </Text>
@@ -35,7 +35,7 @@ export function WelcomeHeader({ mode }: WelcomeHeaderProps) {
 
     return (
       <Text>
-        🌳 Brancher -{" "}
+        🌳 Branchlet -{" "}
         <Text bold color={COLORS.PRIMARY}>
           {modeLabels[mode] || mode}
         </Text>

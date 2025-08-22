@@ -1,6 +1,6 @@
 export const MESSAGES = {
   // Welcome and general
-  WELCOME: "Brancher - Git Worktree Manager",
+  WELCOME: "Branchlet - Git Worktree Manager",
 
   // Menu options
   MENU_TITLE: "What would you like to do?",

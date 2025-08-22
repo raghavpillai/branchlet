@@ -1,11 +1,11 @@
 {
-  "name": "brancher",
+  "name": "branchlet",
   "version": "0.0.1",
   "description": "CLI for creating and managing Git worktrees",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "brancher": "dist/index.js"
+    "branchlet": "dist/index.js"
   },
   "scripts": {
     "dev": "bun run src/index.tsx",
