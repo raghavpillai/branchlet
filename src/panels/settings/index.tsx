@@ -25,6 +25,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string>()
   const [step, setStep] = useState<SettingsStep>("menu")
+  const [configPath, setConfigPath] = useState<string>()
 
   useInput((input, key) => {
     if (error && input?.toLowerCase() === "r") {
@@ -52,6 +53,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
       const configService = worktreeService.getConfigService()
       const currentConfig = configService.getConfig()
       setConfig(currentConfig)
+      setConfigPath(configService.getConfigPath() || GLOBAL_CONFIG_FILE)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -69,6 +71,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
       await configService.createGlobalConfig()
       const newConfig = configService.getConfig()
       setConfig(newConfig)
+      setConfigPath(configService.getConfigPath() || GLOBAL_CONFIG_FILE)
       setError(undefined)
     } catch (err) {
       setError(`Failed to reset configuration: ${err}`)
@@ -126,7 +129,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
           <Text>
             Please edit the configuration file at:{" "}
             <Text bold color={COLORS.PRIMARY}>
-              {GLOBAL_CONFIG_FILE}
+              {configPath || GLOBAL_CONFIG_FILE}
             </Text>
           </Text>
         </Box>
@@ -159,7 +162,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
             <Text>
               Configuration file:{" "}
               <Text bold color={COLORS.PRIMARY}>
-                {GLOBAL_CONFIG_FILE}
+              {configPath || GLOBAL_CONFIG_FILE}
               </Text>
             </Text>
           </Box>
@@ -194,7 +197,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
 
           <Box marginTop={1}>
             <Text color={COLORS.MUTED} dimColor>
-              Edit in {GLOBAL_CONFIG_FILE}. Press any key to go back.
+              Edit in {configPath || GLOBAL_CONFIG_FILE}. Press any key to go back.
             </Text>
           </Box>
         </Box>
@@ -223,7 +226,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
 
           <Box marginTop={1}>
             <Text color={COLORS.MUTED} dimColor>
-              Edit in {GLOBAL_CONFIG_FILE}. Press any key to go back.
+              Edit in {configPath || GLOBAL_CONFIG_FILE}. Press any key to go back.
             </Text>
           </Box>
         </Box>
@@ -257,7 +260,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
 
           <Box marginTop={1}>
             <Text color={COLORS.MUTED} dimColor>
-              Edit in {GLOBAL_CONFIG_FILE}. Press any key to go back.
+              Edit in {configPath || GLOBAL_CONFIG_FILE}. Press any key to go back.
             </Text>
           </Box>
         </Box>
@@ -301,7 +304,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
 
           <Box marginTop={1}>
             <Text color={COLORS.MUTED} dimColor>
-              Edit in {GLOBAL_CONFIG_FILE}. Press any key to go back.
+              Edit in {configPath || GLOBAL_CONFIG_FILE}. Press any key to go back.
             </Text>
           </Box>
         </Box>
