@@ -54,6 +54,16 @@ export function handleGitError(stderr: string, operation: string): GitWorktreeEr
     return new GitWorktreeError("Not a git repository", "NOT_GIT_REPO", stderr)
   }
 
+  if (stderr.includes("contains modified or untracked files") || 
+      stderr.includes("worktree is dirty") ||
+      stderr.includes("cannot be removed") && stderr.includes("is dirty")) {
+    return new GitWorktreeError(
+      "Worktree has uncommitted changes. Use force to delete anyway.",
+      "UNCOMMITTED_CHANGES",
+      stderr
+    )
+  }
+
   return new GitWorktreeError(
     `Git ${operation} operation failed: ${stderr}`,
     "GIT_OPERATION_FAILED",
@@ -74,6 +84,8 @@ export function getUserFriendlyErrorMessage(error: Error): string {
         return "The specified path does not exist."
       case "NOT_GIT_REPO":
         return "Current directory is not a git repository."
+      case "UNCOMMITTED_CHANGES":
+        return "Worktree has uncommitted changes. Use force to delete anyway."
       default:
         return `Git operation failed: ${error.message}`
     }

@@ -4,6 +4,7 @@ import { ConfirmDialog, SelectPrompt, StatusIndicator } from "../../components/c
 import { COLORS, MESSAGES } from "../../constants/index.js"
 import type { WorktreeService } from "../../services/index.js"
 import type { DeleteWorktreeState, GitWorktree, SelectOption } from "../../types/index.js"
+import { GitWorktreeError, ValidationError } from "../../utils/index.js"
 
 interface DeleteWorktreeProps {
   worktreeService: WorktreeService
@@ -64,6 +65,38 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
       setState((prev) => ({ ...prev, step: "deleting" }))
 
       await worktreeService.deleteWorktree(state.selectedWorktree, state.force)
+
+      setState((prev) => ({ ...prev, step: "success" }))
+
+      setTimeout(() => {
+        onComplete()
+      }, 1500)
+    } catch (error) {
+      if (
+        (error instanceof GitWorktreeError && error.code === "UNCOMMITTED_CHANGES") ||
+        (error instanceof ValidationError && error.message.includes("uncommitted changes"))
+      ) {
+        setState((prev) => ({
+          ...prev,
+          step: "force-confirm",
+        }))
+      } else {
+        setState((prev) => ({
+          ...prev,
+          error: error instanceof Error ? error.message : String(error),
+          step: "select",
+        }))
+      }
+    }
+  }
+
+  const handleForceConfirm = async (): Promise<void> => {
+    if (!state.selectedWorktree) return
+
+    try {
+      setState((prev) => ({ ...prev, step: "deleting" }))
+
+      await worktreeService.deleteWorktree(state.selectedWorktree, true)
 
       setState((prev) => ({ ...prev, step: "success" }))
 
@@ -161,6 +194,28 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
         />
       )
     }
+
+    case "force-confirm":
+      return (
+        <ConfirmDialog
+          title="Force Delete Worktree"
+          message={
+            <Box flexDirection="column">
+              <Text>
+                Worktree at <Text bold>'{state.selectedWorktree}'</Text> has uncommitted changes.
+              </Text>
+              <Text color={COLORS.WARNING}>
+                Force delete will permanently lose all uncommitted work!
+              </Text>
+              <Text>Are you sure you want to proceed?</Text>
+            </Box>
+          }
+          variant="danger"
+          confirmLabel="Force Delete"
+          onConfirm={handleForceConfirm}
+          onCancel={() => setState((prev) => ({ ...prev, step: "select" }))}
+        />
+      )
 
     case "deleting":
       return <StatusIndicator status="loading" message={MESSAGES.DELETE_DELETING} />
