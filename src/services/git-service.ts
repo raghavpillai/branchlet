@@ -71,8 +71,7 @@ export class GitService {
       } else if (line.startsWith("HEAD ")) {
         currentWorktree.commit = line.substring(5)
       } else if (line.startsWith("branch ")) {
-        // Extract branch name from "branch refs/heads/branch-name"
-        const branchRef = line.substring(7) // Remove "branch " prefix
+        const branchRef = line.substring(7)
         currentWorktree.branch = branchRef.replace(/^refs\/heads\//, "")
       } else if (line === "bare") {
         currentWorktree.isMain = true
