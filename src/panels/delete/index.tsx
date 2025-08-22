@@ -217,8 +217,12 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
         />
       )
 
-    case "deleting":
-      return <StatusIndicator status="loading" message={MESSAGES.DELETE_DELETING} />
+    case "deleting": {
+      const selectedWorktree = getSelectedWorktree()
+      const branchName = selectedWorktree?.branch || ""
+      const message = `${MESSAGES.DELETE_DELETING} (${branchName})`
+      return <StatusIndicator status="loading" message={message} />
+    }
 
     case "success":
       return <StatusIndicator status="success" message={MESSAGES.DELETE_SUCCESS} spinner={false} />

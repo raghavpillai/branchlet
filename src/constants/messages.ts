@@ -15,7 +15,7 @@ export const MESSAGES = {
   CREATE_DIRECTORY_PLACEHOLDER: "feature-name",
   CREATE_SOURCE_BRANCH_PROMPT: "Select source branch:",
   CREATE_NEW_BRANCH_PROMPT: "Enter name for new branch:",
-  CREATE_NEW_BRANCH_PLACEHOLDER: "feature/new-feature",
+  CREATE_NEW_BRANCH_PLACEHOLDER: "feat/new-feature",
   CREATE_CONFIRM_TITLE: "Create Worktree Confirmation",
   CREATE_SUCCESS: "Worktree created successfully!",
   CREATE_CREATING: "Creating worktree...",
