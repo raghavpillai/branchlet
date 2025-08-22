@@ -86,25 +86,18 @@ export function ListWorktrees({ worktreeService, onBack }: ListWorktreesProps) {
   }
 
   return (
-    <Box flexDirection="column">
-      <Box marginBottom={1}>
-        <Text bold color={COLORS.PRIMARY}>
-          {MESSAGES.LIST_TITLE}
-        </Text>
-      </Box>
-
-      <Box marginBottom={1}>
-        <Text bold color={COLORS.MUTED}>
-          PATH BRANCH
-        </Text>
+    <Box flexDirection="column" width="100%">
+      <Box justifyContent="space-between" width="100%">
+        <Text bold color={COLORS.MUTED}>PATH</Text>
+        <Text bold color={COLORS.MUTED}>BRANCH</Text>
       </Box>
 
       {worktrees.map((worktree) => {
         const path = formatPath(worktree.path)
 
         return (
-          <Box key={worktree.path}>
-            <Text {...(worktree.isMain ? { color: COLORS.PRIMARY } : {})}>{path.padEnd(43)}</Text>
+          <Box key={worktree.path} justifyContent="space-between" width="100%">
+            <Text {...(worktree.isMain ? { color: COLORS.PRIMARY } : {})}>{path}</Text>
             <Text color={COLORS.SUCCESS}>{worktree.branch}</Text>
           </Box>
         )
