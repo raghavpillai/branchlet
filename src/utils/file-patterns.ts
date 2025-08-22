@@ -12,9 +12,9 @@ export async function matchFiles(
     for (const input of inputs) {
       if (!input) continue
       expanded.add(input)
-      const hasSlash = input.includes("/")
-      const hasGlobstar = input.includes("**")
-      if (!hasSlash && !hasGlobstar) {
+      const startsWithGlobstar = input.startsWith("**/")
+      const isAbsolute = input.startsWith("/")
+      if (!startsWithGlobstar && !isAbsolute) {
         expanded.add(`**/${input}`)
       }
     }

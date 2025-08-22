@@ -33,6 +33,7 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
   })
   const [branches, setBranches] = useState<GitBranch[]>([])
   const [loading, setLoading] = useState(false)
+  const [repoPath, setRepoPath] = useState<string>("")
 
   const loadBranches = useCallback(async (): Promise<void> => {
     try {
@@ -40,6 +41,7 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
       const gitService = worktreeService.getGitService()
       const repoInfo = await gitService.getRepositoryInfo()
       setBranches(repoInfo.branches)
+      setRepoPath(repoInfo.path)
     } catch (error) {
       setState((prev) => ({
         ...prev,
@@ -109,7 +111,7 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
       setState((prev) => ({ ...prev, step: "creating" }))
 
       const config = worktreeService.getConfigService().getConfig()
-      const gitRoot = getRepositoryRoot()
+      const gitRoot = repoPath || getRepositoryRoot()
       const worktreePath = getWorktreePath(
         gitRoot,
         state.directoryName,

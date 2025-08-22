@@ -27,7 +27,8 @@ export class WorktreeService {
 
   async createWorktree(options: WorktreeCreateOptions): Promise<void> {
     const config = this.configService.getConfig()
-    const gitRoot = getRepositoryRoot()
+    // Use the initialized git root so file copying preserves repo-relative paths
+    const gitRoot = this.gitRoot || getRepositoryRoot()
 
     if (await this.gitService.branchExists(options.newBranch)) {
       throw new ValidationError(`Branch '${options.newBranch}' already exists`)

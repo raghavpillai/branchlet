@@ -37,7 +37,13 @@ export async function copyFiles(
         }
 
         if (await isDirectory(sourcePath)) {
-          await copyDirectoryRecursive(sourcePath, targetPath, result, config.worktreeCopyIgnores)
+          await copyDirectoryRecursive(
+            sourcePath,
+            targetPath,
+            result,
+            config.worktreeCopyIgnores,
+            sourceDir
+          )
         } else {
           await mkdir(dirname(targetPath), { recursive: true })
           await copyFile(sourcePath, targetPath)
@@ -58,7 +64,8 @@ async function copyDirectoryRecursive(
   sourceDir: string,
   targetDir: string,
   result: { copied: string[]; skipped: string[]; errors: string[] },
-  ignorePatterns: string[]
+  ignorePatterns: string[],
+  baseRoot: string
 ): Promise<void> {
   try {
     await mkdir(targetDir, { recursive: true })
@@ -67,7 +74,7 @@ async function copyDirectoryRecursive(
     for (const entry of entries) {
       const sourcePath = join(sourceDir, entry)
       const targetPath = join(targetDir, entry)
-      const relativePath = relative(process.cwd(), sourcePath)
+      const relativePath = relative(baseRoot, sourcePath)
 
       if (shouldIgnoreFile(relativePath, ignorePatterns)) {
         result.skipped.push(relativePath)
@@ -78,7 +85,7 @@ async function copyDirectoryRecursive(
         const stats = await stat(sourcePath)
 
         if (stats.isDirectory()) {
-          await copyDirectoryRecursive(sourcePath, targetPath, result, ignorePatterns)
+          await copyDirectoryRecursive(sourcePath, targetPath, result, ignorePatterns, baseRoot)
         } else {
           await copyFile(sourcePath, targetPath)
           result.copied.push(relativePath)
