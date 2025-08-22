@@ -57,6 +57,8 @@ export interface CreateWorktreeState {
   error?: string
   currentCommand?: string
   commandProgress?: { current: number; total: number }
+  postCreateCommands?: string[]
+  currentCommandIndex?: number
 }
 
 export interface DeleteWorktreeState {

@@ -1,6 +1,7 @@
 import { Box, Text, useInput } from "ink"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { COLORS } from "../../constants/index.js"
+import { useBorderColor } from "../../contexts/border-context.js"
 import type { ConfirmDialogProps } from "../../types/index.js"
 
 export function ConfirmDialog({
@@ -13,12 +14,26 @@ export function ConfirmDialog({
   variant = "default",
 }: ConfirmDialogProps) {
   const [selectedOption, setSelectedOption] = useState<"confirm" | "cancel">("cancel")
+  const borderContext = useBorderColor()
 
   const variantColors = {
     default: COLORS.INFO,
     warning: COLORS.WARNING,
     danger: COLORS.ERROR,
   }
+
+  const borderColors = {
+    default: COLORS.MUTED,
+    warning: COLORS.WARNING,
+    danger: COLORS.ERROR,
+  }
+
+  useEffect(() => {
+    borderContext?.setBorderColor(borderColors[variant])
+    return () => {
+      borderContext?.setBorderColor(COLORS.MUTED)
+    }
+  }, [variant, borderContext])
 
   useInput((input, key) => {
     if (key.escape) {
@@ -50,9 +65,7 @@ export function ConfirmDialog({
   return (
     <Box
       flexDirection="column"
-      borderStyle="round"
-      borderColor={variantColors[variant]}
-      padding={1}
+      width="100%"
     >
       <Box marginBottom={1}>
         <Text color={variantColors[variant]} bold>
@@ -60,9 +73,9 @@ export function ConfirmDialog({
         </Text>
       </Box>
 
-      <Box marginBottom={2}>{typeof message === "string" ? <Text>{message}</Text> : message}</Box>
+      <Box marginBottom={2} width="100%">{typeof message === "string" ? <Text>{message}</Text> : message}</Box>
 
-      <Box justifyContent="center" columnGap={2}>
+      <Box justifyContent="center" columnGap={2} width="100%">
         <Box borderStyle="round" paddingX={2} paddingY={0} borderColor={COLORS.MUTED}>
           <Text
             color={selectedOption === "confirm" ? "white" : COLORS.MUTED}
@@ -82,7 +95,7 @@ export function ConfirmDialog({
         </Box>
       </Box>
 
-      <Box marginTop={1} justifyContent="center">
+      <Box marginTop={1} justifyContent="center" width="100%">
         <Text color={COLORS.MUTED} dimColor>
           Use ←→ or Tab to navigate, Enter to confirm, Esc to cancel
         </Text>

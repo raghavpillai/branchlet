@@ -1,6 +1,7 @@
 import { Box, Text, useInput } from "ink"
 import { useCallback, useEffect, useState } from "react"
 import {
+  CommandListProgress,
   CommandProgress,
   ConfirmDialog,
   InputPrompt,
@@ -134,6 +135,8 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
           ...prev,
           step: "running-commands",
           commandProgress: { current: 0, total: config.postCreateCmd.length },
+          postCreateCommands: config.postCreateCmd,
+          currentCommandIndex: 0,
         }))
 
         const variables = {
@@ -151,6 +154,7 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
               ...prev,
               currentCommand: command,
               commandProgress: { current, total },
+              currentCommandIndex: current - 1,
             }))
           }
         )
@@ -259,10 +263,9 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
 
     case "running-commands":
       return (
-        <CommandProgress
-          command={state.currentCommand || ""}
-          currentIndex={state.commandProgress?.current || 0}
-          totalCommands={state.commandProgress?.total || 0}
+        <CommandListProgress
+          commands={state.postCreateCommands || []}
+          currentIndex={state.currentCommandIndex || 0}
         />
       )
 

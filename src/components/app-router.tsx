@@ -1,5 +1,7 @@
 import { Box } from "ink"
+import { useState } from "react"
 import { COLORS } from "../constants/index.js"
+import { BorderContext } from "../contexts/border-context.js"
 import {
   CreateWorktree,
   DeleteWorktree,
@@ -30,18 +32,21 @@ export function AppRouter({
   onBackToMenu,
   onExit,
 }: AppRouterProps) {
+  const [borderColor, setBorderColor] = useState<string>(COLORS.MUTED)
+
   return (
-    <Box flexDirection="column">
-      <WelcomeHeader mode={mode} gitRoot={gitRoot} />
+    <BorderContext.Provider value={{ setBorderColor }}>
+      <Box flexDirection="column">
+        <WelcomeHeader mode={mode} gitRoot={gitRoot} />
 
       {mode === "menu" && (
-        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED}>
+        <Box borderStyle="round" paddingX={1} borderColor={COLORS.MUTED}>
           <MainPanel onSelect={onMenuSelect} onCancel={onExit} defaultIndex={lastMenuIndex} />
         </Box>
       )}
 
       {mode === "create" && (
-        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED}>
+        <Box borderStyle="round" paddingX={1} borderColor={borderColor}>
           <CreateWorktree
             worktreeService={worktreeService}
             onComplete={onBackToMenu}
@@ -51,13 +56,13 @@ export function AppRouter({
       )}
 
       {mode === "list" && (
-        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED}>
+        <Box borderStyle="round" paddingX={1} borderColor={borderColor}>
           <ListWorktrees worktreeService={worktreeService} onBack={onBackToMenu} />
         </Box>
       )}
 
       {mode === "delete" && (
-        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED}>
+        <Box borderStyle="round" paddingX={1} borderColor={borderColor}>
           <DeleteWorktree
             worktreeService={worktreeService}
             onComplete={onBackToMenu}
@@ -67,10 +72,11 @@ export function AppRouter({
       )}
 
       {mode === "settings" && (
-        <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED}>
+        <Box borderStyle="round" paddingX={1} borderColor={borderColor}>
           <SettingsMenu worktreeService={worktreeService} onBack={onBackToMenu} />
         </Box>
       )}
-    </Box>
+      </Box>
+    </BorderContext.Provider>
   )
 }
