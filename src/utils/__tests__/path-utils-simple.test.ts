@@ -1,0 +1,193 @@
+import { describe, expect, test } from "bun:test"
+import {
+  getRepositoryBaseName,
+  getRepositoryRoot,
+  resolveTemplate,
+  validateBranchName,
+  validateDirectoryName,
+} from "../path-utils.js"
+import type { TemplateVariables } from "../../types/index.js"
+
+describe("path-utils", () => {
+  describe("getRepositoryRoot", () => {
+    test("should return current working directory", () => {
+      const result = getRepositoryRoot()
+      expect(result).toBeDefined()
+      expect(typeof result).toBe("string")
+    })
+
+    test("should resolve provided path", () => {
+      const testPath = "/test/path"
+      const result = getRepositoryRoot(testPath)
+      expect(result).toBe(testPath)
+    })
+  })
+
+  describe("getRepositoryBaseName", () => {
+    test("should extract repository base name", () => {
+      const repoPath = "/path/to/my-project"
+      const result = getRepositoryBaseName(repoPath)
+      expect(result).toBe("my-project")
+    })
+
+    test("should handle root path", () => {
+      const repoPath = "/"
+      const result = getRepositoryBaseName(repoPath)
+      expect(result).toBe("")
+    })
+
+    test("should handle relative paths", () => {
+      const repoPath = "my-project"
+      const result = getRepositoryBaseName(repoPath)
+      expect(result).toBe("my-project")
+    })
+  })
+
+  describe("resolveTemplate", () => {
+    const mockVariables: TemplateVariables = {
+      BASE_PATH: "my-project",
+      WORKTREE_PATH: "/path/to/worktree",
+      BRANCH_NAME: "feature/awesome",
+      SOURCE_BRANCH: "main",
+    }
+
+    test("should resolve all template variables", () => {
+      const template = "$BASE_PATH-worktrees/$BRANCH_NAME-from-$SOURCE_BRANCH"
+      const expected = "my-project-worktrees/feature/awesome-from-main"
+
+      const result = resolveTemplate(template, mockVariables)
+      expect(result).toBe(expected)
+    })
+
+    test("should handle template with no variables", () => {
+      const template = "static/path/to/worktrees"
+      const result = resolveTemplate(template, mockVariables)
+      expect(result).toBe(template)
+    })
+
+    test("should handle template with only one variable", () => {
+      const template = "worktrees/$BRANCH_NAME"
+      const expected = "worktrees/feature/awesome"
+
+      const result = resolveTemplate(template, mockVariables)
+      expect(result).toBe(expected)
+    })
+
+    test("should handle repeated variables", () => {
+      const template = "$BRANCH_NAME-$BRANCH_NAME-test"
+      const expected = "feature/awesome-feature/awesome-test"
+
+      const result = resolveTemplate(template, mockVariables)
+      expect(result).toBe(expected)
+    })
+
+    test("should handle missing variables in template", () => {
+      const template = "$BASE_PATH/$UNKNOWN_VAR/$BRANCH_NAME"
+      const expected = "my-project/$UNKNOWN_VAR/feature/awesome"
+
+      const result = resolveTemplate(template, mockVariables)
+      expect(result).toBe(expected)
+    })
+
+    test("should handle empty template", () => {
+      const result = resolveTemplate("", mockVariables)
+      expect(result).toBe("")
+    })
+  })
+
+  describe("validateBranchName", () => {
+    test("should accept valid branch names", () => {
+      const validNames = [
+        "main",
+        "develop",
+        "feature/awesome-feature",
+        "bug-fix",
+        "release/v1.0.0",
+        "feat/user-auth_system",
+      ]
+
+      for (const name of validNames) {
+        expect(validateBranchName(name)).toBeUndefined()
+      }
+    })
+
+    test("should reject invalid branch names", () => {
+      const invalidNames = [
+        "", // empty
+        " ", // whitespace only
+        "feature ", // trailing space
+        " feature", // leading space
+        "feat ure", // internal space
+        "feature.", // ends with dot
+        "feature/", // ends with slash
+        "/feature", // starts with slash
+        "feature//fix", // double slash
+        "feature..fix", // double dot
+        "-feature", // starts with dash
+        "feature~", // contains tilde
+        "feature^", // contains caret
+        "feature:", // contains colon
+        "feature?", // contains question mark
+        "feature*", // contains asterisk
+        "feature[", // contains bracket
+        "feature\\", // contains backslash
+      ]
+
+      for (const name of invalidNames) {
+        expect(validateBranchName(name)).toBeDefined()
+      }
+    })
+
+    test("should reject HEAD as branch name", () => {
+      expect(validateBranchName("HEAD")).toBeDefined()
+    })
+  })
+
+  describe("validateDirectoryName", () => {
+    test("should accept valid directory names", () => {
+      const validNames = [
+        "test",
+        "my-directory",
+        "dir_with_underscores",
+        "dir123",
+        "CamelCase",
+        "mixed-Case_123",
+      ]
+
+      for (const name of validNames) {
+        expect(validateDirectoryName(name)).toBeUndefined()
+      }
+    })
+
+    test("should reject invalid directory names", () => {
+      const invalidNames = [
+        "", // empty
+        "   ", // whitespace only
+        "dir/name", // contains slash
+        "dir\\name", // contains backslash
+        ".hidden", // starts with dot
+        "-dash", // starts with dash
+        "dir<name", // contains invalid char
+        "dir>name", // contains invalid char
+        "dir:name", // contains invalid char
+        "dir|name", // contains invalid char
+        "dir?name", // contains invalid char
+        "dir*name", // contains invalid char
+      ]
+
+      for (const name of invalidNames) {
+        expect(validateDirectoryName(name)).toBeDefined()
+      }
+    })
+
+    test("should reject very long directory names", () => {
+      const longName = "a".repeat(256)
+      expect(validateDirectoryName(longName)).toBeDefined()
+    })
+
+    test("should accept directory names at length limit", () => {
+      const maxLengthName = "a".repeat(255)
+      expect(validateDirectoryName(maxLengthName)).toBeUndefined()
+    })
+  })
+})

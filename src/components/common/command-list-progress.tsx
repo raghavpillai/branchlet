@@ -14,11 +14,11 @@ interface CommandListProgressProps {
   failedCommands?: string[]
 }
 
-export function CommandListProgress({ 
-  commands, 
-  currentIndex, 
-  completedCommands = [], 
-  failedCommands = [] 
+export function CommandListProgress({
+  commands,
+  currentIndex,
+  completedCommands = [],
+  failedCommands = [],
 }: CommandListProgressProps) {
   const getCommandStatus = (index: number): CommandStatus["status"] => {
     const command = commands[index]
@@ -53,9 +53,9 @@ export function CommandListProgress({
 
       {commands.map((command, index) => {
         const status = getCommandStatus(index)
-        
+
         return (
-          <Box key={index} marginBottom={0}>
+          <Box key={`command-${index}-${command}`} marginBottom={0}>
             {getStatusIcon(status)}
             <Text> {command || ""}</Text>
           </Box>

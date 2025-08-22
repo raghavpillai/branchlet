@@ -6,6 +6,6 @@ interface BorderContextType {
 
 export const BorderContext = createContext<BorderContextType | null>(null)
 
-export function useBorderColor() {
+export function useBorderContext() {
   return useContext(BorderContext)
 }

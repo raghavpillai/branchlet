@@ -39,43 +39,43 @@ export function AppRouter({
       <Box flexDirection="column">
         <WelcomeHeader mode={mode} gitRoot={gitRoot} />
 
-      {mode === "menu" && (
-        <Box borderStyle="round" paddingX={1} borderColor={COLORS.MUTED}>
-          <MainPanel onSelect={onMenuSelect} onCancel={onExit} defaultIndex={lastMenuIndex} />
-        </Box>
-      )}
+        {mode === "menu" && (
+          <Box borderStyle="round" paddingX={1} borderColor={COLORS.MUTED}>
+            <MainPanel onSelect={onMenuSelect} onCancel={onExit} defaultIndex={lastMenuIndex} />
+          </Box>
+        )}
 
-      {mode === "create" && (
-        <Box borderStyle="round" paddingX={1} borderColor={borderColor}>
-          <CreateWorktree
-            worktreeService={worktreeService}
-            onComplete={onBackToMenu}
-            onCancel={onBackToMenu}
-          />
-        </Box>
-      )}
+        {mode === "create" && (
+          <Box borderStyle="round" paddingX={1} borderColor={borderColor}>
+            <CreateWorktree
+              worktreeService={worktreeService}
+              onComplete={onBackToMenu}
+              onCancel={onBackToMenu}
+            />
+          </Box>
+        )}
 
-      {mode === "list" && (
-        <Box borderStyle="round" paddingX={1} borderColor={borderColor}>
-          <ListWorktrees worktreeService={worktreeService} onBack={onBackToMenu} />
-        </Box>
-      )}
+        {mode === "list" && (
+          <Box borderStyle="round" paddingX={1} borderColor={borderColor}>
+            <ListWorktrees worktreeService={worktreeService} onBack={onBackToMenu} />
+          </Box>
+        )}
 
-      {mode === "delete" && (
-        <Box borderStyle="round" paddingX={1} borderColor={borderColor}>
-          <DeleteWorktree
-            worktreeService={worktreeService}
-            onComplete={onBackToMenu}
-            onCancel={onBackToMenu}
-          />
-        </Box>
-      )}
+        {mode === "delete" && (
+          <Box borderStyle="round" paddingX={1} borderColor={borderColor}>
+            <DeleteWorktree
+              worktreeService={worktreeService}
+              onComplete={onBackToMenu}
+              onCancel={onBackToMenu}
+            />
+          </Box>
+        )}
 
-      {mode === "settings" && (
-        <Box borderStyle="round" paddingX={1} borderColor={borderColor}>
-          <SettingsMenu worktreeService={worktreeService} onBack={onBackToMenu} />
-        </Box>
-      )}
+        {mode === "settings" && (
+          <Box borderStyle="round" paddingX={1} borderColor={borderColor}>
+            <SettingsMenu worktreeService={worktreeService} onBack={onBackToMenu} />
+          </Box>
+        )}
       </Box>
     </BorderContext.Provider>
   )

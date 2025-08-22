@@ -88,8 +88,12 @@ export function ListWorktrees({ worktreeService, onBack }: ListWorktreesProps) {
   return (
     <Box flexDirection="column" width="100%">
       <Box justifyContent="space-between" width="100%">
-        <Text bold color={COLORS.MUTED}>PATH</Text>
-        <Text bold color={COLORS.MUTED}>BRANCH</Text>
+        <Text bold color={COLORS.MUTED}>
+          PATH
+        </Text>
+        <Text bold color={COLORS.MUTED}>
+          BRANCH
+        </Text>
       </Box>
 
       {worktrees.map((worktree) => {

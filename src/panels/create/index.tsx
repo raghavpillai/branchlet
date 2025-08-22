@@ -2,7 +2,6 @@ import { Box, Text, useInput } from "ink"
 import { useCallback, useEffect, useState } from "react"
 import {
   CommandListProgress,
-  CommandProgress,
   ConfirmDialog,
   InputPrompt,
   SelectPrompt,

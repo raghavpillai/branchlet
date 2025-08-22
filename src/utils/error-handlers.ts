@@ -54,9 +54,11 @@ export function handleGitError(stderr: string, operation: string): GitWorktreeEr
     return new GitWorktreeError("Not a git repository", "NOT_GIT_REPO", stderr)
   }
 
-  if (stderr.includes("contains modified or untracked files") || 
-      stderr.includes("worktree is dirty") ||
-      stderr.includes("cannot be removed") && stderr.includes("is dirty")) {
+  if (
+    stderr.includes("contains modified or untracked files") ||
+    stderr.includes("worktree is dirty") ||
+    (stderr.includes("cannot be removed") && stderr.includes("is dirty"))
+  ) {
     return new GitWorktreeError(
       "Worktree has uncommitted changes. Use force to delete anyway.",
       "UNCOMMITTED_CHANGES",

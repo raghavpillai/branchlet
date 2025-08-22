@@ -1,7 +1,7 @@
 import { Box, Text, useInput } from "ink"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { COLORS } from "../../constants/index.js"
-import { useBorderColor } from "../../contexts/border-context.js"
+import { useBorderContext } from "../../contexts/border-context.js"
 import type { ConfirmDialogProps } from "../../types/index.js"
 
 export function ConfirmDialog({
@@ -14,26 +14,32 @@ export function ConfirmDialog({
   variant = "default",
 }: ConfirmDialogProps) {
   const [selectedOption, setSelectedOption] = useState<"confirm" | "cancel">("cancel")
-  const borderContext = useBorderColor()
+  const borderContext = useBorderContext()
 
-  const variantColors = {
-    default: COLORS.INFO,
-    warning: COLORS.WARNING,
-    danger: COLORS.ERROR,
-  }
+  const variantColors = useMemo(
+    () => ({
+      default: COLORS.INFO,
+      warning: COLORS.WARNING,
+      danger: COLORS.ERROR,
+    }),
+    []
+  )
 
-  const borderColors = {
-    default: COLORS.MUTED,
-    warning: COLORS.WARNING,
-    danger: COLORS.ERROR,
-  }
+  const borderColors = useMemo(
+    () => ({
+      default: COLORS.INFO,
+      warning: COLORS.WARNING,
+      danger: COLORS.ERROR,
+    }),
+    []
+  )
 
   useEffect(() => {
     borderContext?.setBorderColor(borderColors[variant])
     return () => {
       borderContext?.setBorderColor(COLORS.MUTED)
     }
-  }, [variant, borderContext])
+  }, [variant, borderContext, borderColors])
 
   useInput((input, key) => {
     if (key.escape) {
@@ -63,17 +69,16 @@ export function ConfirmDialog({
   })
 
   return (
-    <Box
-      flexDirection="column"
-      width="100%"
-    >
+    <Box flexDirection="column" width="100%">
       <Box marginBottom={1}>
         <Text color={variantColors[variant]} bold>
           {title}
         </Text>
       </Box>
 
-      <Box marginBottom={2} width="100%">{typeof message === "string" ? <Text>{message}</Text> : message}</Box>
+      <Box marginBottom={2} width="100%">
+        {typeof message === "string" ? <Text>{message}</Text> : message}
+      </Box>
 
       <Box justifyContent="center" columnGap={2} width="100%">
         <Box borderStyle="round" paddingX={2} paddingY={0} borderColor={COLORS.MUTED}>
