@@ -4,7 +4,8 @@ import {
   GitWorktreeError,
   ValidationError,
   handleGitError,
-} from "../error-handlers.js"
+  getUserFriendlyErrorMessage,
+} from "../../src/utils/error-handlers.js"
 
 describe("error-handlers", () => {
   describe("ConfigError", () => {
@@ -187,6 +188,74 @@ describe("error-handlers", () => {
 
       expect(error).toBeInstanceOf(GitWorktreeError)
       expect((error as GitWorktreeError).code).toBe("ALREADY_EXISTS")
+    })
+  })
+
+  describe("getUserFriendlyErrorMessage", () => {
+    test("should return friendly message for GitWorktreeError with ALREADY_EXISTS code", () => {
+      const error = new GitWorktreeError("Some error", "ALREADY_EXISTS")
+      const result = getUserFriendlyErrorMessage(error)
+      expect(result).toBe("A worktree or branch with this name already exists.")
+    })
+
+    test("should return friendly message for GitWorktreeError with INVALID_REF code", () => {
+      const error = new GitWorktreeError("Some error", "INVALID_REF")
+      const result = getUserFriendlyErrorMessage(error)
+      expect(result).toBe("Invalid branch name or commit reference.")
+    })
+
+    test("should return friendly message for GitWorktreeError with BRANCH_CHECKED_OUT code", () => {
+      const error = new GitWorktreeError("Some error", "BRANCH_CHECKED_OUT")
+      const result = getUserFriendlyErrorMessage(error)
+      expect(result).toBe("This branch is already checked out in another worktree.")
+    })
+
+    test("should return friendly message for GitWorktreeError with PATH_NOT_FOUND code", () => {
+      const error = new GitWorktreeError("Some error", "PATH_NOT_FOUND")
+      const result = getUserFriendlyErrorMessage(error)
+      expect(result).toBe("The specified path does not exist.")
+    })
+
+    test("should return friendly message for GitWorktreeError with NOT_GIT_REPO code", () => {
+      const error = new GitWorktreeError("Some error", "NOT_GIT_REPO")
+      const result = getUserFriendlyErrorMessage(error)
+      expect(result).toBe("Current directory is not a git repository.")
+    })
+
+    test("should return friendly message for GitWorktreeError with UNCOMMITTED_CHANGES code", () => {
+      const error = new GitWorktreeError("Some error", "UNCOMMITTED_CHANGES")
+      const result = getUserFriendlyErrorMessage(error)
+      expect(result).toBe("Worktree has uncommitted changes. Use force to delete anyway.")
+    })
+
+    test("should return default message for GitWorktreeError with unknown code", () => {
+      const error = new GitWorktreeError("Custom error message", "UNKNOWN_CODE")
+      const result = getUserFriendlyErrorMessage(error)
+      expect(result).toBe("Git operation failed: Custom error message")
+    })
+
+    test("should return friendly message for ValidationError", () => {
+      const error = new ValidationError("Invalid input provided")
+      const result = getUserFriendlyErrorMessage(error)
+      expect(result).toBe("Validation error: Invalid input provided")
+    })
+
+    test("should return friendly message for ConfigError", () => {
+      const error = new ConfigError("Config file not found")
+      const result = getUserFriendlyErrorMessage(error)
+      expect(result).toBe("Configuration error: Config file not found")
+    })
+
+    test("should return generic message for unknown error types", () => {
+      const error = new Error("Some unexpected error")
+      const result = getUserFriendlyErrorMessage(error)
+      expect(result).toBe("Unexpected error: Some unexpected error")
+    })
+
+    test("should handle error without message", () => {
+      const error = new Error()
+      const result = getUserFriendlyErrorMessage(error)
+      expect(result).toBe("Unexpected error: ")
     })
   })
 })

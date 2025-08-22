@@ -43,7 +43,7 @@ jobs:
         run: bun run lint
         
       - name: Run tests
-        run: bun test --coverage
+        run: bun test tests/ --coverage
         
       - name: Build project
         run: bun run build

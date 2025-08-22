@@ -2,11 +2,12 @@ import { describe, expect, test } from "bun:test"
 import {
   getRepositoryBaseName,
   getRepositoryRoot,
+  getWorktreePath,
   resolveTemplate,
   validateBranchName,
   validateDirectoryName,
-} from "../path-utils.js"
-import type { TemplateVariables } from "../../types/index.js"
+} from "../../src/utils/path-utils.js"
+import type { TemplateVariables } from "../../src/types/index.js"
 
 describe("path-utils", () => {
   describe("getRepositoryRoot", () => {
@@ -188,6 +189,78 @@ describe("path-utils", () => {
     test("should accept directory names at length limit", () => {
       const maxLengthName = "a".repeat(255)
       expect(validateDirectoryName(maxLengthName)).toBeUndefined()
+    })
+  })
+
+  describe("getWorktreePath", () => {
+    test("should generate worktree path using template", () => {
+      const gitRoot = "/Users/test/my-project"
+      const directoryName = "feature-branch"
+      const template = "$BASE_PATH-worktrees/$BRANCH_NAME"
+      const branchName = "feature/awesome"
+      const sourceBranch = "main"
+
+      const result = getWorktreePath(gitRoot, directoryName, template, branchName, sourceBranch)
+      
+      expect(result).toContain("my-project-worktrees/feature/awesome")
+      expect(result).toContain("feature-branch")
+    })
+
+    test("should handle template without variables", () => {
+      const gitRoot = "/Users/test/my-project"
+      const directoryName = "test-dir"
+      const template = "static-worktrees"
+      
+      const result = getWorktreePath(gitRoot, directoryName, template)
+      
+      expect(result).toContain("static-worktrees")
+      expect(result).toContain("test-dir")
+    })
+
+    test("should handle missing branch parameters", () => {
+      const gitRoot = "/Users/test/my-project"
+      const directoryName = "test-dir"
+      const template = "$BASE_PATH/$BRANCH_NAME"
+      
+      const result = getWorktreePath(gitRoot, directoryName, template)
+      
+      expect(result).toContain("my-project")
+      expect(result).toContain("test-dir")
+    })
+
+    test("should handle complex template with all variables", () => {
+      const gitRoot = "/repo/awesome-project"
+      const directoryName = "work-dir"
+      const template = "$BASE_PATH-$SOURCE_BRANCH-to-$BRANCH_NAME"
+      const branchName = "feature/new-feature"
+      const sourceBranch = "develop"
+
+      const result = getWorktreePath(gitRoot, directoryName, template, branchName, sourceBranch)
+      
+      expect(result).toContain("awesome-project-develop-to-feature/new-feature")
+      expect(result).toContain("work-dir")
+    })
+
+    test("should handle root directory git repository", () => {
+      const gitRoot = "/"
+      const directoryName = "test"
+      const template = "$BASE_PATH-worktrees"
+      
+      const result = getWorktreePath(gitRoot, directoryName, template)
+      
+      expect(result).toBeDefined()
+      expect(result).toContain("test")
+    })
+
+    test("should handle relative paths", () => {
+      const gitRoot = "my-project"
+      const directoryName = "new-work"
+      const template = "$BASE_PATH-branches"
+      
+      const result = getWorktreePath(gitRoot, directoryName, template)
+      
+      expect(result).toContain("my-project-branches")
+      expect(result).toContain("new-work")
     })
   })
 })

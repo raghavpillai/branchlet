@@ -5,7 +5,7 @@ import {
   getDefaultBranch,
   getGitRoot,
   isGitRepository,
-} from "../git-commands.js"
+} from "../../src/utils/git-commands.js"
 
 describe("git-commands", () => {
   describe("executeGitCommand", () => {
