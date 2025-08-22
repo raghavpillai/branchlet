@@ -54,7 +54,11 @@ export class ConfigService {
   }
 
   async saveConfig(config: WorktreeConfig, path?: string): Promise<void> {
-    const configPath = path || this.configPath || join(process.cwd(), LOCAL_CONFIG_FILE_NAME)
+    const configPath = path || this.configPath
+
+    if (!configPath) {
+      throw new ConfigError("No config path available for saving")
+    }
 
     const validation = validateConfig(config)
     if (!validation.success) {
@@ -88,12 +92,9 @@ export class ConfigService {
 
   private async findConfigFile(projectPath?: string): Promise<ConfigFile | null> {
     const searchPaths: string[] = []
+    const baseDir = projectPath || process.cwd()
 
-    if (projectPath) {
-      searchPaths.push(join(projectPath, LOCAL_CONFIG_FILE_NAME))
-    }
-
-    searchPaths.push(join(process.cwd(), LOCAL_CONFIG_FILE_NAME))
+    searchPaths.push(join(baseDir, LOCAL_CONFIG_FILE_NAME))
     searchPaths.push(GLOBAL_CONFIG_FILE)
 
     for (const path of searchPaths) {

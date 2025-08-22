@@ -15,6 +15,7 @@ interface AppRouterProps {
   mode: AppMode
   worktreeService: WorktreeService
   lastMenuIndex: number
+  gitRoot?: string | undefined
   onMenuSelect: (value: AppMode | "exit", selectedIndex?: number) => void
   onBackToMenu: () => void
   onExit: () => void
@@ -24,13 +25,14 @@ export function AppRouter({
   mode,
   worktreeService,
   lastMenuIndex,
+  gitRoot,
   onMenuSelect,
   onBackToMenu,
   onExit,
 }: AppRouterProps) {
   return (
     <Box flexDirection="column">
-      <WelcomeHeader mode={mode} />
+      <WelcomeHeader mode={mode} gitRoot={gitRoot} />
 
       {mode === "menu" && (
         <Box borderStyle="round" padding={1} borderColor={COLORS.MUTED}>

@@ -74,3 +74,8 @@ export async function getDefaultBranch(path?: string): Promise<string> {
 
   return "main"
 }
+
+export async function getGitRoot(path?: string): Promise<string | null> {
+  const result = await executeGitCommand(["rev-parse", "--show-toplevel"], path)
+  return result.success ? result.stdout : null
+}

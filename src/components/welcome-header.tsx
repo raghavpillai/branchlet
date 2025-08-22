@@ -4,10 +4,11 @@ import type { AppMode } from "../types/index.js"
 
 interface WelcomeHeaderProps {
   mode: AppMode
+  gitRoot?: string | undefined
 }
 
-export function WelcomeHeader({ mode }: WelcomeHeaderProps) {
-  const cwd = process.cwd()
+export function WelcomeHeader({ mode, gitRoot }: WelcomeHeaderProps) {
+  const cwd = gitRoot || process.cwd()
   const formatPath = (path: string): string => {
     const home = process.env.HOME || ""
     return path.replace(home, "~")

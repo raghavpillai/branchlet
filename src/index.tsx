@@ -120,5 +120,4 @@ function main(): void {
   })
 }
 
-// Always run main when this file is executed
 main()

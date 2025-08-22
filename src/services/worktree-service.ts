@@ -8,8 +8,10 @@ import { GitService } from "./git-service.js"
 export class WorktreeService {
   private gitService: GitService
   private configService: ConfigService
+  private gitRoot?: string | undefined
 
-  constructor(gitRoot?: string) {
+  constructor(gitRoot?: string | undefined) {
+    this.gitRoot = gitRoot
     this.gitService = new GitService(gitRoot)
     this.configService = new ConfigService()
   }
@@ -20,7 +22,7 @@ export class WorktreeService {
       throw new ValidationError("Current directory is not a git repository")
     }
 
-    await this.configService.loadConfig()
+    await this.configService.loadConfig(this.gitRoot)
   }
 
   async createWorktree(options: WorktreeCreateOptions): Promise<void> {

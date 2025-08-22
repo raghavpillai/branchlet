@@ -4,7 +4,7 @@ import { COLORS } from "../constants/index.js"
 import { ConfigService } from "../services/config-service.js"
 import { WorktreeService } from "../services/index.js"
 import type { AppMode } from "../types/index.js"
-import { getUserFriendlyErrorMessage } from "../utils/index.js"
+import { getGitRoot, getUserFriendlyErrorMessage } from "../utils/index.js"
 import { AppRouter } from "./app-router.js"
 import { ErrorState } from "./error-state.js"
 import { LoadingState } from "./loading-state.js"
@@ -19,15 +19,22 @@ export function App({ initialMode = "menu", onExit }: AppProps) {
   const [worktreeService, setWorktreeService] = useState<WorktreeService | null>(null)
   const [error, setError] = useState<string>()
   const [loading, setLoading] = useState(true)
+  const [initializing, setInitializing] = useState(true)
   const [lastMenuIndex, setLastMenuIndex] = useState(0)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
+  const [gitRoot, setGitRoot] = useState<string>()
 
-  const initializeService = useCallback(async (): Promise<void> => {
+  const initialize = useCallback(async (): Promise<void> => {
     try {
+      const root = await getGitRoot()
+      const workingDir = root || process.cwd()
+      setGitRoot(workingDir)
+      setInitializing(false)
+
       setLoading(true)
       setError(undefined)
 
-      const service = new WorktreeService()
+      const service = new WorktreeService(workingDir)
       await service.initialize()
 
       setWorktreeService(service)
@@ -72,7 +79,7 @@ export function App({ initialMode = "menu", onExit }: AppProps) {
       const tempConfigService = new ConfigService()
       await tempConfigService.createGlobalConfig()
 
-      await initializeService()
+      await initialize()
     } catch (err) {
       setError(`Failed to reset configuration: ${err}`)
       setLoading(false)
@@ -91,11 +98,15 @@ export function App({ initialMode = "menu", onExit }: AppProps) {
   }
 
   useEffect(() => {
-    initializeService()
-  }, [initializeService])
+    initialize()
+  }, [initialize])
+
+  if (initializing) {
+    return null
+  }
 
   if (loading) {
-    return <LoadingState mode={mode} />
+    return <LoadingState mode={mode} gitRoot={gitRoot} />
   }
 
   if (error) {
@@ -119,6 +130,7 @@ export function App({ initialMode = "menu", onExit }: AppProps) {
       mode={mode}
       worktreeService={worktreeService}
       lastMenuIndex={lastMenuIndex}
+      gitRoot={gitRoot}
       onMenuSelect={handleMenuSelect}
       onBackToMenu={handleBackToMenu}
       onExit={handleExit}
