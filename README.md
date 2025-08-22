@@ -71,7 +71,7 @@ Create a `.branchlet.json` file in your project root or configure global setting
   "worktreeCopyIgnores": ["**/node_modules/**", "**/dist/**", "**/.git/**"],
   "worktreePathTemplate": "$BASE_PATH.worktree",
   "postCreateCmd": ["npm install", "npm run db:generate"],
-  "terminalCommand": "code $WORKTREE_PATH"
+  "terminalCommand": "code ."
 }
 ```
 
@@ -145,7 +145,7 @@ Create `.branchlet.json` in your project:
     "npm install",
     "echo 'Worktree ready at $WORKTREE_PATH'"
   ],
-  "terminalCommand": "code $WORKTREE_PATH"
+  "terminalCommand": "code ."
 }
 ```
 
