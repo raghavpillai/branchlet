@@ -3,7 +3,7 @@
 [![npm version](https://badge.fury.io/js/branchlet.svg)](https://www.npmjs.com/package/branchlet)
 [![license](https://img.shields.io/npm/l/branchlet.svg)](https://www.npmjs.com/package/branchlet)
 
-A CLI tool for creating and managing Git worktrees with an easy to use interface.
+A interactive CLI tool for creating and managing Git worktrees with an easy to use interface.
 
 ![Branchlet Demo](assets/branchlet-demo.gif)
 
