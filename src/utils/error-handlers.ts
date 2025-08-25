@@ -66,6 +66,14 @@ export function handleGitError(stderr: string, operation: string): GitWorktreeEr
     )
   }
 
+  if (stderr.includes("is not a .git file") && stderr.includes("validation failed")) {
+    return new GitWorktreeError(
+      "Worktree is corrupted. Try manual cleanup or use force delete.",
+      "CORRUPTED_WORKTREE", 
+      stderr
+    )
+  }
+
   return new GitWorktreeError(
     `Git ${operation} operation failed: ${stderr}`,
     "GIT_OPERATION_FAILED",
@@ -88,6 +96,8 @@ export function getUserFriendlyErrorMessage(error: Error): string {
         return "Current directory is not a git repository."
       case "UNCOMMITTED_CHANGES":
         return "Worktree has uncommitted changes. Use force to delete anyway."
+      case "CORRUPTED_WORKTREE":
+        return "Worktree is corrupted. This can be fixed by manually deleting the worktree directory and running 'git worktree prune'."
       default:
         return `Git operation failed: ${error.message}`
     }

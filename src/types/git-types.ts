@@ -4,6 +4,13 @@ export interface GitWorktree {
   commit: string
   isMain: boolean
   isClean: boolean
+  branchStatus?: BranchStatus
+}
+
+export interface BranchStatus {
+  ahead: number
+  behind: number
+  upstreamBranch: string | null
 }
 
 export interface GitBranch {

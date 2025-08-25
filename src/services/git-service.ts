@@ -1,4 +1,5 @@
 import type {
+  BranchStatus,
   GitBranch,
   GitRepository,
   GitWorktree,
@@ -101,6 +102,11 @@ export class GitService {
       worktree.isClean = await this.isWorktreeClean(worktree.path)
       if (!worktree.branch) {
         worktree.branch = "detached"
+      } else {
+        const branchStatus = await this.getBranchStatus(worktree.branch)
+        if (branchStatus) {
+          worktree.branchStatus = branchStatus
+        }
       }
     }
 
@@ -234,5 +240,57 @@ export class GitService {
   async worktreeExists(worktreePath: string): Promise<boolean> {
     const worktrees = await this.listWorktrees()
     return worktrees.some((wt) => wt.path === worktreePath)
+  }
+
+  async getBranchStatus(branchName: string): Promise<BranchStatus | null> {
+    try {
+      // Try default branch first, then current branch as fallback
+      const candidates = [await this.getDefaultBranch(), await this.getCurrentBranch()]
+      
+      for (const compareBranch of candidates) {
+        if (!compareBranch || compareBranch === branchName) {
+          continue
+        }
+
+        const result = await executeGitCommand(
+          ["rev-list", "--left-right", "--count", `${compareBranch}...${branchName}`],
+          this.gitRoot
+        )
+
+        if (result.success) {
+          const [behind, ahead] = result.stdout.split("\t").map(Number)
+          return {
+            ahead: ahead || 0,
+            behind: behind || 0,
+            upstreamBranch: compareBranch,
+          }
+        }
+      }
+
+      return null
+    } catch {
+      return null
+    }
+  }
+
+
+  async deleteBranch(branchName: string, force = false): Promise<void> {
+    const currentBranch = await this.getCurrentBranch()
+    const defaultBranch = await this.getDefaultBranch()
+
+    if (branchName === currentBranch) {
+      throw new Error(`Cannot delete current branch '${branchName}'`)
+    }
+
+    if (branchName === defaultBranch) {
+      throw new Error(`Cannot delete default branch '${branchName}'`)
+    }
+
+    const args = ["branch", force ? "-D" : "-d", branchName]
+    const result = await executeGitCommand(args, this.gitRoot)
+
+    if (!result.success) {
+      throw handleGitError(result.stderr, "delete branch")
+    }
   }
 }

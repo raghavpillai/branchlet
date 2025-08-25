@@ -1,5 +1,7 @@
+import { rmdir } from "node:fs/promises"
 import type { TemplateVariables, WorktreeCreateOptions } from "../types/index.js"
-import { ValidationError } from "../utils/error-handlers.js"
+import { GitWorktreeError, ValidationError } from "../utils/error-handlers.js"
+import { executeGitCommand } from "../utils/git-commands.js"
 import { getRepositoryBaseName, getRepositoryRoot, getWorktreePath } from "../utils/path-utils.js"
 import { ConfigService } from "./config-service.js"
 import { copyFiles, executePostCreateCommands, openTerminal } from "./file-service.js"
@@ -71,7 +73,21 @@ export class WorktreeService {
     }
   }
 
-  async deleteWorktree(worktreePath: string, force = false): Promise<void> {
+  async deleteWorktree(
+    worktreePath: string,
+    force = false
+  ): Promise<{ worktreeDeleted: boolean; branchDeleted: boolean; branchName?: string }> {
+    const config = this.configService.getConfig()
+
+    let branchName: string | undefined
+    let branchDeleted = false
+
+    if (config.deleteBranchWithWorktree) {
+      const worktrees = await this.gitService.listWorktrees()
+      const targetWorktree = worktrees.find((wt) => wt.path === worktreePath)
+      branchName = targetWorktree?.branch
+    }
+
     if (!force) {
       const isClean = await this.gitService.isWorktreeClean(worktreePath)
       if (!isClean) {
@@ -79,7 +95,31 @@ export class WorktreeService {
       }
     }
 
-    await this.gitService.deleteWorktree({ path: worktreePath, force })
+    try {
+      await this.gitService.deleteWorktree({ path: worktreePath, force })
+    } catch (error) {
+      if (error instanceof GitWorktreeError && error.code === "CORRUPTED_WORKTREE") {
+        console.warn(`Attempting manual cleanup for corrupted worktree: ${worktreePath}`)
+        await this.manualWorktreeCleanup(worktreePath)
+      } else {
+        throw error
+      }
+    }
+
+    if (config.deleteBranchWithWorktree && branchName && branchName !== "detached") {
+      try {
+        await this.gitService.deleteBranch(branchName, force)
+        branchDeleted = true
+      } catch (error) {
+        console.warn(`Failed to delete branch '${branchName}':`, error)
+      }
+    }
+
+    return {
+      worktreeDeleted: true,
+      branchDeleted,
+      ...(branchName && { branchName }),
+    }
   }
 
   getGitService(): GitService {
@@ -88,5 +128,17 @@ export class WorktreeService {
 
   getConfigService(): ConfigService {
     return this.configService
+  }
+
+  private async manualWorktreeCleanup(worktreePath: string): Promise<void> {
+    try {
+      await rmdir(worktreePath, { recursive: true })
+
+      await executeGitCommand(["worktree", "prune"], this.gitRoot)
+
+      console.log(`Successfully cleaned up corrupted worktree: ${worktreePath}`)
+    } catch (error) {
+      throw new Error(`Manual worktree cleanup failed: ${error}`)
+    }
   }
 }
