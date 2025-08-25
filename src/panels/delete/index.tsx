@@ -4,7 +4,6 @@ import { ConfirmDialog, SelectPrompt, StatusIndicator } from "../../components/c
 import { COLORS, MESSAGES } from "../../constants/index.js"
 import type { WorktreeService } from "../../services/index.js"
 import type { DeleteWorktreeState, GitWorktree, SelectOption } from "../../types/index.js"
-import { GitWorktreeError, ValidationError } from "../../utils/index.js"
 
 interface DeleteWorktreeProps {
   worktreeService: WorktreeService
