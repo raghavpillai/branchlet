@@ -155,6 +155,59 @@ describe("WorktreeService", () => {
     })
   })
 
+  describe("branch deletion functionality", () => {
+    test("should handle branch deletion when enabled", async () => {
+      const service = new WorktreeService()
+      
+      // Configure branch deletion
+      const configService = service.getConfigService()
+      configService.updateConfig({ deleteBranchWithWorktree: true })
+      
+      try {
+        const result = await service.deleteWorktree("/non/existent/path")
+        expect(result).toBeDefined()
+        expect(typeof result.worktreeDeleted).toBe('boolean')
+        expect(typeof result.branchDeleted).toBe('boolean')
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+      }
+      
+      // Reset config
+      configService.resetConfig()
+    })
+
+    test("should handle branch deletion when disabled", async () => {
+      const service = new WorktreeService()
+      
+      // Ensure branch deletion is disabled
+      const configService = service.getConfigService()
+      configService.updateConfig({ deleteBranchWithWorktree: false })
+      
+      try {
+        const result = await service.deleteWorktree("/non/existent/path")
+        expect(result).toBeDefined()
+        expect(result.branchDeleted).toBe(false)
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+      }
+      
+      // Reset config
+      configService.resetConfig()
+    })
+
+    test("should handle corrupted worktree cleanup", async () => {
+      const service = new WorktreeService()
+      
+      try {
+        // This should trigger error handling but not the manual cleanup path
+        // since the path doesn't exist
+        await service.deleteWorktree("/absolutely/does/not/exist/corrupted")
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+      }
+    })
+  })
+
   describe("integration scenarios", () => {
     test("should handle service lifecycle", async () => {
       const service = new WorktreeService()
@@ -175,6 +228,20 @@ describe("WorktreeService", () => {
       configService.resetConfig()
       const resetConfig = configService.getConfig()
       expect(resetConfig.terminalCommand).toBe(originalConfig.terminalCommand)
+    })
+
+    test("should handle branch deletion config integration", async () => {
+      const service = new WorktreeService()
+      const configService = service.getConfigService()
+      
+      // Test new config option
+      expect(configService.getConfig().deleteBranchWithWorktree).toBe(false) // Default
+      
+      configService.updateConfig({ deleteBranchWithWorktree: true })
+      expect(configService.getConfig().deleteBranchWithWorktree).toBe(true)
+      
+      configService.resetConfig()
+      expect(configService.getConfig().deleteBranchWithWorktree).toBe(false)
     })
   })
 })

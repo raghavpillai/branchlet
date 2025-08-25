@@ -58,6 +58,13 @@ describe("git-commands", () => {
       const result = await getDefaultBranch("/non/existent/path")
       expect(result).toBe("main")
     })
+
+    test("should handle origin/HEAD resolution when available", async () => {
+      // This test covers the successful path of symbolic-ref parsing
+      const result = await getDefaultBranch()
+      expect(typeof result).toBe("string")
+      expect(result).not.toContain("refs/remotes/origin/")
+    })
   })
 
   describe("getGitRoot", () => {

@@ -145,6 +145,16 @@ describe("error-handlers", () => {
       expect(error.message).toContain("does not exist")
     })
 
+    test("should detect corrupted worktree error", () => {
+      const stderr = "fatal: validation failed, cannot remove working tree: '/private/tmp/test/.git' is not a .git file, error code 7"
+
+      const error = handleGitError(stderr, "delete worktree")
+
+      expect(error).toBeInstanceOf(GitWorktreeError)
+      expect((error as GitWorktreeError).code).toBe("CORRUPTED_WORKTREE")
+      expect(error.message).toContain("corrupted")
+    })
+
     test("should detect not in git repository error", () => {
       const stderr = "fatal: not a git repository (or any of the parent directories): .git"
 
@@ -226,6 +236,12 @@ describe("error-handlers", () => {
       const error = new GitWorktreeError("Some error", "UNCOMMITTED_CHANGES")
       const result = getUserFriendlyErrorMessage(error)
       expect(result).toBe("Worktree has uncommitted changes. Use force to delete anyway.")
+    })
+
+    test("should return friendly message for GitWorktreeError with CORRUPTED_WORKTREE code", () => {
+      const error = new GitWorktreeError("Some error", "CORRUPTED_WORKTREE")
+      const result = getUserFriendlyErrorMessage(error)
+      expect(result).toBe("Worktree is corrupted. This can be fixed by manually deleting the worktree directory and running 'git worktree prune'.")
     })
 
     test("should return default message for GitWorktreeError with unknown code", () => {
