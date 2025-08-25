@@ -19,6 +19,7 @@ type SettingsStep =
   | "path-template"
   | "post-cmd"
   | "terminal-cmd"
+  | "delete-branch"
 
 export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
   const [config, setConfig] = useState<WorktreeConfig | null>(null)
@@ -103,6 +104,11 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
       label: "Terminal Command",
       value: "terminal-cmd",
       description: config?.terminalCommand || "(none)",
+    },
+    {
+      label: "Delete Branch with Worktree",
+      value: "delete-branch",
+      description: config?.deleteBranchWithWorktree ? "enabled" : "disabled",
     },
   ]
 
@@ -336,7 +342,51 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
 
           <Box marginTop={1}>
             <Text color={COLORS.MUTED} dimColor>
-              Edit in {GLOBAL_CONFIG_FILE}. Press any key to go back.
+              Edit in {configPath || GLOBAL_CONFIG_FILE}. Press any key to go back.
+            </Text>
+          </Box>
+        </Box>
+      )
+
+    case "delete-branch":
+      return (
+        <Box flexDirection="column">
+          <Box>
+            <Text bold color={COLORS.INFO}>
+              Delete Branch with Worktree
+            </Text>
+          </Box>
+
+          <Box>
+            <Text color={COLORS.MUTED}>Also delete the associated git branch when deleting a worktree:</Text>
+          </Box>
+
+          <Box marginLeft={2}>
+            <Text color={config?.deleteBranchWithWorktree ? COLORS.SUCCESS : COLORS.MUTED}>
+              {config?.deleteBranchWithWorktree ? "✓ Enabled" : "✗ Disabled"}
+            </Text>
+          </Box>
+
+          {config?.deleteBranchWithWorktree && (
+            <Box>
+              <Text color={COLORS.WARNING}>
+                ⚠️  This is a more destructive operation. Branches will be permanently deleted.
+              </Text>
+            </Box>
+          )}
+
+          <Box>
+            <Text color={COLORS.INFO}>Safety features:</Text>
+            <Box flexDirection="column" marginLeft={2}>
+              <Text color={COLORS.MUTED}>• Never deletes current or default branches</Text>
+              <Text color={COLORS.MUTED}>• Shows branch status (commits ahead/behind)</Text>
+              <Text color={COLORS.MUTED}>• Requires explicit confirmation</Text>
+            </Box>
+          </Box>
+
+          <Box marginTop={1}>
+            <Text color={COLORS.MUTED} dimColor>
+              Edit in {configPath || GLOBAL_CONFIG_FILE}. Press any key to go back.
             </Text>
           </Box>
         </Box>

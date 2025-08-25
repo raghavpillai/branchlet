@@ -10,6 +10,7 @@ describe("config-schema", () => {
         worktreePathTemplate: "$BASE_PATH-worktrees/$BRANCH_NAME",
         postCreateCmd: ["npm install"],
         terminalCommand: "code $WORKTREE_PATH",
+        deleteBranchWithWorktree: false,
       }
 
       const result = validateConfig(validConfig)
@@ -104,6 +105,7 @@ describe("config-schema", () => {
             "echo 'Worktree setup complete'",
           ],
           terminalCommand: "code $WORKTREE_PATH",
+          deleteBranchWithWorktree: true,
         },
         {
           worktreeCopyPatterns: ["Cargo.toml", "Cargo.lock", "*.md"],
@@ -111,6 +113,7 @@ describe("config-schema", () => {
           worktreePathTemplate: "../$BRANCH_NAME-worktree",
           postCreateCmd: ["cargo check", "cargo test"],
           terminalCommand: "cd $WORKTREE_PATH && zsh",
+          deleteBranchWithWorktree: false,
         },
         {
           worktreeCopyPatterns: ["go.mod", "go.sum", "*.md", "Makefile"],
@@ -118,6 +121,7 @@ describe("config-schema", () => {
           worktreePathTemplate: "/tmp/go-worktrees/$BRANCH_NAME",
           postCreateCmd: ["go mod download", "make build"],
           terminalCommand: "tmux new-session -c $WORKTREE_PATH",
+          deleteBranchWithWorktree: true,
         },
       ]
 
@@ -137,6 +141,7 @@ describe("config-schema", () => {
         worktreePathTemplate: "$BASE_PATH/$BRANCH_NAME",
         postCreateCmd: [],
         terminalCommand: "",
+        deleteBranchWithWorktree: false,
       }
 
       const result = WorktreeConfigSchema.parse(validConfig)

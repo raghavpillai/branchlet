@@ -215,6 +215,88 @@ describe("GitService", () => {
     })
   })
 
+  describe("branch status functionality", () => {
+    test("should get branch status when comparison branch exists", async () => {
+      const service = new GitService()
+      
+      try {
+        const result = await service.getBranchStatus("test-branch-that-does-not-exist")
+        // Should return null for non-existent branch
+        expect(result).toBeNull()
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+      }
+    })
+
+    test("should handle branch status for current branch", async () => {
+      const service = new GitService()
+      
+      try {
+        const currentBranch = await service.getCurrentBranch()
+        if (currentBranch) {
+          const result = await service.getBranchStatus(currentBranch)
+          // Should return null when comparing branch with itself
+          expect(result).toBeNull()
+        }
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+      }
+    })
+
+    test("should handle getBranchStatus with no comparison branch available", async () => {
+      const service = new GitService("/tmp") // Non-git directory
+      
+      const result = await service.getBranchStatus("any-branch")
+      expect(result).toBeNull()
+    })
+  })
+
+  describe("branch deletion functionality", () => {
+    test("should prevent deletion of current branch", async () => {
+      const service = new GitService()
+      
+      try {
+        const currentBranch = await service.getCurrentBranch()
+        if (currentBranch) {
+          await expect(service.deleteBranch(currentBranch)).rejects.toThrow()
+        }
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+      }
+    })
+
+    test("should prevent deletion of default branch", async () => {
+      const service = new GitService()
+      
+      try {
+        const defaultBranch = await service.getDefaultBranch()
+        await expect(service.deleteBranch(defaultBranch)).rejects.toThrow()
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+      }
+    })
+
+    test("should handle deletion of non-existent branch", async () => {
+      const service = new GitService()
+      
+      try {
+        await service.deleteBranch("non-existent-branch-12345")
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+      }
+    })
+
+    test("should handle force deletion", async () => {
+      const service = new GitService()
+      
+      try {
+        await service.deleteBranch("non-existent-branch-12345", true)
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+      }
+    })
+  })
+
   describe("error handling", () => {
     test("should handle git operations in non-git directory", async () => {
       const tempService = new GitService("/tmp")

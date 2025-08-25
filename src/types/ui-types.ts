@@ -62,8 +62,13 @@ export interface CreateWorktreeState {
 }
 
 export interface DeleteWorktreeState {
-  step: "select" | "confirm" | "force-confirm" | "deleting" | "success"
+  step: "select" | "confirm" | "deleting" | "success"
   selectedWorktree?: string
   force: boolean
   error?: string
+  deleteResult?: {
+    worktreeDeleted: boolean
+    branchDeleted: boolean
+    branchName?: string
+  }
 }

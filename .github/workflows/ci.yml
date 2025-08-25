@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   test:
-    name: Test
+    name: Test (Node v${{ matrix.node-version }})
     runs-on: ubuntu-latest
     
     strategy:

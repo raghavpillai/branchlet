@@ -4,7 +4,6 @@ import { ConfirmDialog, SelectPrompt, StatusIndicator } from "../../components/c
 import { COLORS, MESSAGES } from "../../constants/index.js"
 import type { WorktreeService } from "../../services/index.js"
 import type { DeleteWorktreeState, GitWorktree, SelectOption } from "../../types/index.js"
-import { GitWorktreeError, ValidationError } from "../../utils/index.js"
 
 interface DeleteWorktreeProps {
   worktreeService: WorktreeService
@@ -19,6 +18,7 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
   })
   const [worktrees, setWorktrees] = useState<GitWorktree[]>([])
   const [loading, setLoading] = useState(true)
+  const config = worktreeService.getConfigService().getConfig()
 
   const loadWorktrees = useCallback(async (): Promise<void> => {
     try {
@@ -58,51 +58,19 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
     }))
   }
 
-  const handleConfirm = async (): Promise<void> => {
+  const handleConfirm = async (force = false): Promise<void> => {
     if (!state.selectedWorktree) return
 
     try {
       setState((prev) => ({ ...prev, step: "deleting" }))
 
-      await worktreeService.deleteWorktree(state.selectedWorktree, state.force)
+      const result = await worktreeService.deleteWorktree(state.selectedWorktree, force)
 
-      setState((prev) => ({ ...prev, step: "success" }))
-
-      setTimeout(() => {
-        onComplete()
-      }, 1500)
-    } catch (error) {
-      if (
-        (error instanceof GitWorktreeError && error.code === "UNCOMMITTED_CHANGES") ||
-        (error instanceof ValidationError && error.message.includes("uncommitted changes"))
-      ) {
-        setState((prev) => ({
-          ...prev,
-          step: "force-confirm",
-        }))
-      } else {
-        setState((prev) => ({
-          ...prev,
-          error: error instanceof Error ? error.message : String(error),
-          step: "select",
-        }))
-      }
-    }
-  }
-
-  const handleForceConfirm = async (): Promise<void> => {
-    if (!state.selectedWorktree) return
-
-    try {
-      setState((prev) => ({ ...prev, step: "deleting" }))
-
-      await worktreeService.deleteWorktree(state.selectedWorktree, true)
-
-      setState((prev) => ({ ...prev, step: "success" }))
+      setState((prev) => ({ ...prev, step: "success", deleteResult: result }))
 
       setTimeout(() => {
         onComplete()
-      }, 1500)
+      }, 2500)
     } catch (error) {
       setState((prev) => ({
         ...prev,
@@ -112,6 +80,7 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
     }
   }
 
+
   const getWorktreeOptions = (): SelectOption<string>[] => {
     return worktrees.map((worktree) => {
       const formatPath = (path: string): string => {
@@ -119,7 +88,23 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
         return path.replace(home, "~")
       }
 
-      const statusInfo = worktree.isClean ? "" : "has changes"
+      const statusParts: string[] = []
+      
+      if (!worktree.isClean) {
+        statusParts.push("has changes")
+      }
+      
+      if (worktree.branchStatus) {
+        const { ahead, behind, upstreamBranch } = worktree.branchStatus
+        if (ahead > 0 || behind > 0) {
+          const parts = []
+          if (ahead > 0) parts.push(`+${ahead}`)
+          if (behind > 0) parts.push(`-${behind}`)
+          statusParts.push(`${parts.join(" ")} vs ${upstreamBranch}`)
+        }
+      }
+
+      const statusInfo = statusParts.join(", ")
 
       return {
         label: `${formatPath(worktree.path)} [${worktree.branch}]`,
@@ -173,49 +158,60 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
     case "confirm": {
       const selectedWorktree = getSelectedWorktree()
       const hasChanges = selectedWorktree && !selectedWorktree.isClean
-      const warningMessage = hasChanges
-        ? `${MESSAGES.DELETE_WARNING} This worktree has uncommitted changes.`
-        : MESSAGES.DELETE_WARNING
+      const branchName = selectedWorktree?.branch
+      const willDeleteBranch = config.deleteBranchWithWorktree && branchName && branchName !== "detached"
+      
+
+      const confirmLabel = hasChanges ? "Force Delete" : "Yes"
+      const title = hasChanges ? "Force Delete Worktree" : MESSAGES.DELETE_CONFIRM_TITLE
 
       return (
         <ConfirmDialog
-          title={MESSAGES.DELETE_CONFIRM_TITLE}
+          title={title}
           message={
             <Box flexDirection="column">
               <Text>
-                Delete worktree at <Text bold>'{state.selectedWorktree}'</Text>?
+                {hasChanges ? "Worktree at" : "Delete worktree at"} <Text bold>'{state.selectedWorktree}'</Text>{hasChanges ? " has uncommitted changes." : "?"}
               </Text>
-              <Text>{warningMessage}</Text>
+              {willDeleteBranch && (
+                <Box flexDirection="column">
+                  <Text color={COLORS.WARNING}>
+                    This will also {hasChanges ? "force " : ""}delete branch <Text bold>'{branchName}'</Text>!
+                  </Text>
+                  {selectedWorktree?.branchStatus && (
+                    <Box marginLeft={2}>
+                      <Text color={COLORS.MUTED}>
+                        {selectedWorktree.branchStatus.ahead > 0 && `ahead ${selectedWorktree.branchStatus.ahead}`}
+                        {selectedWorktree.branchStatus.ahead > 0 && selectedWorktree.branchStatus.behind > 0 && '/'}
+                        {selectedWorktree.branchStatus.behind > 0 && `behind ${selectedWorktree.branchStatus.behind}`}
+                        {selectedWorktree.branchStatus.ahead === 0 && selectedWorktree.branchStatus.behind === 0 && 'up to date'}
+                        {' vs '}{selectedWorktree.branchStatus.upstreamBranch}
+                      </Text>
+                    </Box>
+                  )}
+                </Box>
+              )}
+              {hasChanges && (
+                <Text color={COLORS.WARNING}>
+                  Force delete will permanently lose all uncommitted work!
+                </Text>
+              )}
+              {hasChanges && (
+                <Text>Are you sure you want to proceed?</Text>
+              )}
+              {!hasChanges && (
+                <Text>{MESSAGES.DELETE_WARNING}</Text>
+              )}
             </Box>
           }
-          variant={hasChanges ? "danger" : "warning"}
-          onConfirm={handleConfirm}
+          variant={hasChanges || willDeleteBranch ? "danger" : "warning"}
+          confirmLabel={confirmLabel}
+          onConfirm={() => handleConfirm(hasChanges)}
           onCancel={() => setState((prev) => ({ ...prev, step: "select" }))}
         />
       )
     }
 
-    case "force-confirm":
-      return (
-        <ConfirmDialog
-          title="Force Delete Worktree"
-          message={
-            <Box flexDirection="column">
-              <Text>
-                Worktree at <Text bold>'{state.selectedWorktree}'</Text> has uncommitted changes.
-              </Text>
-              <Text color={COLORS.WARNING}>
-                Force delete will permanently lose all uncommitted work!
-              </Text>
-              <Text>Are you sure you want to proceed?</Text>
-            </Box>
-          }
-          variant="danger"
-          confirmLabel="Force Delete"
-          onConfirm={handleForceConfirm}
-          onCancel={() => setState((prev) => ({ ...prev, step: "select" }))}
-        />
-      )
 
     case "deleting": {
       const selectedWorktree = getSelectedWorktree()
@@ -224,8 +220,18 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
       return <StatusIndicator status="loading" message={message} />
     }
 
-    case "success":
-      return <StatusIndicator status="success" message={MESSAGES.DELETE_SUCCESS} spinner={false} />
+    case "success": {
+      const result = state.deleteResult
+      let message: string = MESSAGES.DELETE_SUCCESS
+      
+      if (result?.branchDeleted && result.branchName) {
+        message = `Worktree and branch '${result.branchName}' deleted successfully`
+      } else if (result?.branchName && config.deleteBranchWithWorktree) {
+        message = `Worktree deleted. Branch '${result.branchName}' was kept.`
+      }
+
+      return <StatusIndicator status="success" message={message} spinner={false} />
+    }
 
     default:
       return <Text>Unknown step</Text>

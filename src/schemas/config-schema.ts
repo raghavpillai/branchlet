@@ -26,6 +26,10 @@ export const WorktreeConfigSchema = z
       .string()
       .default("")
       .describe("Command to open terminal in new worktree directory (e.g., 'code $WORKTREE_PATH')"),
+    deleteBranchWithWorktree: z
+      .boolean()
+      .default(false)
+      .describe("Also delete the associated git branch when deleting a worktree"),
   })
   .describe("Configuration for Git worktree management tool")
 
