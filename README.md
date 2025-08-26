@@ -73,7 +73,8 @@ Create a `.branchlet.json` file in your project root or configure global setting
   "worktreeCopyIgnores": ["**/node_modules/**", "**/dist/**", "**/.git/**"],
   "worktreePathTemplate": "$BASE_PATH.worktree",
   "postCreateCmd": ["npm install", "npm run db:generate"],
-  "terminalCommand": "code ."
+  "terminalCommand": "code .",
+  "deleteBranchWithWorktree": true
 }
 ```
 
@@ -99,6 +100,11 @@ Create a `.branchlet.json` file in your project root or configure global setting
 - **`terminalCommand`**: Command to open terminal/editor in the new worktree. Runs in the new worktree directory.
   - Default: `""`
   - Examples: `"code ."`, `"cursor ."`, `"zed ."`
+
+- **`deleteBranchWithWorktree`**: Whether to also delete the associated git branch when deleting a worktree
+  - Default: `false`
+  - When enabled, deleting a worktree will also delete its branch (with safety checks)
+  - Shows warnings for branches with unpushed commits or uncommitted changes
 
 ### Template Variables
 
@@ -147,7 +153,8 @@ Create `.branchlet.json` in your project:
     "npm install",
     "npm run db:populate"
   ],
-  "terminalCommand": "code ."
+  "terminalCommand": "code .",
+  "deleteBranchWithWorktree": true
 }
 ```
 
