@@ -1,19 +1,25 @@
 import { Box, Text, useInput } from "ink"
 import { useCallback, useEffect, useState } from "react"
-import { StatusIndicator } from "../../components/common/index.js"
+import { SelectPrompt, StatusIndicator } from "../../components/common/index.js"
 import { COLORS, MESSAGES } from "../../constants/index.js"
+import { openTerminal } from "../../services/file-service.js"
 import type { WorktreeService } from "../../services/index.js"
-import type { GitWorktree } from "../../types/index.js"
+import type { GitWorktree, SelectOption } from "../../types/index.js"
 
 interface ListWorktreesProps {
   worktreeService: WorktreeService
   onBack: () => void
 }
 
+type NavigationMode = "list" | "action-menu"
+
 export function ListWorktrees({ worktreeService, onBack }: ListWorktreesProps) {
   const [worktrees, setWorktrees] = useState<GitWorktree[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string>()
+  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [navigationMode, setNavigationMode] = useState<NavigationMode>("list")
+  const [selectedWorktree, setSelectedWorktree] = useState<GitWorktree | null>(null)
 
   const loadWorktrees = useCallback(async (): Promise<void> => {
     try {
@@ -34,9 +40,82 @@ export function ListWorktrees({ worktreeService, onBack }: ListWorktreesProps) {
     loadWorktrees()
   }, [loadWorktrees])
 
+  const formatPath = (path: string): string => {
+    const home = process.env.HOME || ""
+    return path.replace(home, "~")
+  }
+
+  const handleOpenWithCommand = useCallback(
+    async (worktree: GitWorktree) => {
+      try {
+        const config = worktreeService.getConfigService().getConfig()
+        if (config.terminalCommand) {
+          await openTerminal(config.terminalCommand, worktree.path)
+        }
+        onBack()
+      } catch (error) {
+        console.error("Failed to open with command:", error)
+      }
+    },
+    [worktreeService, onBack]
+  )
+
+  const handleActionSelect = useCallback(
+    (action: string) => {
+      if (!selectedWorktree) return
+
+      switch (action) {
+        case "command":
+          handleOpenWithCommand(selectedWorktree)
+          break
+      }
+    },
+    [selectedWorktree, handleOpenWithCommand]
+  )
+
   useInput((input, key) => {
-    if (key.escape || key.return || input) {
+    if (navigationMode === "action-menu") return
+
+    if (key.escape) {
       onBack()
+      return
+    }
+
+    if (worktrees.length === 0) {
+      onBack()
+      return
+    }
+
+    if (key.upArrow) {
+      setSelectedIndex((prev) => (prev === 0 ? worktrees.length - 1 : prev - 1))
+      return
+    }
+
+    if (key.downArrow) {
+      setSelectedIndex((prev) => (prev === worktrees.length - 1 ? 0 : prev + 1))
+      return
+    }
+
+    if (key.return) {
+      const worktree = worktrees[selectedIndex]
+      if (worktree) {
+        setSelectedWorktree(worktree)
+        setNavigationMode("action-menu")
+      }
+      return
+    }
+
+    if (input.toLowerCase() === "e") {
+      const worktree = worktrees[selectedIndex]
+      if (worktree) {
+        handleOpenWithCommand(worktree)
+      }
+      return
+    }
+
+    const numericInput = Number.parseInt(input, 10)
+    if (!Number.isNaN(numericInput) && numericInput >= 1 && numericInput <= worktrees.length) {
+      setSelectedIndex(numericInput - 1)
     }
   })
 
@@ -68,21 +147,34 @@ export function ListWorktrees({ worktreeService, onBack }: ListWorktreesProps) {
     )
   }
 
-  const formatPath = (path: string): string => {
-    const home = process.env.HOME || ""
-    return path.replace(home, "~")
-  }
+  if (navigationMode === "action-menu" && selectedWorktree) {
+    const config = worktreeService.getConfigService().getConfig()
+    const actions: SelectOption[] = []
 
-  const _getStatusIndicator = (worktree: GitWorktree): string => {
-    let indicator = ""
-    if (worktree.isMain) {
-      indicator += MESSAGES.LIST_MAIN_INDICATOR
+    if (config.terminalCommand) {
+      actions.push({
+        label: "Open with Command",
+        value: "command",
+        description: "Open using configured terminal command",
+      })
     }
-    if (!worktree.isClean) {
-      indicator += worktree.isMain ? " " : ""
-      indicator += MESSAGES.LIST_DIRTY_INDICATOR
-    }
-    return indicator
+
+    return (
+      <Box flexDirection="column">
+        <Box marginBottom={1}>
+          <Text>
+            Selected: <Text color={COLORS.PRIMARY}>{formatPath(selectedWorktree.path)}</Text>{" "}
+            <Text color={COLORS.SUCCESS}>({selectedWorktree.branch})</Text>
+          </Text>
+        </Box>
+        <SelectPrompt
+          label="Choose action:"
+          options={actions}
+          onSelect={handleActionSelect}
+          onCancel={() => setNavigationMode("list")}
+        />
+      </Box>
+    )
   }
 
   return (
@@ -96,12 +188,23 @@ export function ListWorktrees({ worktreeService, onBack }: ListWorktreesProps) {
         </Text>
       </Box>
 
-      {worktrees.map((worktree) => {
+      {worktrees.map((worktree, index) => {
         const path = formatPath(worktree.path)
+        const isSelected = index === selectedIndex
+        const marker = isSelected ? "> " : "  "
 
         return (
           <Box key={worktree.path} justifyContent="space-between" width="100%">
-            <Text {...(worktree.isMain ? { color: COLORS.PRIMARY } : {})}>{path}</Text>
+            <Text
+              {...(isSelected
+                ? { color: COLORS.PRIMARY }
+                : worktree.isMain
+                  ? { color: COLORS.PRIMARY }
+                  : {})}
+            >
+              {marker}
+              {path}
+            </Text>
             <Text color={COLORS.SUCCESS}>{worktree.branch}</Text>
           </Box>
         )
@@ -109,7 +212,7 @@ export function ListWorktrees({ worktreeService, onBack }: ListWorktreesProps) {
 
       <Box marginTop={2}>
         <Text color={COLORS.MUTED} dimColor>
-          Press any key to go back
+          ↑↓ Navigate • Enter Action Menu • E Command • Esc Back
         </Text>
       </Box>
     </Box>
