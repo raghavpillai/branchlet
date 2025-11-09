@@ -30,12 +30,12 @@ export function SelectPrompt<T = string>({
       return
     }
 
-    if (key.upArrow) {
+    if (key.upArrow || input.toLowerCase() === "k") {
       setSelectedIndex((prev) => (prev === 0 ? options.length - 1 : prev - 1))
       return
     }
 
-    if (key.downArrow) {
+    if (key.downArrow || input.toLowerCase() === "j") {
       setSelectedIndex((prev) => (prev === options.length - 1 ? 0 : prev + 1))
       return
     }
