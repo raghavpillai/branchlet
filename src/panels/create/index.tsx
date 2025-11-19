@@ -85,14 +85,21 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
   }
 
   const handleNewBranchSubmit = (newBranch: string): void => {
+    const trimmedBranch = newBranch.trim()
     setState((prev) => ({
       ...prev,
-      newBranch: newBranch.trim(),
+      // If empty, use source branch (checkout existing branch)
+      newBranch: trimmedBranch || prev.sourceBranch,
       step: "confirm",
     }))
   }
 
   const validateNewBranchName = (name: string): string | undefined => {
+    // Allow empty input to use source branch
+    if (!name.trim()) {
+      return undefined
+    }
+
     const formatError = validateBranchName(name)
     if (formatError) {
       return formatError
@@ -249,15 +256,21 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
         />
       )
 
-    case "confirm":
+    case "confirm": {
+      const isUsingExistingBranch = state.newBranch === state.sourceBranch
+      const message = isUsingExistingBranch
+        ? `Create worktree '${state.directoryName}' using existing branch '${state.sourceBranch}'?`
+        : `Create worktree '${state.directoryName}' with new branch '${state.newBranch}' from '${state.sourceBranch}'?`
+
       return (
         <ConfirmDialog
           title={MESSAGES.CREATE_CONFIRM_TITLE}
-          message={`Create worktree '${state.directoryName}' with branch '${state.newBranch}' from '${state.sourceBranch}'?`}
+          message={message}
           onConfirm={handleConfirm}
           onCancel={onCancel}
         />
       )
+    }
 
     case "creating":
       return <StatusIndicator status="loading" message={MESSAGES.CREATE_CREATING} />
