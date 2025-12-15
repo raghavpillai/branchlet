@@ -33,8 +33,10 @@ export class WorktreeService {
     const gitRoot = this.gitRoot || getRepositoryRoot()
 
     // Only check if branch exists when creating a new branch
-    // If newBranch === sourceBranch, we're using an existing branch
-    if (options.newBranch !== options.sourceBranch && await this.gitService.branchExists(options.newBranch)) {
+    if (
+      options.newBranch !== options.sourceBranch &&
+      (await this.gitService.branchExists(options.newBranch))
+    ) {
       throw new ValidationError(`Branch '${options.newBranch}' already exists`)
     }
 

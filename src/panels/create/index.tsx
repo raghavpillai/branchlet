@@ -88,14 +88,12 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
     const trimmedBranch = newBranch.trim()
     setState((prev) => ({
       ...prev,
-      // If empty, use source branch (checkout existing branch)
       newBranch: trimmedBranch || prev.sourceBranch,
       step: "confirm",
     }))
   }
 
   const validateNewBranchName = (name: string): string | undefined => {
-    // Allow empty input to use source branch
     if (!name.trim()) {
       return undefined
     }
