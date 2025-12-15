@@ -76,6 +76,20 @@ export async function getDefaultBranch(path?: string): Promise<string> {
 }
 
 export async function getGitRoot(path?: string): Promise<string | null> {
-  const result = await executeGitCommand(["rev-parse", "--show-toplevel"], path)
-  return result.success ? result.stdout : null
+  const result = await executeGitCommand(
+    ["rev-parse", "--path-format=absolute", "--git-common-dir"],
+    path
+  )
+
+  if (!result.success) {
+    return null
+  }
+
+  const gitDir = result.stdout
+  if (gitDir.endsWith("/.git")) {
+    return gitDir.slice(0, -5) // removes "/.git"
+  }
+
+  const parentDir = gitDir.split("/").slice(0, -1).join("/")
+  return parentDir || null
 }
