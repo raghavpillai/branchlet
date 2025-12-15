@@ -160,7 +160,7 @@ Create `.branchlet.json` in your project:
 
 ## Requirements
 
-- Node.js 18.0.0 or higher
+- Node.js 20.0.0 or higher
 - Git installed and available in PATH
 - Operating system: macOS, Linux, or Windows
 
