@@ -9,11 +9,18 @@ import type { GitWorktree, SelectOption } from "../../types/index.js"
 interface ListWorktreesProps {
   worktreeService: WorktreeService
   onBack: () => void
+  cdMode?: boolean
+  onCdSelect?: (path: string) => void
 }
 
 type NavigationMode = "list" | "action-menu"
 
-export function ListWorktrees({ worktreeService, onBack }: ListWorktreesProps) {
+export function ListWorktrees({
+  worktreeService,
+  onBack,
+  cdMode = false,
+  onCdSelect,
+}: ListWorktreesProps) {
   const [worktrees, setWorktrees] = useState<GitWorktree[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string>()
@@ -99,8 +106,17 @@ export function ListWorktrees({ worktreeService, onBack }: ListWorktreesProps) {
     if (key.return) {
       const worktree = worktrees[selectedIndex]
       if (worktree) {
-        setSelectedWorktree(worktree)
-        setNavigationMode("action-menu")
+        if (cdMode && onCdSelect) {
+          onCdSelect(worktree.path)
+        } else {
+          const config = worktreeService.getConfigService().getConfig()
+          if (config.terminalCommand) {
+            setSelectedWorktree(worktree)
+            setNavigationMode("action-menu")
+          } else {
+            onBack()
+          }
+        }
       }
       return
     }
@@ -115,7 +131,15 @@ export function ListWorktrees({ worktreeService, onBack }: ListWorktreesProps) {
 
     const numericInput = Number.parseInt(input, 10)
     if (!Number.isNaN(numericInput) && numericInput >= 1 && numericInput <= worktrees.length) {
-      setSelectedIndex(numericInput - 1)
+      const index = numericInput - 1
+      if (cdMode && onCdSelect) {
+        const worktree = worktrees[index]
+        if (worktree) {
+          onCdSelect(worktree.path)
+        }
+      } else {
+        setSelectedIndex(index)
+      }
     }
   })
 
@@ -212,7 +236,9 @@ export function ListWorktrees({ worktreeService, onBack }: ListWorktreesProps) {
 
       <Box marginTop={2}>
         <Text color={COLORS.MUTED} dimColor>
-          ↑↓ Navigate • Enter Action Menu • E Command • Esc Back
+          {cdMode
+            ? "↑↓ Navigate • Enter Select • Esc Cancel"
+            : "↑↓ Navigate • Enter Action Menu • E Command • Esc Back"}
         </Text>
       </Box>
     </Box>
