@@ -8,10 +8,10 @@ import type { AppMode } from "./types/index.js"
 
 const VERSION = packageJson.version
 
-function parseArguments(): { mode: AppMode; help: boolean } {
+function parseArguments(): { mode: AppMode; help: boolean; cdMode: boolean } {
   const argv = minimist(process.argv.slice(2), {
     string: ["mode"],
-    boolean: ["help", "version"],
+    boolean: ["help", "version", "cd"],
     alias: {
       h: "help",
       v: "version",
@@ -20,7 +20,7 @@ function parseArguments(): { mode: AppMode; help: boolean } {
   })
 
   if (argv.help) {
-    return { mode: "menu", help: true }
+    return { mode: "menu", help: true, cdMode: false }
   }
 
   if (argv.version) {
@@ -42,7 +42,9 @@ function parseArguments(): { mode: AppMode; help: boolean } {
     }
   }
 
-  return { mode, help: false }
+  const cdMode = argv.cd === true
+
+  return { mode, help: false, cdMode }
 }
 
 function showHelp(): void {
@@ -63,13 +65,19 @@ Options:
   -h, --help     Show this help message
   -v, --version  Show version number
   -m, --mode     Set initial mode
+  --cd           Quick directory change mode (outputs path for shell wrapper)
 
 Examples:
   branchlet                # Start interactive menu
   branchlet create         # Go directly to create worktree flow
   branchlet list           # List all worktrees
+  branchlet list --cd      # Select worktree and output path (for shell integration)
   branchlet delete         # Go directly to delete worktree flow
   branchlet settings       # Open settings menu
+
+Shell Integration:
+  Run 'branchlet' and select "Setup Shell Integration" to enable quick directory switching.
+  After setup, just run 'branchlet' to quickly change to any worktree directory.
 
 Configuration:
   The tool looks for configuration files in the following order:
@@ -81,7 +89,7 @@ For more information, visit: https://github.com/raghavpillai/git-worktree-manage
 }
 
 function main(): void {
-  const { mode, help } = parseArguments()
+  const { mode, help, cdMode } = parseArguments()
 
   if (help) {
     showHelp()
@@ -90,9 +98,31 @@ function main(): void {
 
   let hasExited = false
 
+  let inkStdin = process.stdin
+  let inkStdout = process.stdout
+
+  if (cdMode) {
+    process.env.FORCE_COLOR = "3"
+
+    try {
+      const fs = require("node:fs")
+      const tty = require("node:tty")
+      const ttyFd = fs.openSync("/dev/tty", "r+")
+      inkStdin = new tty.ReadStream(ttyFd) as any
+      inkStdout = new tty.WriteStream(ttyFd) as any
+
+      Object.defineProperty(inkStdout, "isTTY", { value: true })
+      Object.defineProperty(inkStdout, "hasColors", { value: () => true })
+      Object.defineProperty(inkStdout, "getColorDepth", { value: () => 24 })
+    } catch (error) {
+      console.error("Could not open /dev/tty:", error)
+    }
+  }
+
   const { unmount } = render(
     <App
       initialMode={mode}
+      cdMode={cdMode}
       onExit={() => {
         if (!hasExited) {
           hasExited = true
@@ -100,7 +130,12 @@ function main(): void {
           process.exit(0)
         }
       }}
-    />
+    />,
+    {
+      stdin: inkStdin,
+      stdout: inkStdout,
+      stderr: process.stderr,
+    }
   )
 
   process.on("SIGINT", () => {

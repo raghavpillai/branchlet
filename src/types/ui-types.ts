@@ -1,12 +1,13 @@
 import type React from "react"
 
-export type AppMode = "menu" | "create" | "list" | "delete" | "settings"
+export type AppMode = "menu" | "create" | "list" | "delete" | "settings" | "setup"
 
 export interface SelectOption<T = string> {
   label: string
   value: T
   description?: string
   isDefault?: boolean
+  color?: string
 }
 
 export interface InputPromptProps {

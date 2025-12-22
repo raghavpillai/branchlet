@@ -4,6 +4,7 @@ export const MESSAGES = {
 
   // Menu options
   MENU_TITLE: "What would you like to do?",
+  MENU_SETUP: "Setup Shell Integration",
   MENU_CREATE: "Create new worktree",
   MENU_LIST: "List worktrees",
   MENU_DELETE: "Delete worktree",
