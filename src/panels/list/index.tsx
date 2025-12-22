@@ -72,12 +72,17 @@ export function ListWorktrees({
       if (!selectedWorktree) return
 
       switch (action) {
+        case "cd":
+          if (cdMode && onCdSelect) {
+            onCdSelect(selectedWorktree.path)
+          }
+          break
         case "command":
           handleOpenWithCommand(selectedWorktree)
           break
       }
     },
-    [selectedWorktree, handleOpenWithCommand]
+    [selectedWorktree, cdMode, onCdSelect, handleOpenWithCommand]
   )
 
   useInput((input, key) => {
@@ -106,17 +111,8 @@ export function ListWorktrees({
     if (key.return) {
       const worktree = worktrees[selectedIndex]
       if (worktree) {
-        if (cdMode && onCdSelect) {
-          onCdSelect(worktree.path)
-        } else {
-          const config = worktreeService.getConfigService().getConfig()
-          if (config.terminalCommand) {
-            setSelectedWorktree(worktree)
-            setNavigationMode("action-menu")
-          } else {
-            onBack()
-          }
-        }
+        setSelectedWorktree(worktree)
+        setNavigationMode("action-menu")
       }
       return
     }
@@ -131,15 +127,7 @@ export function ListWorktrees({
 
     const numericInput = Number.parseInt(input, 10)
     if (!Number.isNaN(numericInput) && numericInput >= 1 && numericInput <= worktrees.length) {
-      const index = numericInput - 1
-      if (cdMode && onCdSelect) {
-        const worktree = worktrees[index]
-        if (worktree) {
-          onCdSelect(worktree.path)
-        }
-      } else {
-        setSelectedIndex(index)
-      }
+      setSelectedIndex(numericInput - 1)
     }
   })
 
@@ -174,6 +162,21 @@ export function ListWorktrees({
   if (navigationMode === "action-menu" && selectedWorktree) {
     const config = worktreeService.getConfigService().getConfig()
     const actions: SelectOption[] = []
+
+    if (cdMode) {
+      actions.push({
+        label: "Change to Directory",
+        value: "cd",
+        disabled: false,
+      })
+    } else {
+      actions.push({
+        label: "Change to Directory",
+        value: "cd",
+        description: "requires shell integration",
+        disabled: true,
+      })
+    }
 
     if (config.terminalCommand) {
       actions.push({
@@ -236,9 +239,7 @@ export function ListWorktrees({
 
       <Box marginTop={2}>
         <Text color={COLORS.MUTED} dimColor>
-          {cdMode
-            ? "↑↓ Navigate • Enter Select • Esc Cancel"
-            : "↑↓ Navigate • Enter Action Menu • E Command • Esc Back"}
+          ↑↓ Navigate • Enter Action Menu • E Command • Esc Back
         </Text>
       </Box>
     </Box>

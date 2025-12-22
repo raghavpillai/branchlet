@@ -24,7 +24,7 @@ export function SelectPrompt<T = string>({
 
     if (key.return) {
       const selectedOption = options[selectedIndex]
-      if (selectedOption) {
+      if (selectedOption && !selectedOption.disabled) {
         onSelect(selectedOption.value, selectedIndex)
       }
       return
@@ -55,11 +55,13 @@ export function SelectPrompt<T = string>({
       {options.map((option, index) => {
         const isSelected = index === selectedIndex
         const marker = isSelected ? "> " : "  "
-        const textColor = option.color || (isSelected ? COLORS.PRIMARY : undefined)
+        const textColor = option.disabled
+          ? COLORS.MUTED
+          : option.color || (isSelected ? COLORS.PRIMARY : undefined)
 
         return (
           <Box key={option.value as React.Key} marginLeft={1}>
-            <Text {...(textColor ? { color: textColor } : {})}>
+            <Text {...(textColor ? { color: textColor } : {})} {...(option.disabled ? { dimColor: true } : {})}>
               {marker}
               {option.label}
             </Text>

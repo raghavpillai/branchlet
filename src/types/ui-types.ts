@@ -8,6 +8,7 @@ export interface SelectOption<T = string> {
   description?: string
   isDefault?: boolean
   color?: string
+  disabled?: boolean
 }
 
 export interface InputPromptProps {
