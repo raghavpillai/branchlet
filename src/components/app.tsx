@@ -2,6 +2,8 @@ import { Text, useInput } from "ink"
 import { useCallback, useEffect, useState } from "react"
 import { COLORS } from "../constants/index.js"
 import { ConfigService } from "../services/config-service.js"
+import { ShellIntegrationService } from "../services/shell-integration-service.js"
+import type { ShellIntegrationStatus } from "../services/shell-integration-service.js"
 import { WorktreeService } from "../services/index.js"
 import type { AppMode } from "../types/index.js"
 import { getGitRoot, getUserFriendlyErrorMessage } from "../utils/index.js"
@@ -11,10 +13,11 @@ import { LoadingState } from "./loading-state.js"
 
 interface AppProps {
   initialMode?: AppMode
+  cdMode?: boolean
   onExit?: () => void
 }
 
-export function App({ initialMode = "menu", onExit }: AppProps) {
+export function App({ initialMode = "menu", cdMode = false, onExit }: AppProps) {
   const [mode, setMode] = useState<AppMode>(initialMode)
   const [worktreeService, setWorktreeService] = useState<WorktreeService | null>(null)
   const [error, setError] = useState<string>()
@@ -23,6 +26,9 @@ export function App({ initialMode = "menu", onExit }: AppProps) {
   const [lastMenuIndex, setLastMenuIndex] = useState(0)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [gitRoot, setGitRoot] = useState<string>()
+  const [shellIntegrationStatus, setShellIntegrationStatus] = useState<ShellIntegrationStatus | null>(
+    null
+  )
 
   const initialize = useCallback(async (): Promise<void> => {
     try {
@@ -33,6 +39,17 @@ export function App({ initialMode = "menu", onExit }: AppProps) {
 
       setLoading(true)
       setError(undefined)
+
+      ShellIntegrationService.detect()
+        .then(setShellIntegrationStatus)
+        .catch(() => {
+          setShellIntegrationStatus({
+            isInstalled: false,
+            shell: "unknown",
+            configPath: null,
+            reason: "Detection failed",
+          })
+        })
 
       const service = new WorktreeService(workingDir)
       await service.initialize()
@@ -131,9 +148,16 @@ export function App({ initialMode = "menu", onExit }: AppProps) {
       worktreeService={worktreeService}
       lastMenuIndex={lastMenuIndex}
       gitRoot={gitRoot}
+      shellIntegrationStatus={shellIntegrationStatus}
+      cdMode={cdMode}
       onMenuSelect={handleMenuSelect}
       onBackToMenu={handleBackToMenu}
       onExit={handleExit}
+      onShellIntegrationComplete={() => {
+        ShellIntegrationService.detect()
+          .then(setShellIntegrationStatus)
+          .catch(() => {})
+      }}
     />
   )
 }

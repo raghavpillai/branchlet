@@ -8,7 +8,9 @@ import {
   ListWorktrees,
   MainPanel,
   SettingsMenu,
+  SetupShellIntegration,
 } from "../panels/index.js"
+import type { ShellIntegrationStatus } from "../services/shell-integration-service.js"
 import type { WorktreeService } from "../services/index.js"
 import type { AppMode } from "../types/index.js"
 import { WelcomeHeader } from "./welcome-header.js"
@@ -18,9 +20,12 @@ interface AppRouterProps {
   worktreeService: WorktreeService
   lastMenuIndex: number
   gitRoot?: string | undefined
+  shellIntegrationStatus: ShellIntegrationStatus | null
+  cdMode: boolean
   onMenuSelect: (value: AppMode | "exit", selectedIndex?: number) => void
   onBackToMenu: () => void
   onExit: () => void
+  onShellIntegrationComplete: () => void
 }
 
 export function AppRouter({
@@ -28,9 +33,12 @@ export function AppRouter({
   worktreeService,
   lastMenuIndex,
   gitRoot,
+  shellIntegrationStatus,
+  cdMode,
   onMenuSelect,
   onBackToMenu,
   onExit,
+  onShellIntegrationComplete,
 }: AppRouterProps) {
   const [borderColor, setBorderColor] = useState<string>(COLORS.MUTED)
 
@@ -41,7 +49,12 @@ export function AppRouter({
 
         {mode === "menu" && (
           <Box borderStyle="round" paddingX={1} borderColor={COLORS.MUTED}>
-            <MainPanel onSelect={onMenuSelect} onCancel={onExit} defaultIndex={lastMenuIndex} />
+            <MainPanel
+              onSelect={onMenuSelect}
+              onCancel={onExit}
+              defaultIndex={lastMenuIndex}
+              shellIntegrationStatus={shellIntegrationStatus}
+            />
           </Box>
         )}
 
@@ -57,7 +70,15 @@ export function AppRouter({
 
         {mode === "list" && (
           <Box borderStyle="round" paddingX={1} borderColor={borderColor}>
-            <ListWorktrees worktreeService={worktreeService} onBack={onBackToMenu} />
+            <ListWorktrees
+              worktreeService={worktreeService}
+              onBack={onBackToMenu}
+              cdMode={cdMode}
+              onCdSelect={(path) => {
+                process.stdout.write(path + "\n")
+                onExit()
+              }}
+            />
           </Box>
         )}
 
@@ -74,6 +95,19 @@ export function AppRouter({
         {mode === "settings" && (
           <Box borderStyle="round" paddingX={1} borderColor={borderColor}>
             <SettingsMenu worktreeService={worktreeService} onBack={onBackToMenu} />
+          </Box>
+        )}
+
+        {mode === "setup" && (
+          <Box borderStyle="round" paddingX={1} borderColor={borderColor}>
+            <SetupShellIntegration
+              shellIntegrationStatus={shellIntegrationStatus}
+              onComplete={() => {
+                onShellIntegrationComplete()
+                onBackToMenu()
+              }}
+              onCancel={onBackToMenu}
+            />
           </Box>
         )}
       </Box>
