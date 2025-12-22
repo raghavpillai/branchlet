@@ -13,11 +13,11 @@ import { LoadingState } from "./loading-state.js"
 
 interface AppProps {
   initialMode?: AppMode
-  cdMode?: boolean
+  isFromWrapper?: boolean
   onExit?: () => void
 }
 
-export function App({ initialMode = "menu", cdMode = false, onExit }: AppProps) {
+export function App({ initialMode = "menu", isFromWrapper = false, onExit }: AppProps) {
   const [mode, setMode] = useState<AppMode>(initialMode)
   const [worktreeService, setWorktreeService] = useState<WorktreeService | null>(null)
   const [error, setError] = useState<string>()
@@ -149,7 +149,7 @@ export function App({ initialMode = "menu", cdMode = false, onExit }: AppProps) 
       lastMenuIndex={lastMenuIndex}
       gitRoot={gitRoot}
       shellIntegrationStatus={shellIntegrationStatus}
-      cdMode={cdMode}
+      isFromWrapper={isFromWrapper}
       onMenuSelect={handleMenuSelect}
       onBackToMenu={handleBackToMenu}
       onExit={handleExit}

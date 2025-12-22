@@ -187,9 +187,9 @@ export class ShellIntegrationService {
     return `# Branchlet setup: added on ${today}
 ${commandName}() {
   if [ $# -eq 0 ]; then
-    local dir=\$(FORCE_COLOR=3 command ${commandName} --cd)
+    local dir=\$(FORCE_COLOR=3 command ${commandName} --from-wrapper)
     if [ -n "\$dir" ]; then
-      cd "\$dir" && echo "📍 \$(pwd)"
+      cd "\$dir" && echo "Branchlet: Navigated to \$(pwd)"
     fi
   else
     command ${commandName} "$@"

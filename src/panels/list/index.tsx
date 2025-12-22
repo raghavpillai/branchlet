@@ -9,8 +9,8 @@ import type { GitWorktree, SelectOption } from "../../types/index.js"
 interface ListWorktreesProps {
   worktreeService: WorktreeService
   onBack: () => void
-  cdMode?: boolean
-  onCdSelect?: (path: string) => void
+  isFromWrapper?: boolean
+  onPathSelect?: (path: string) => void
 }
 
 type NavigationMode = "list" | "action-menu"
@@ -18,8 +18,8 @@ type NavigationMode = "list" | "action-menu"
 export function ListWorktrees({
   worktreeService,
   onBack,
-  cdMode = false,
-  onCdSelect,
+  isFromWrapper = false,
+  onPathSelect,
 }: ListWorktreesProps) {
   const [worktrees, setWorktrees] = useState<GitWorktree[]>([])
   const [loading, setLoading] = useState(true)
@@ -73,8 +73,8 @@ export function ListWorktrees({
 
       switch (action) {
         case "cd":
-          if (cdMode && onCdSelect) {
-            onCdSelect(selectedWorktree.path)
+          if (isFromWrapper && onPathSelect) {
+            onPathSelect(selectedWorktree.path)
           }
           break
         case "command":
@@ -82,7 +82,7 @@ export function ListWorktrees({
           break
       }
     },
-    [selectedWorktree, cdMode, onCdSelect, handleOpenWithCommand]
+    [selectedWorktree, isFromWrapper, onPathSelect, handleOpenWithCommand]
   )
 
   useInput((input, key) => {
@@ -163,15 +163,15 @@ export function ListWorktrees({
     const config = worktreeService.getConfigService().getConfig()
     const actions: SelectOption[] = []
 
-    if (cdMode) {
+    if (isFromWrapper) {
       actions.push({
-        label: "Change to Directory",
+        label: "Navigate to Directory",
         value: "cd",
         disabled: false,
       })
     } else {
       actions.push({
-        label: "Change to Directory",
+        label: "Navigate to Directory",
         value: "cd",
         description: "requires shell integration",
         disabled: true,

@@ -8,10 +8,10 @@ import type { AppMode } from "./types/index.js"
 
 const VERSION = packageJson.version
 
-function parseArguments(): { mode: AppMode; help: boolean; cdMode: boolean } {
+function parseArguments(): { mode: AppMode; help: boolean; isFromWrapper: boolean } {
   const argv = minimist(process.argv.slice(2), {
     string: ["mode"],
-    boolean: ["help", "version", "cd"],
+    boolean: ["help", "version", "from-wrapper"],
     alias: {
       h: "help",
       v: "version",
@@ -20,7 +20,7 @@ function parseArguments(): { mode: AppMode; help: boolean; cdMode: boolean } {
   })
 
   if (argv.help) {
-    return { mode: "menu", help: true, cdMode: false }
+    return { mode: "menu", help: true, isFromWrapper: false }
   }
 
   if (argv.version) {
@@ -42,9 +42,9 @@ function parseArguments(): { mode: AppMode; help: boolean; cdMode: boolean } {
     }
   }
 
-  const cdMode = argv.cd === true
+  const isFromWrapper = argv["from-wrapper"] === true
 
-  return { mode, help: false, cdMode }
+  return { mode, help: false, isFromWrapper }
 }
 
 function showHelp(): void {
@@ -65,13 +65,13 @@ Options:
   -h, --help     Show this help message
   -v, --version  Show version number
   -m, --mode     Set initial mode
-  --cd           Quick directory change mode (outputs path for shell wrapper)
+  --from-wrapper Called from shell wrapper (outputs path to stdout)
 
 Examples:
   branchlet                # Start interactive menu
   branchlet create         # Go directly to create worktree flow
   branchlet list           # List all worktrees
-  branchlet list --cd      # Select worktree and output path (for shell integration)
+  branchlet --from-wrapper # Used by shell wrapper to enable directory switching
   branchlet delete         # Go directly to delete worktree flow
   branchlet settings       # Open settings menu
 
@@ -89,7 +89,7 @@ For more information, visit: https://github.com/raghavpillai/git-worktree-manage
 }
 
 function main(): void {
-  const { mode, help, cdMode } = parseArguments()
+  const { mode, help, isFromWrapper } = parseArguments()
 
   if (help) {
     showHelp()
@@ -101,7 +101,7 @@ function main(): void {
   let inkStdin = process.stdin
   let inkStdout = process.stdout
 
-  if (cdMode) {
+  if (isFromWrapper) {
     process.env.FORCE_COLOR = "3"
 
     try {
@@ -122,7 +122,7 @@ function main(): void {
   const { unmount } = render(
     <App
       initialMode={mode}
-      cdMode={cdMode}
+      isFromWrapper={isFromWrapper}
       onExit={() => {
         if (!hasExited) {
           hasExited = true

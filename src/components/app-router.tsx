@@ -21,7 +21,7 @@ interface AppRouterProps {
   lastMenuIndex: number
   gitRoot?: string | undefined
   shellIntegrationStatus: ShellIntegrationStatus | null
-  cdMode: boolean
+  isFromWrapper: boolean
   onMenuSelect: (value: AppMode | "exit", selectedIndex?: number) => void
   onBackToMenu: () => void
   onExit: () => void
@@ -34,7 +34,7 @@ export function AppRouter({
   lastMenuIndex,
   gitRoot,
   shellIntegrationStatus,
-  cdMode,
+  isFromWrapper,
   onMenuSelect,
   onBackToMenu,
   onExit,
@@ -73,8 +73,8 @@ export function AppRouter({
             <ListWorktrees
               worktreeService={worktreeService}
               onBack={onBackToMenu}
-              cdMode={cdMode}
-              onCdSelect={(path) => {
+              isFromWrapper={isFromWrapper}
+              onPathSelect={(path) => {
                 process.stdout.write(path + "\n")
                 onExit()
               }}
