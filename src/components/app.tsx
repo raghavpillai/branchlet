@@ -1,15 +1,20 @@
 import { Text, useInput } from "ink"
 import { useCallback, useEffect, useState } from "react"
+import packageJson from "../../package.json" with { type: "json" }
 import { COLORS } from "../constants/index.js"
 import { ConfigService } from "../services/config-service.js"
 import { WorktreeService } from "../services/index.js"
 import type { ShellIntegrationStatus } from "../services/shell-integration-service.js"
 import { ShellIntegrationService } from "../services/shell-integration-service.js"
+import type { UpdateCheckResult } from "../services/update-service.js"
+import { UpdateService } from "../services/update-service.js"
 import type { AppMode } from "../types/index.js"
 import { getGitRoot, getUserFriendlyErrorMessage } from "../utils/index.js"
 import { AppRouter } from "./app-router.js"
 import { ErrorState } from "./error-state.js"
 import { LoadingState } from "./loading-state.js"
+
+const VERSION = packageJson.version
 
 interface AppProps {
   initialMode?: AppMode
@@ -28,6 +33,7 @@ export function App({ initialMode = "menu", isFromWrapper = false, onExit }: App
   const [gitRoot, setGitRoot] = useState<string>()
   const [shellIntegrationStatus, setShellIntegrationStatus] =
     useState<ShellIntegrationStatus | null>(null)
+  const [updateStatus, setUpdateStatus] = useState<UpdateCheckResult | null>(null)
 
   const initialize = useCallback(async (): Promise<void> => {
     try {
@@ -52,6 +58,23 @@ export function App({ initialMode = "menu", isFromWrapper = false, onExit }: App
 
       const service = new WorktreeService(workingDir)
       await service.initialize()
+
+      const configService = service.getConfigService()
+      if (UpdateService.shouldCheckForUpdates(configService)) {
+        UpdateService.checkForUpdates(VERSION, configService)
+          .then(setUpdateStatus)
+          .catch(() => {
+            const cached = UpdateService.getCachedUpdateStatus(configService)
+            if (cached) {
+              setUpdateStatus(cached)
+            }
+          })
+      } else {
+        const cached = UpdateService.getCachedUpdateStatus(configService)
+        if (cached) {
+          setUpdateStatus(cached)
+        }
+      }
 
       setWorktreeService(service)
     } catch (err) {
@@ -148,6 +171,7 @@ export function App({ initialMode = "menu", isFromWrapper = false, onExit }: App
       lastMenuIndex={lastMenuIndex}
       gitRoot={gitRoot}
       shellIntegrationStatus={shellIntegrationStatus}
+      updateStatus={updateStatus}
       isFromWrapper={isFromWrapper}
       onMenuSelect={handleMenuSelect}
       onBackToMenu={handleBackToMenu}

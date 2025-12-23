@@ -30,6 +30,18 @@ export const WorktreeConfigSchema = z
       .boolean()
       .default(false)
       .describe("Also delete the associated git branch when deleting a worktree"),
+    lastUpdateCheck: z
+      .number()
+      .optional()
+      .describe("Timestamp of last update check (milliseconds since epoch)"),
+    latestVersion: z
+      .string()
+      .optional()
+      .describe("Latest version available on npm"),
+    checkedVersion: z
+      .string()
+      .optional()
+      .describe("Version that was current when last checked"),
   })
   .describe("Configuration for Git worktree management tool")
 
