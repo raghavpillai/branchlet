@@ -168,7 +168,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
             <Text>
               Configuration file:{" "}
               <Text bold color={COLORS.PRIMARY}>
-              {configPath || GLOBAL_CONFIG_FILE}
+                {configPath || GLOBAL_CONFIG_FILE}
               </Text>
             </Text>
           </Box>
@@ -358,7 +358,9 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
           </Box>
 
           <Box>
-            <Text color={COLORS.MUTED}>Also delete the associated git branch when deleting a worktree:</Text>
+            <Text color={COLORS.MUTED}>
+              Also delete the associated git branch when deleting a worktree:
+            </Text>
           </Box>
 
           <Box marginLeft={2}>
@@ -370,7 +372,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
           {config?.deleteBranchWithWorktree && (
             <Box>
               <Text color={COLORS.WARNING}>
-                ⚠️  This is a more destructive operation. Branches will be permanently deleted.
+                ⚠️ This is a more destructive operation. Branches will be permanently deleted.
               </Text>
             </Box>
           )}

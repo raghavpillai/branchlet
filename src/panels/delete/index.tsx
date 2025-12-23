@@ -80,7 +80,6 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
     }
   }
 
-
   const getWorktreeOptions = (): SelectOption<string>[] => {
     return worktrees.map((worktree) => {
       const formatPath = (path: string): string => {
@@ -89,11 +88,11 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
       }
 
       const statusParts: string[] = []
-      
+
       if (!worktree.isClean) {
         statusParts.push("has changes")
       }
-      
+
       if (worktree.branchStatus) {
         const { ahead, behind, upstreamBranch } = worktree.branchStatus
         if (ahead > 0 || behind > 0) {
@@ -159,8 +158,8 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
       const selectedWorktree = getSelectedWorktree()
       const hasChanges = selectedWorktree && !selectedWorktree.isClean
       const branchName = selectedWorktree?.branch
-      const willDeleteBranch = config.deleteBranchWithWorktree && branchName && branchName !== "detached"
-      
+      const willDeleteBranch =
+        config.deleteBranchWithWorktree && branchName && branchName !== "detached"
 
       const confirmLabel = hasChanges ? "Force Delete" : "Yes"
       const title = hasChanges ? "Force Delete Worktree" : MESSAGES.DELETE_CONFIRM_TITLE
@@ -171,21 +170,31 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
           message={
             <Box flexDirection="column">
               <Text>
-                {hasChanges ? "Worktree at" : "Delete worktree at"} <Text bold>'{state.selectedWorktree}'</Text>{hasChanges ? " has uncommitted changes." : "?"}
+                {hasChanges ? "Worktree at" : "Delete worktree at"}{" "}
+                <Text bold>'{state.selectedWorktree}'</Text>
+                {hasChanges ? " has uncommitted changes." : "?"}
               </Text>
               {willDeleteBranch && (
                 <Box flexDirection="column">
                   <Text color={COLORS.WARNING}>
-                    This will also {hasChanges ? "force " : ""}delete branch <Text bold>'{branchName}'</Text>!
+                    This will also {hasChanges ? "force " : ""}delete branch{" "}
+                    <Text bold>'{branchName}'</Text>!
                   </Text>
                   {selectedWorktree?.branchStatus && (
                     <Box marginLeft={2}>
                       <Text color={COLORS.MUTED}>
-                        {selectedWorktree.branchStatus.ahead > 0 && `ahead ${selectedWorktree.branchStatus.ahead}`}
-                        {selectedWorktree.branchStatus.ahead > 0 && selectedWorktree.branchStatus.behind > 0 && '/'}
-                        {selectedWorktree.branchStatus.behind > 0 && `behind ${selectedWorktree.branchStatus.behind}`}
-                        {selectedWorktree.branchStatus.ahead === 0 && selectedWorktree.branchStatus.behind === 0 && 'up to date'}
-                        {' vs '}{selectedWorktree.branchStatus.upstreamBranch}
+                        {selectedWorktree.branchStatus.ahead > 0 &&
+                          `ahead ${selectedWorktree.branchStatus.ahead}`}
+                        {selectedWorktree.branchStatus.ahead > 0 &&
+                          selectedWorktree.branchStatus.behind > 0 &&
+                          "/"}
+                        {selectedWorktree.branchStatus.behind > 0 &&
+                          `behind ${selectedWorktree.branchStatus.behind}`}
+                        {selectedWorktree.branchStatus.ahead === 0 &&
+                          selectedWorktree.branchStatus.behind === 0 &&
+                          "up to date"}
+                        {" vs "}
+                        {selectedWorktree.branchStatus.upstreamBranch}
                       </Text>
                     </Box>
                   )}
@@ -196,12 +205,8 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
                   Force delete will permanently lose all uncommitted work!
                 </Text>
               )}
-              {hasChanges && (
-                <Text>Are you sure you want to proceed?</Text>
-              )}
-              {!hasChanges && (
-                <Text>{MESSAGES.DELETE_WARNING}</Text>
-              )}
+              {hasChanges && <Text>Are you sure you want to proceed?</Text>}
+              {!hasChanges && <Text>{MESSAGES.DELETE_WARNING}</Text>}
             </Box>
           }
           variant={hasChanges || willDeleteBranch ? "danger" : "warning"}
@@ -211,7 +216,6 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
         />
       )
     }
-
 
     case "deleting": {
       const selectedWorktree = getSelectedWorktree()
@@ -223,7 +227,7 @@ export function DeleteWorktree({ worktreeService, onComplete, onCancel }: Delete
     case "success": {
       const result = state.deleteResult
       let message: string = MESSAGES.DELETE_SUCCESS
-      
+
       if (result?.branchDeleted && result.branchName) {
         message = `Worktree and branch '${result.branchName}' deleted successfully`
       } else if (result?.branchName && config.deleteBranchWithWorktree) {

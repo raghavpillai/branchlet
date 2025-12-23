@@ -2,9 +2,9 @@ import { Text, useInput } from "ink"
 import { useCallback, useEffect, useState } from "react"
 import { COLORS } from "../constants/index.js"
 import { ConfigService } from "../services/config-service.js"
-import { ShellIntegrationService } from "../services/shell-integration-service.js"
-import type { ShellIntegrationStatus } from "../services/shell-integration-service.js"
 import { WorktreeService } from "../services/index.js"
+import type { ShellIntegrationStatus } from "../services/shell-integration-service.js"
+import { ShellIntegrationService } from "../services/shell-integration-service.js"
 import type { AppMode } from "../types/index.js"
 import { getGitRoot, getUserFriendlyErrorMessage } from "../utils/index.js"
 import { AppRouter } from "./app-router.js"
@@ -26,9 +26,8 @@ export function App({ initialMode = "menu", isFromWrapper = false, onExit }: App
   const [lastMenuIndex, setLastMenuIndex] = useState(0)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [gitRoot, setGitRoot] = useState<string>()
-  const [shellIntegrationStatus, setShellIntegrationStatus] = useState<ShellIntegrationStatus | null>(
-    null
-  )
+  const [shellIntegrationStatus, setShellIntegrationStatus] =
+    useState<ShellIntegrationStatus | null>(null)
 
   const initialize = useCallback(async (): Promise<void> => {
     try {

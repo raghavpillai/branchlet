@@ -98,8 +98,8 @@ function main(): void {
 
   let hasExited = false
 
-  let inkStdin = process.stdin
-  let inkStdout = process.stdout
+  let inkStdin: NodeJS.ReadStream = process.stdin
+  let inkStdout: NodeJS.WriteStream = process.stdout
 
   if (isFromWrapper) {
     process.env.FORCE_COLOR = "3"
@@ -108,8 +108,8 @@ function main(): void {
       const fs = require("node:fs")
       const tty = require("node:tty")
       const ttyFd = fs.openSync("/dev/tty", "r+")
-      inkStdin = new tty.ReadStream(ttyFd) as any
-      inkStdout = new tty.WriteStream(ttyFd) as any
+      inkStdin = new tty.ReadStream(ttyFd) as unknown as NodeJS.ReadStream
+      inkStdout = new tty.WriteStream(ttyFd) as unknown as NodeJS.WriteStream
 
       Object.defineProperty(inkStdout, "isTTY", { value: true })
       Object.defineProperty(inkStdout, "hasColors", { value: () => true })

@@ -10,8 +10,8 @@ import {
   SettingsMenu,
   SetupShellIntegration,
 } from "../panels/index.js"
-import type { ShellIntegrationStatus } from "../services/shell-integration-service.js"
 import type { WorktreeService } from "../services/index.js"
+import type { ShellIntegrationStatus } from "../services/shell-integration-service.js"
 import type { AppMode } from "../types/index.js"
 import { WelcomeHeader } from "./welcome-header.js"
 
@@ -75,7 +75,7 @@ export function AppRouter({
               onBack={onBackToMenu}
               isFromWrapper={isFromWrapper}
               onPathSelect={(path) => {
-                process.stdout.write(path + "\n")
+                process.stdout.write(`${path}\n`)
                 onExit()
               }}
             />

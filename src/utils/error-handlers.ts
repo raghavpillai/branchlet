@@ -69,7 +69,7 @@ export function handleGitError(stderr: string, operation: string): GitWorktreeEr
   if (stderr.includes("is not a .git file") && stderr.includes("validation failed")) {
     return new GitWorktreeError(
       "Worktree is corrupted. Try manual cleanup or use force delete.",
-      "CORRUPTED_WORKTREE", 
+      "CORRUPTED_WORKTREE",
       stderr
     )
   }

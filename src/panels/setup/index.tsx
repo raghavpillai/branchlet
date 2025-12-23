@@ -180,8 +180,8 @@ export function SetupShellIntegration({
     <Box flexDirection="column">
       <Box marginBottom={1}>
         <Text color={COLORS.INFO}>
-          Shell integration wraps the <Text bold>branchlet</Text> command to enable quick
-          directory switching.
+          Shell integration wraps the <Text bold>branchlet</Text> command to enable quick directory
+          switching.
         </Text>
       </Box>
 

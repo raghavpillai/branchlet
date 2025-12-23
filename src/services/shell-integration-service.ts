@@ -10,6 +10,7 @@ export interface ShellIntegrationStatus {
   reason?: string
 }
 
+// biome-ignore lint/complexity/noStaticOnlyClass: Service class pattern
 export class ShellIntegrationService {
   private static readonly WRAPPER_SIGNATURE = "# Branchlet setup: added on"
 
@@ -17,8 +18,8 @@ export class ShellIntegrationService {
    * Detects if shell integration is installed
    */
   static async detect(): Promise<ShellIntegrationStatus> {
-    const shell = this.detectShell()
-    const configPath = this.getConfigPath(shell)
+    const shell = ShellIntegrationService.detectShell()
+    const configPath = ShellIntegrationService.getConfigPath(shell)
 
     if (!configPath) {
       return {
@@ -40,7 +41,7 @@ export class ShellIntegrationService {
 
     try {
       const content = await readFile(configPath, "utf-8")
-      const isInstalled = content.includes(this.WRAPPER_SIGNATURE)
+      const isInstalled = content.includes(ShellIntegrationService.WRAPPER_SIGNATURE)
 
       if (isInstalled) {
         return {
@@ -70,20 +71,22 @@ export class ShellIntegrationService {
    * Installs shell integration to the user's shell config
    */
   static async install(shell: "zsh" | "bash", commandName = "branchlet"): Promise<void> {
-    const configPath = this.getConfigPath(shell)
+    const configPath = ShellIntegrationService.getConfigPath(shell)
     if (!configPath) {
       throw new Error("Could not determine shell config path")
     }
 
-    const wrapperFunction = this.generateWrapperFunction(commandName)
+    const wrapperFunction = ShellIntegrationService.generateWrapperFunction(commandName)
 
     // Check if already installed
     if (existsSync(configPath)) {
       const content = await readFile(configPath, "utf-8")
-      if (content.includes(this.WRAPPER_SIGNATURE)) {
+      if (content.includes(ShellIntegrationService.WRAPPER_SIGNATURE)) {
         // Already installed, update it
         const lines = content.split("\n")
-        const startIndex = lines.findIndex((line) => line.includes(this.WRAPPER_SIGNATURE))
+        const startIndex = lines.findIndex((line) =>
+          line.includes(ShellIntegrationService.WRAPPER_SIGNATURE)
+        )
 
         if (startIndex !== -1) {
           // Find the end of the function (closing brace)
@@ -116,18 +119,20 @@ export class ShellIntegrationService {
    * Removes shell integration from config file
    */
   static async remove(shell: "zsh" | "bash"): Promise<void> {
-    const configPath = this.getConfigPath(shell)
+    const configPath = ShellIntegrationService.getConfigPath(shell)
     if (!configPath || !existsSync(configPath)) {
       return
     }
 
     const content = await readFile(configPath, "utf-8")
-    if (!content.includes(this.WRAPPER_SIGNATURE)) {
+    if (!content.includes(ShellIntegrationService.WRAPPER_SIGNATURE)) {
       return
     }
 
     const lines = content.split("\n")
-    const startIndex = lines.findIndex((line) => line.includes(this.WRAPPER_SIGNATURE))
+    const startIndex = lines.findIndex((line) =>
+      line.includes(ShellIntegrationService.WRAPPER_SIGNATURE)
+    )
 
     if (startIndex !== -1) {
       // Find the end of the function (closing brace)
@@ -187,9 +192,9 @@ export class ShellIntegrationService {
     return `# Branchlet setup: added on ${today}
 ${commandName}() {
   if [ $# -eq 0 ]; then
-    local dir=\$(FORCE_COLOR=3 command ${commandName} --from-wrapper)
-    if [ -n "\$dir" ]; then
-      cd "\$dir" && echo "Branchlet: Navigated to \$(pwd)"
+    local dir=$(FORCE_COLOR=3 command ${commandName} --from-wrapper)
+    if [ -n "$dir" ]; then
+      cd "$dir" && echo "Branchlet: Navigated to $(pwd)"
     fi
   else
     command ${commandName} "$@"

@@ -61,7 +61,10 @@ export function SelectPrompt<T = string>({
 
         return (
           <Box key={option.value as React.Key} marginLeft={1}>
-            <Text {...(textColor ? { color: textColor } : {})} {...(option.disabled ? { dimColor: true } : {})}>
+            <Text
+              {...(textColor ? { color: textColor } : {})}
+              {...(option.disabled ? { dimColor: true } : {})}
+            >
               {marker}
               {option.label}
             </Text>
