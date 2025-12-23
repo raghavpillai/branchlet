@@ -246,7 +246,7 @@ export class GitService {
     try {
       // Try default branch first, then current branch as fallback
       const candidates = [await this.getDefaultBranch(), await this.getCurrentBranch()]
-      
+
       for (const compareBranch of candidates) {
         if (!compareBranch || compareBranch === branchName) {
           continue
@@ -272,7 +272,6 @@ export class GitService {
       return null
     }
   }
-
 
   async deleteBranch(branchName: string, force = false): Promise<void> {
     const currentBranch = await this.getCurrentBranch()

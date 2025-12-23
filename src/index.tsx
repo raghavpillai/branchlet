@@ -8,10 +8,10 @@ import type { AppMode } from "./types/index.js"
 
 const VERSION = packageJson.version
 
-function parseArguments(): { mode: AppMode; help: boolean } {
+function parseArguments(): { mode: AppMode; help: boolean; isFromWrapper: boolean } {
   const argv = minimist(process.argv.slice(2), {
     string: ["mode"],
-    boolean: ["help", "version"],
+    boolean: ["help", "version", "from-wrapper"],
     alias: {
       h: "help",
       v: "version",
@@ -20,7 +20,7 @@ function parseArguments(): { mode: AppMode; help: boolean } {
   })
 
   if (argv.help) {
-    return { mode: "menu", help: true }
+    return { mode: "menu", help: true, isFromWrapper: false }
   }
 
   if (argv.version) {
@@ -42,7 +42,9 @@ function parseArguments(): { mode: AppMode; help: boolean } {
     }
   }
 
-  return { mode, help: false }
+  const isFromWrapper = argv["from-wrapper"] === true
+
+  return { mode, help: false, isFromWrapper }
 }
 
 function showHelp(): void {
@@ -63,13 +65,19 @@ Options:
   -h, --help     Show this help message
   -v, --version  Show version number
   -m, --mode     Set initial mode
+  --from-wrapper Called from shell wrapper (outputs path to stdout)
 
 Examples:
   branchlet                # Start interactive menu
   branchlet create         # Go directly to create worktree flow
   branchlet list           # List all worktrees
+  branchlet --from-wrapper # Used by shell wrapper to enable directory switching
   branchlet delete         # Go directly to delete worktree flow
   branchlet settings       # Open settings menu
+
+Shell Integration:
+  Run 'branchlet' and select "Setup Shell Integration" to enable quick directory switching.
+  After setup, just run 'branchlet' to quickly change to any worktree directory.
 
 Configuration:
   The tool looks for configuration files in the following order:
@@ -81,7 +89,7 @@ For more information, visit: https://github.com/raghavpillai/git-worktree-manage
 }
 
 function main(): void {
-  const { mode, help } = parseArguments()
+  const { mode, help, isFromWrapper } = parseArguments()
 
   if (help) {
     showHelp()
@@ -90,9 +98,31 @@ function main(): void {
 
   let hasExited = false
 
+  let inkStdin: NodeJS.ReadStream = process.stdin
+  let inkStdout: NodeJS.WriteStream = process.stdout
+
+  if (isFromWrapper) {
+    process.env.FORCE_COLOR = "3"
+
+    try {
+      const fs = require("node:fs")
+      const tty = require("node:tty")
+      const ttyFd = fs.openSync("/dev/tty", "r+")
+      inkStdin = new tty.ReadStream(ttyFd) as unknown as NodeJS.ReadStream
+      inkStdout = new tty.WriteStream(ttyFd) as unknown as NodeJS.WriteStream
+
+      Object.defineProperty(inkStdout, "isTTY", { value: true })
+      Object.defineProperty(inkStdout, "hasColors", { value: () => true })
+      Object.defineProperty(inkStdout, "getColorDepth", { value: () => 24 })
+    } catch (error) {
+      console.error("Could not open /dev/tty:", error)
+    }
+  }
+
   const { unmount } = render(
     <App
       initialMode={mode}
+      isFromWrapper={isFromWrapper}
       onExit={() => {
         if (!hasExited) {
           hasExited = true
@@ -100,7 +130,12 @@ function main(): void {
           process.exit(0)
         }
       }}
-    />
+    />,
+    {
+      stdin: inkStdin,
+      stdout: inkStdout,
+      stderr: process.stderr,
+    }
   )
 
   process.on("SIGINT", () => {
