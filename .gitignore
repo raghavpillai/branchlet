@@ -9,3 +9,6 @@
 
 .claude/
 *.tsbuildinfo
+
+# Plans
+/plans
