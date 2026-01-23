@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-7/schema#",
+  "description": "Configuration schema for Branchlet - Git worktree management CLI",
+  "type": "object",
+  "properties": {
+    "worktreeCopyPatterns": {
+      "description": "File patterns to copy to new worktrees (glob patterns supported)",
+      "default": [
+        ".env*",
+        ".vscode/**"
+      ],
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "worktreeCopyIgnores": {
+      "description": "File patterns to ignore when copying (glob patterns supported)",
+      "default": [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/.git/**",
+        "**/Thumbs.db",
+        "**/.DS_Store"
+      ],
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "worktreePathTemplate": {
+      "description": "Template for worktree directory names. Variables: $BASE_PATH, $WORKTREE_PATH, $BRANCH_NAME, $SOURCE_BRANCH",
+      "default": "$BASE_PATH.worktree",
+      "type": "string"
+    },
+    "postCreateCmd": {
+      "description": "Commands to run after creating a worktree. Variables: $BASE_PATH, $WORKTREE_PATH, $BRANCH_NAME, $SOURCE_BRANCH",
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "terminalCommand": {
+      "description": "Command to open terminal in new worktree directory (e.g., 'code $WORKTREE_PATH')",
+      "default": "",
+      "type": "string"
+    },
+    "deleteBranchWithWorktree": {
+      "description": "Also delete the associated git branch when deleting a worktree",
+      "default": false,
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "worktreeCopyPatterns",
+    "worktreeCopyIgnores",
+    "worktreePathTemplate",
+    "postCreateCmd",
+    "terminalCommand",
+    "deleteBranchWithWorktree"
+  ],
+  "additionalProperties": false,
+  "$id": "https://raw.githubusercontent.com/raghavpillai/branchlet/main/schema.json",
+  "title": "Branchlet Configuration"
+}

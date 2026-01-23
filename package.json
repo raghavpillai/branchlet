@@ -18,7 +18,9 @@
     "format": "biome format --write src/",
     "check": "biome check --write src/",
     "typecheck": "tsc --noEmit",
-    "ci": "bun run typecheck && bun run lint && bun test && bun run build",
+    "generate:schema": "bun run scripts/generate-schema.ts",
+    "validate:schema": "bun test tests/schemas/json-schema.test.ts",
+    "ci": "bun run typecheck && bun run lint && bun run validate:schema && bun test && bun run build",
     "prepack": "bun run build"
   },
   "keywords": [
@@ -38,7 +40,8 @@
   "license": "MIT",
   "files": [
     "dist/",
-    "README.md"
+    "README.md",
+    "schema.json"
   ],
   "dependencies": {
     "glob": "^11.1.0",

@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+export { z }
+
 export const WorktreeConfigSchema = z
   .object({
     worktreeCopyPatterns: z
