@@ -3,6 +3,8 @@ import { useEffect, useState } from "react"
 import { COLORS } from "../../constants/index.js"
 import type { SelectPromptProps } from "../../types/index.js"
 
+const MAX_VISIBLE = 10
+
 export function SelectPrompt<T = string>({
   label,
   options,
@@ -15,6 +17,28 @@ export function SelectPrompt<T = string>({
   useEffect(() => {
     setSelectedIndex(Math.max(0, Math.min(defaultIndex, options.length - 1)))
   }, [defaultIndex, options.length])
+
+  const getVisibleRange = () => {
+    if (options.length <= MAX_VISIBLE) {
+      return { start: 0, end: options.length }
+    }
+    const half = Math.floor(MAX_VISIBLE / 2)
+    let start = selectedIndex - half
+    let end = selectedIndex + half + (MAX_VISIBLE % 2)
+    if (start < 0) {
+      start = 0
+      end = MAX_VISIBLE
+    } else if (end > options.length) {
+      end = options.length
+      start = options.length - MAX_VISIBLE
+    }
+    return { start, end }
+  }
+
+  const { start, end } = getVisibleRange()
+  const visibleOptions = options.slice(start, end)
+  const hasMoreAbove = start > 0
+  const hasMoreBelow = end < options.length
 
   useInput((input, key) => {
     if (key.escape) {
@@ -52,8 +76,17 @@ export function SelectPrompt<T = string>({
         <Text>{label}</Text>
       </Box>
 
-      {options.map((option, index) => {
-        const isSelected = index === selectedIndex
+      {hasMoreAbove && (
+        <Box marginLeft={1}>
+          <Text color={COLORS.MUTED} dimColor>
+            ↑ {start} more above
+          </Text>
+        </Box>
+      )}
+
+      {visibleOptions.map((option, visibleIndex) => {
+        const actualIndex = start + visibleIndex
+        const isSelected = actualIndex === selectedIndex
         const marker = isSelected ? "> " : "  "
 
         return (
@@ -71,6 +104,14 @@ export function SelectPrompt<T = string>({
           </Box>
         )
       })}
+
+      {hasMoreBelow && (
+        <Box marginLeft={1}>
+          <Text color={COLORS.MUTED} dimColor>
+            ↓ {options.length - end} more below
+          </Text>
+        </Box>
+      )}
 
       <Box marginTop={1}>
         <Text color={COLORS.MUTED} dimColor>

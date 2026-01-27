@@ -233,15 +233,19 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
         />
       )
 
-    case "source-branch":
+    case "source-branch": {
+      const branchOptions = getBranchOptions()
+      const defaultIndex = branchOptions.findIndex((opt) => opt.isDefault)
       return (
         <SelectPrompt
           label={MESSAGES.CREATE_SOURCE_BRANCH_PROMPT}
-          options={getBranchOptions()}
+          options={branchOptions}
+          defaultIndex={defaultIndex >= 0 ? defaultIndex : 0}
           onSelect={handleSourceBranchSelect}
           onCancel={onCancel}
         />
       )
+    }
 
     case "new-branch":
       return (
