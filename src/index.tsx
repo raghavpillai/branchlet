@@ -2,25 +2,36 @@
 import { render } from "ink"
 import minimist from "minimist"
 import packageJson from "../package.json" with { type: "json" }
+import type { CliArgs } from "./cli/index.js"
+import { runCli } from "./cli/index.js"
 import { App } from "./components/app.js"
 import { MESSAGES } from "./constants/index.js"
 import type { AppMode } from "./types/index.js"
 
 const VERSION = packageJson.version
 
-function parseArguments(): { mode: AppMode; help: boolean } {
+function parseArguments(): {
+  mode: AppMode
+  help: boolean
+  cliArgs: CliArgs | null
+} {
   const argv = minimist(process.argv.slice(2), {
-    string: ["mode"],
-    boolean: ["help", "version"],
+    string: ["mode", "name", "source", "branch", "path"],
+    boolean: ["help", "version", "json", "force"],
     alias: {
       h: "help",
       v: "version",
       m: "mode",
+      n: "name",
+      s: "source",
+      b: "branch",
+      p: "path",
+      f: "force",
     },
   })
 
   if (argv.help) {
-    return { mode: "menu", help: true }
+    return { mode: "menu", help: true, cliArgs: null }
   }
 
   if (argv.version) {
@@ -42,7 +53,29 @@ function parseArguments(): { mode: AppMode; help: boolean } {
     }
   }
 
-  return { mode, help: false }
+  // Detect non-interactive CLI mode
+  const cliCommands = ["create", "list", "delete"] as const
+  const isCliCommand = cliCommands.includes(mode as (typeof cliCommands)[number])
+  const hasCliFlags =
+    argv.name || argv.source || argv.branch || argv.path || argv.force || argv.json
+
+  if (isCliCommand && hasCliFlags) {
+    return {
+      mode,
+      help: false,
+      cliArgs: {
+        command: mode as CliArgs["command"],
+        name: argv.name || undefined,
+        source: argv.source || undefined,
+        branch: argv.branch || undefined,
+        path: argv.path || undefined,
+        json: argv.json || false,
+        force: argv.force || false,
+      },
+    }
+  }
+
+  return { mode, help: false, cliArgs: null }
 }
 
 function showHelp(): void {
@@ -59,17 +92,32 @@ Commands:
   settings   Manage configuration
   (no command) Start interactive menu
 
-Options:
+Interactive Options:
   -h, --help     Show this help message
   -v, --version  Show version number
   -m, --mode     Set initial mode
 
-Examples:
+Non-Interactive Options:
+  -n, --name <name>      Worktree directory name (create, delete)
+  -s, --source <branch>  Source branch (create)
+  -b, --branch <branch>  New branch name; defaults to source (create)
+  -p, --path <path>      Worktree path (delete)
+  -f, --force            Force delete even with uncommitted changes (delete)
+  --json                 Output as JSON (list)
+
+Interactive Examples:
   branchlet                # Start interactive menu
   branchlet create         # Go directly to create worktree flow
-  branchlet list           # List all worktrees
+  branchlet list           # List all worktrees interactively
   branchlet delete         # Go directly to delete worktree flow
   branchlet settings       # Open settings menu
+
+Non-Interactive Examples:
+  branchlet create -n my-feature -s main              # Create worktree from main
+  branchlet create -n my-feature -s main -b feat/foo  # Create with new branch
+  branchlet list --json                               # List worktrees as JSON
+  branchlet delete -n my-feature                      # Delete worktree by name
+  branchlet delete -p /path/to/worktree -f            # Force delete by path
 
 Configuration:
   The tool looks for configuration files in the following order:
@@ -80,14 +128,27 @@ For more information, visit: https://github.com/raghavpillai/git-worktree-manage
 `)
 }
 
-function main(): void {
-  const { mode, help } = parseArguments()
+async function main(): Promise<void> {
+  const { mode, help, cliArgs } = parseArguments()
 
   if (help) {
     showHelp()
     process.exit(0)
   }
 
+  // Non-interactive CLI mode
+  if (cliArgs) {
+    try {
+      await runCli(cliArgs)
+      process.exit(0)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      process.stderr.write(`Error: ${message}\n`)
+      process.exit(1)
+    }
+  }
+
+  // Interactive TUI mode
   let hasExited = false
 
   const { unmount } = render(

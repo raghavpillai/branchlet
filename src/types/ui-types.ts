@@ -24,6 +24,7 @@ export interface SelectPromptProps<T = string> {
   onSelect: (value: T, selectedIndex?: number) => void
   onCancel?: () => void
   defaultIndex?: number
+  searchable?: boolean
 }
 
 export interface ConfirmDialogProps {

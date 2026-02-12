@@ -1,5 +1,5 @@
 import { Box, Text, useInput } from "ink"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { COLORS } from "../../constants/index.js"
 import type { SelectPromptProps } from "../../types/index.js"
 
@@ -9,40 +9,81 @@ export function SelectPrompt<T = string>({
   onSelect,
   onCancel,
   defaultIndex = 0,
+  searchable = false,
 }: SelectPromptProps<T>) {
   const [selectedIndex, setSelectedIndex] = useState(defaultIndex)
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const filteredOptions = useMemo(() => {
+    if (!searchable || !searchQuery) return options
+    const query = searchQuery.toLowerCase()
+    return options.filter((opt) => opt.label.toLowerCase().includes(query))
+  }, [options, searchQuery, searchable])
 
   useEffect(() => {
     setSelectedIndex(Math.max(0, Math.min(defaultIndex, options.length - 1)))
   }, [defaultIndex, options.length])
 
+  // Clamp selected index when filtered list shrinks
+  useEffect(() => {
+    if (selectedIndex >= filteredOptions.length && filteredOptions.length > 0) {
+      setSelectedIndex(filteredOptions.length - 1)
+    }
+  }, [filteredOptions.length, selectedIndex])
+
   useInput((input, key) => {
     if (key.escape) {
+      if (searchable && searchQuery) {
+        setSearchQuery("")
+        return
+      }
       onCancel?.()
       return
     }
 
     if (key.return) {
-      const selectedOption = options[selectedIndex]
+      const selectedOption = filteredOptions[selectedIndex]
       if (selectedOption) {
         onSelect(selectedOption.value, selectedIndex)
       }
       return
     }
 
-    if (key.upArrow || input.toLowerCase() === "k") {
-      setSelectedIndex((prev) => (prev === 0 ? options.length - 1 : prev - 1))
+    if (key.upArrow) {
+      setSelectedIndex((prev) => (prev === 0 ? filteredOptions.length - 1 : prev - 1))
       return
     }
 
-    if (key.downArrow || input.toLowerCase() === "j") {
-      setSelectedIndex((prev) => (prev === options.length - 1 ? 0 : prev + 1))
+    if (key.downArrow) {
+      setSelectedIndex((prev) => (prev === filteredOptions.length - 1 ? 0 : prev + 1))
       return
     }
 
-    const numericInput = Number.parseInt(input, 10)
-    if (!Number.isNaN(numericInput) && numericInput >= 1 && numericInput <= options.length) {
-      setSelectedIndex(numericInput - 1)
+    if (searchable) {
+      if (key.backspace || key.delete) {
+        setSearchQuery((prev) => prev.slice(0, -1))
+        return
+      }
+      // Printable character — append to search
+      if (input && !key.ctrl && !key.meta) {
+        setSearchQuery((prev) => prev + input)
+        setSelectedIndex(0)
+        return
+      }
+    } else {
+      // Non-searchable: keep j/k and numeric shortcuts
+      if (input.toLowerCase() === "k") {
+        setSelectedIndex((prev) => (prev === 0 ? options.length - 1 : prev - 1))
+        return
+      }
+      if (input.toLowerCase() === "j") {
+        setSelectedIndex((prev) => (prev === options.length - 1 ? 0 : prev + 1))
+        return
+      }
+      const numericInput = Number.parseInt(input, 10)
+      if (!Number.isNaN(numericInput) && numericInput >= 1 && numericInput <= options.length) {
+        setSelectedIndex(numericInput - 1)
+      }
     }
   })
 
@@ -52,29 +93,49 @@ export function SelectPrompt<T = string>({
         <Text>{label}</Text>
       </Box>
 
-      {options.map((option, index) => {
-        const isSelected = index === selectedIndex
-        const marker = isSelected ? "> " : "  "
+      {searchable && (
+        <Box marginBottom={1} marginLeft={1}>
+          <Text color={COLORS.MUTED}>Search: </Text>
+          <Text color={COLORS.PRIMARY}>{searchQuery}</Text>
+          <Text color={COLORS.MUTED} dimColor>
+            {searchQuery ? "" : "type to filter..."}
+          </Text>
+        </Box>
+      )}
 
-        return (
-          <Box key={option.value as React.Key} marginLeft={1}>
-            <Text {...(isSelected ? { color: COLORS.PRIMARY } : {})}>
-              {marker}
-              {option.label}
-            </Text>
-            {option.description && (
-              <Text color={COLORS.MUTED} dimColor italic>
-                {" "}
-                ({option.description})
+      {filteredOptions.length === 0 ? (
+        <Box marginLeft={1}>
+          <Text color={COLORS.MUTED} italic>
+            No matching options
+          </Text>
+        </Box>
+      ) : (
+        filteredOptions.map((option, index) => {
+          const isSelected = index === selectedIndex
+          const marker = isSelected ? "> " : "  "
+
+          return (
+            <Box key={option.value as React.Key} marginLeft={1}>
+              <Text {...(isSelected ? { color: COLORS.PRIMARY } : {})}>
+                {marker}
+                {option.label}
               </Text>
-            )}
-          </Box>
-        )
-      })}
+              {option.description && (
+                <Text color={COLORS.MUTED} dimColor italic>
+                  {" "}
+                  ({option.description})
+                </Text>
+              )}
+            </Box>
+          )
+        })
+      )}
 
       <Box marginTop={1}>
         <Text color={COLORS.MUTED} dimColor>
-          Use ↑↓ arrows to navigate, Enter to select, Esc to cancel
+          {searchable
+            ? "Use ↑↓ arrows to navigate, Enter to select, Esc to clear search/cancel"
+            : "Use ↑↓ arrows to navigate, Enter to select, Esc to cancel"}
         </Text>
       </Box>
     </Box>
