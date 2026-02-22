@@ -130,7 +130,7 @@ export function SetupShellIntegration({
         message={
           <Box flexDirection="column" gap={1}>
             <Text>
-              This will add the following function to <Text bold>{configFile}</Text>:
+              This will add the following to <Text bold>{configFile}</Text>:
             </Text>
             <Box
               marginTop={1}
@@ -141,7 +141,11 @@ export function SetupShellIntegration({
               borderColor={COLORS.MUTED}
             >
               <Text color={COLORS.MUTED} dimColor>
-                {`${commandName}() {
+                {`# Tab completions for ${commandName} commands
+# ...
+
+# Shell wrapper for directory switching
+${commandName}() {
   if [ $# -eq 0 ]; then
     local dir=$(FORCE_COLOR=3 command ${commandName} --from-wrapper)
     if [ -n "$dir" ]; then
