@@ -5,12 +5,6 @@ import packageJson from "../package.json" with { type: "json" }
 import { App } from "./components/app.js"
 import { MESSAGES } from "./constants/index.js"
 import type { AppMode } from "./types/index.js"
-import {
-  getBashCompletion,
-  getCompletionHelp,
-  getFishCompletion,
-  getZshCompletion,
-} from "./utils/completion-scripts.js"
 
 const VERSION = packageJson.version
 
@@ -53,35 +47,6 @@ function parseArguments(): { mode: AppMode; help: boolean; isFromWrapper: boolea
   return { mode, help: false, isFromWrapper }
 }
 
-function handleCompletion(): void {
-  const args = process.argv.slice(2)
-  if (args[0] !== "completion") return
-
-  const shell = args[1]
-  const showHelp = args.includes("--help") || args.includes("-h")
-
-  if (showHelp || !shell) {
-    console.log(getCompletionHelp())
-    process.exit(0)
-  }
-
-  switch (shell) {
-    case "bash":
-      console.log(getBashCompletion())
-      break
-    case "zsh":
-      console.log(getZshCompletion())
-      break
-    case "fish":
-      console.log(getFishCompletion())
-      break
-    default:
-      console.error(`Unknown shell: ${shell}. Use bash, zsh, or fish.`)
-      process.exit(1)
-  }
-  process.exit(0)
-}
-
 function showHelp(): void {
   console.log(`
 ${MESSAGES.WELCOME}
@@ -94,7 +59,6 @@ Commands:
   list         List all worktrees
   delete       Delete a worktree
   settings     Manage configuration
-  completion   Generate shell completions
   (no command) Start interactive menu
 
 Options:
@@ -125,8 +89,6 @@ For more information, visit: https://github.com/raghavpillai/git-worktree-manage
 }
 
 function main(): void {
-  handleCompletion()
-
   const { mode, help, isFromWrapper } = parseArguments()
 
   if (help) {
