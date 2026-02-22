@@ -13,11 +13,12 @@ const VERSION = packageJson.version
 function parseArguments(): {
   mode: AppMode
   help: boolean
+  isFromWrapper: boolean
   cliArgs: CliArgs | null
 } {
   const argv = minimist(process.argv.slice(2), {
     string: ["mode", "name", "source", "branch", "path"],
-    boolean: ["help", "version", "json", "force"],
+    boolean: ["help", "version", "from-wrapper", "json", "force"],
     alias: {
       h: "help",
       v: "version",
@@ -31,7 +32,7 @@ function parseArguments(): {
   })
 
   if (argv.help) {
-    return { mode: "menu", help: true, cliArgs: null }
+    return { mode: "menu", help: true, isFromWrapper: false, cliArgs: null }
   }
 
   if (argv.version) {
@@ -59,10 +60,13 @@ function parseArguments(): {
   const hasCliFlags =
     argv.name || argv.source || argv.branch || argv.path || argv.force || argv.json
 
+  const isFromWrapper = argv["from-wrapper"] === true
+
   if (isCliCommand && hasCliFlags) {
     return {
       mode,
       help: false,
+      isFromWrapper: false,
       cliArgs: {
         command: mode as CliArgs["command"],
         name: argv.name || undefined,
@@ -75,7 +79,7 @@ function parseArguments(): {
     }
   }
 
-  return { mode, help: false, cliArgs: null }
+  return { mode, help: false, isFromWrapper, cliArgs: null }
 }
 
 function showHelp(): void {
@@ -96,6 +100,7 @@ Interactive Options:
   -h, --help     Show this help message
   -v, --version  Show version number
   -m, --mode     Set initial mode
+  --from-wrapper Called from shell wrapper (outputs path to stdout)
 
 Non-Interactive Options:
   -n, --name <name>      Worktree directory name (create, delete)
@@ -109,6 +114,7 @@ Interactive Examples:
   branchlet                # Start interactive menu
   branchlet create         # Go directly to create worktree flow
   branchlet list           # List all worktrees interactively
+  branchlet --from-wrapper # Used by shell wrapper to enable directory switching
   branchlet delete         # Go directly to delete worktree flow
   branchlet settings       # Open settings menu
 
@@ -118,6 +124,10 @@ Non-Interactive Examples:
   branchlet list --json                               # List worktrees as JSON
   branchlet delete -n my-feature                      # Delete worktree by name
   branchlet delete -p /path/to/worktree -f            # Force delete by path
+
+Shell Integration:
+  Run 'branchlet' and select "Setup Shell Integration" to enable quick directory switching.
+  After setup, just run 'branchlet' to quickly change to any worktree directory.
 
 Configuration:
   The tool looks for configuration files in the following order:
@@ -129,7 +139,7 @@ For more information, visit: https://github.com/raghavpillai/git-worktree-manage
 }
 
 async function main(): Promise<void> {
-  const { mode, help, cliArgs } = parseArguments()
+  const { mode, help, isFromWrapper, cliArgs } = parseArguments()
 
   if (help) {
     showHelp()
@@ -151,9 +161,31 @@ async function main(): Promise<void> {
   // Interactive TUI mode
   let hasExited = false
 
+  let inkStdin: NodeJS.ReadStream = process.stdin
+  let inkStdout: NodeJS.WriteStream = process.stdout
+
+  if (isFromWrapper) {
+    process.env.FORCE_COLOR = "3"
+
+    try {
+      const fs = require("node:fs")
+      const tty = require("node:tty")
+      const ttyFd = fs.openSync("/dev/tty", "r+")
+      inkStdin = new tty.ReadStream(ttyFd) as unknown as NodeJS.ReadStream
+      inkStdout = new tty.WriteStream(ttyFd) as unknown as NodeJS.WriteStream
+
+      Object.defineProperty(inkStdout, "isTTY", { value: true })
+      Object.defineProperty(inkStdout, "hasColors", { value: () => true })
+      Object.defineProperty(inkStdout, "getColorDepth", { value: () => 24 })
+    } catch (error) {
+      console.error("Could not open /dev/tty:", error)
+    }
+  }
+
   const { unmount } = render(
     <App
       initialMode={mode}
+      isFromWrapper={isFromWrapper}
       onExit={() => {
         if (!hasExited) {
           hasExited = true
@@ -161,7 +193,12 @@ async function main(): Promise<void> {
           process.exit(0)
         }
       }}
-    />
+    />,
+    {
+      stdin: inkStdin,
+      stdout: inkStdout,
+      stderr: process.stderr,
+    }
   )
 
   process.on("SIGINT", () => {
@@ -181,4 +218,7 @@ async function main(): Promise<void> {
   })
 }
 
-main()
+main().catch((error) => {
+  process.stderr.write(`Fatal: ${error instanceof Error ? error.message : String(error)}\n`)
+  process.exit(1)
+})

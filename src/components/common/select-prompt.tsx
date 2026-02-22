@@ -43,18 +43,18 @@ export function SelectPrompt<T = string>({
 
     if (key.return) {
       const selectedOption = filteredOptions[selectedIndex]
-      if (selectedOption) {
+      if (selectedOption && !selectedOption.disabled) {
         onSelect(selectedOption.value, selectedIndex)
       }
       return
     }
 
-    if (key.upArrow) {
+    if (key.upArrow && filteredOptions.length > 0) {
       setSelectedIndex((prev) => (prev === 0 ? filteredOptions.length - 1 : prev - 1))
       return
     }
 
-    if (key.downArrow) {
+    if (key.downArrow && filteredOptions.length > 0) {
       setSelectedIndex((prev) => (prev === filteredOptions.length - 1 ? 0 : prev + 1))
       return
     }
@@ -113,10 +113,16 @@ export function SelectPrompt<T = string>({
         filteredOptions.map((option, index) => {
           const isSelected = index === selectedIndex
           const marker = isSelected ? "> " : "  "
+          const textColor = option.disabled
+            ? COLORS.MUTED
+            : option.color || (isSelected ? COLORS.PRIMARY : undefined)
 
           return (
             <Box key={option.value as React.Key} marginLeft={1}>
-              <Text {...(isSelected ? { color: COLORS.PRIMARY } : {})}>
+              <Text
+                {...(textColor ? { color: textColor } : {})}
+                {...(option.disabled ? { dimColor: true } : {})}
+              >
                 {marker}
                 {option.label}
               </Text>
