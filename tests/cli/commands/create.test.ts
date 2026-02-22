@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process"
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 import { runCreate } from "../../../src/cli/commands/create.js"
 import type { CliArgs } from "../../../src/cli/types.js"
@@ -6,15 +7,21 @@ import { WorktreeService } from "../../../src/services/worktree-service.js"
 describe("CLI create command", () => {
   const createdWorktrees: string[] = []
   let sourceBranch = "main"
+  let createdTestBranch = false
 
   beforeAll(async () => {
     const service = new WorktreeService()
     await service.initialize()
     const repoInfo = await service.getGitService().getRepositoryInfo()
-    // In CI (detached HEAD), currentBranch is "HEAD" which isn't a real branch.
-    // Pick the first local branch that actually exists.
     const localBranch = repoInfo.branches.find((b) => !b.isRemote)
-    sourceBranch = localBranch?.name || repoInfo.defaultBranch || "main"
+    if (localBranch) {
+      sourceBranch = localBranch.name
+    } else {
+      // CI detached HEAD with no local branches — create one from HEAD
+      execSync("git branch test-source-branch HEAD", { stdio: "ignore" })
+      sourceBranch = "test-source-branch"
+      createdTestBranch = true
+    }
   })
 
   afterAll(async () => {
@@ -28,6 +35,13 @@ describe("CLI create command", () => {
         if (match) {
           await service.deleteWorktree(match.path, true)
         }
+      } catch {
+        // Best effort cleanup
+      }
+    }
+    if (createdTestBranch) {
+      try {
+        execSync("git branch -D test-source-branch", { stdio: "ignore" })
       } catch {
         // Best effort cleanup
       }
