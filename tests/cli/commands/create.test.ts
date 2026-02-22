@@ -1,10 +1,18 @@
-import { afterAll, describe, expect, test } from "bun:test"
+import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 import { runCreate } from "../../../src/cli/commands/create.js"
 import type { CliArgs } from "../../../src/cli/types.js"
 import { WorktreeService } from "../../../src/services/worktree-service.js"
 
 describe("CLI create command", () => {
   const createdWorktrees: string[] = []
+  let sourceBranch = "main"
+
+  beforeAll(async () => {
+    const service = new WorktreeService()
+    await service.initialize()
+    const repoInfo = await service.getGitService().getRepositoryInfo()
+    sourceBranch = repoInfo.currentBranch || repoInfo.defaultBranch || "main"
+  })
 
   afterAll(async () => {
     // Clean up any worktrees created during tests
@@ -30,7 +38,7 @@ describe("CLI create command", () => {
 
       const args: CliArgs = {
         command: "create",
-        source: "main",
+        source: sourceBranch,
       }
 
       try {
@@ -67,7 +75,7 @@ describe("CLI create command", () => {
       const args: CliArgs = {
         command: "create",
         name: ".hidden-dir",
-        source: "main",
+        source: sourceBranch,
       }
 
       try {
@@ -86,7 +94,7 @@ describe("CLI create command", () => {
       const args: CliArgs = {
         command: "create",
         name: "dir/with/slash",
-        source: "main",
+        source: sourceBranch,
       }
 
       try {
@@ -105,7 +113,7 @@ describe("CLI create command", () => {
       const args: CliArgs = {
         command: "create",
         name: "test-wt",
-        source: "main",
+        source: sourceBranch,
         branch: "branch with spaces",
       }
 
@@ -149,7 +157,7 @@ describe("CLI create command", () => {
       const args: CliArgs = {
         command: "create",
         name: "test-default-branch",
-        source: "main",
+        source: sourceBranch,
       }
 
       try {
@@ -175,7 +183,7 @@ describe("CLI create command", () => {
       const args: CliArgs = {
         command: "create",
         name: wtName,
-        source: "main",
+        source: sourceBranch,
         branch: branchName,
       }
 
