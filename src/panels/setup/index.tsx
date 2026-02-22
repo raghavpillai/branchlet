@@ -1,4 +1,4 @@
-import { Box, Text } from "ink"
+import { Box, Text, useInput } from "ink"
 import { useEffect, useState } from "react"
 import { ConfirmDialog, SelectPrompt, StatusIndicator } from "../../components/common/index.js"
 import { COLORS } from "../../constants/index.js"
@@ -24,6 +24,14 @@ export function SetupShellIntegration({
   const [step, setStep] = useState<SetupStep>("select-shell")
   const [selectedShell, setSelectedShell] = useState<"zsh" | "bash" | null>(null)
   const [error, setError] = useState<string>()
+
+  useInput((input, key) => {
+    if (step === "error") {
+      if (key.escape || key.return || input) {
+        onCancel()
+      }
+    }
+  })
 
   // Auto-select shell if detected
   useEffect(() => {
