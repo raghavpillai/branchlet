@@ -64,13 +64,13 @@ export function App({ initialMode = "menu", isFromWrapper = false, onExit }: App
         UpdateService.checkForUpdates(VERSION, configService)
           .then(setUpdateStatus)
           .catch(() => {
-            const cached = UpdateService.getCachedUpdateStatus(configService)
+            const cached = UpdateService.getCachedUpdateStatus(configService, VERSION)
             if (cached) {
               setUpdateStatus(cached)
             }
           })
       } else {
-        const cached = UpdateService.getCachedUpdateStatus(configService)
+        const cached = UpdateService.getCachedUpdateStatus(configService, VERSION)
         if (cached) {
           setUpdateStatus(cached)
         }

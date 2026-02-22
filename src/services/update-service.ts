@@ -30,7 +30,7 @@ export class UpdateService {
 
     if (!UpdateService.shouldCheckForUpdates(configService)) {
       return (
-        UpdateService.getCachedUpdateStatus(configService) || {
+        UpdateService.getCachedUpdateStatus(configService, currentVersion) || {
           hasUpdate: false,
           currentVersion,
           checkedAt: config.lastUpdateCheck || now,
@@ -66,18 +66,22 @@ export class UpdateService {
     }
   }
 
-  static getCachedUpdateStatus(configService: ConfigService): UpdateCheckResult | null {
+  static getCachedUpdateStatus(
+    configService: ConfigService,
+    currentVersion?: string
+  ): UpdateCheckResult | null {
     const config = configService.getConfig()
 
-    if (!config.lastUpdateCheck || !config.latestVersion || !config.checkedVersion) {
+    if (!config.lastUpdateCheck || !config.latestVersion) {
       return null
     }
 
-    const hasUpdate = isNewerVersion(config.checkedVersion, config.latestVersion)
+    const version = currentVersion || config.checkedVersion || config.latestVersion
+    const hasUpdate = isNewerVersion(version, config.latestVersion)
 
     return {
       hasUpdate,
-      currentVersion: config.checkedVersion,
+      currentVersion: version,
       latestVersion: config.latestVersion,
       checkedAt: config.lastUpdateCheck,
     }
