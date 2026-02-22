@@ -194,7 +194,7 @@ ${commandName}() {
   if [ $# -eq 0 ]; then
     local dir=$(FORCE_COLOR=3 command ${commandName} --from-wrapper)
     if [ -n "$dir" ]; then
-      cd "$dir" && echo "Branchlet: Navigated to $(pwd)"
+      builtin cd "$dir" && echo "Branchlet: Navigated to $(pwd)"
     fi
   else
     command ${commandName} "$@"
