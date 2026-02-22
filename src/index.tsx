@@ -55,10 +55,10 @@ Usage:
   branchlet [command] [options]
 
 Commands:
-  create     Create a new worktree
-  list       List all worktrees
-  delete     Delete a worktree
-  settings   Manage configuration
+  create       Create a new worktree
+  list         List all worktrees
+  delete       Delete a worktree
+  settings     Manage configuration
   (no command) Start interactive menu
 
 Options:

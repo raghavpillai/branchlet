@@ -1,4 +1,4 @@
-import { Box, Text } from "ink"
+import { Box, Text, useInput } from "ink"
 import { useEffect, useState } from "react"
 import { ConfirmDialog, SelectPrompt, StatusIndicator } from "../../components/common/index.js"
 import { COLORS } from "../../constants/index.js"
@@ -24,6 +24,14 @@ export function SetupShellIntegration({
   const [step, setStep] = useState<SetupStep>("select-shell")
   const [selectedShell, setSelectedShell] = useState<"zsh" | "bash" | null>(null)
   const [error, setError] = useState<string>()
+
+  useInput((input, key) => {
+    if (step === "error") {
+      if (key.escape || key.return || input) {
+        onCancel()
+      }
+    }
+  })
 
   // Auto-select shell if detected
   useEffect(() => {
@@ -122,7 +130,7 @@ export function SetupShellIntegration({
         message={
           <Box flexDirection="column" gap={1}>
             <Text>
-              This will add the following function to <Text bold>{configFile}</Text>:
+              This will add the following to <Text bold>{configFile}</Text>:
             </Text>
             <Box
               marginTop={1}
@@ -133,11 +141,15 @@ export function SetupShellIntegration({
               borderColor={COLORS.MUTED}
             >
               <Text color={COLORS.MUTED} dimColor>
-                {`${commandName}() {
+                {`# Tab completions for ${commandName} commands
+# ...
+
+# Shell wrapper for directory switching
+${commandName}() {
   if [ $# -eq 0 ]; then
     local dir=$(FORCE_COLOR=3 command ${commandName} --from-wrapper)
     if [ -n "$dir" ]; then
-      cd "$dir" && echo "Branchlet: Navigated to $(pwd)"
+      builtin cd "$dir" && echo "Branchlet: Navigated to $(pwd)"
     fi
   else
     command ${commandName} "$@"
