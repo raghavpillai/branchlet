@@ -1,11 +1,16 @@
 import { Box, Text, useInput } from "ink"
 import { useCallback, useEffect, useState } from "react"
+import packageJson from "../../../package.json" with { type: "json" }
 import { SelectPrompt, StatusIndicator } from "../../components/common/index.js"
 import { GLOBAL_CONFIG_FILE } from "../../constants/default-config.js"
-import { COLORS } from "../../constants/index.js"
+import { COLORS, MESSAGES } from "../../constants/index.js"
 import type { WorktreeConfig } from "../../schemas/config-schema.js"
 import type { WorktreeService } from "../../services/index.js"
+import type { UpdateCheckResult } from "../../services/update-service.js"
+import { UpdateService } from "../../services/update-service.js"
 import type { SelectOption } from "../../types/index.js"
+
+const VERSION = packageJson.version
 
 interface SettingsMenuProps {
   worktreeService: WorktreeService
@@ -20,6 +25,7 @@ type SettingsStep =
   | "post-cmd"
   | "terminal-cmd"
   | "delete-branch"
+  | "check-updates"
 
 export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
   const [config, setConfig] = useState<WorktreeConfig | null>(null)
@@ -27,6 +33,8 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
   const [error, setError] = useState<string>()
   const [step, setStep] = useState<SettingsStep>("menu")
   const [configPath, setConfigPath] = useState<string>()
+  const [checkingUpdates, setCheckingUpdates] = useState(false)
+  const [manualUpdateResult, setManualUpdateResult] = useState<UpdateCheckResult | null>(null)
 
   useInput((input, key) => {
     if (error && input?.toLowerCase() === "r") {
@@ -39,12 +47,14 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
         onBack()
       } else {
         setStep("menu")
+        setManualUpdateResult(null)
       }
       return
     }
 
     if (step !== "menu" && (key.return || input)) {
       setStep("menu")
+      setManualUpdateResult(null)
     }
   })
 
@@ -65,6 +75,28 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
   useEffect(() => {
     loadConfig()
   }, [loadConfig])
+
+  useEffect(() => {
+    if (step === "check-updates" && !checkingUpdates && !manualUpdateResult) {
+      setCheckingUpdates(true)
+      const configService = worktreeService.getConfigService()
+
+      UpdateService.checkForUpdates(VERSION, configService)
+        .then((result) => {
+          setManualUpdateResult(result)
+          setCheckingUpdates(false)
+        })
+        .catch(() => {
+          setManualUpdateResult({
+            hasUpdate: false,
+            currentVersion: VERSION,
+            checkedAt: Date.now(),
+            error: MESSAGES.UPDATE_FAILED,
+          })
+          setCheckingUpdates(false)
+        })
+    }
+  }, [step, checkingUpdates, manualUpdateResult, worktreeService])
 
   const resetConfig = async (): Promise<void> => {
     try {
@@ -109,6 +141,11 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
       label: "Delete Branch with Worktree",
       value: "delete-branch",
       description: config?.deleteBranchWithWorktree ? "enabled" : "disabled",
+    },
+    {
+      label: MESSAGES.UPDATE_CHECK_MENU,
+      value: "check-updates",
+      description: "Check npm for latest version",
     },
   ]
 
@@ -393,6 +430,65 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
           </Box>
         </Box>
       )
+
+    case "check-updates": {
+      if (checkingUpdates) {
+        return <StatusIndicator status="loading" message={MESSAGES.UPDATE_CHECKING} />
+      }
+
+      if (manualUpdateResult) {
+        return (
+          <Box flexDirection="column">
+            <Box>
+              <Text bold color={COLORS.INFO}>
+                {MESSAGES.UPDATE_CHECK_MENU}
+              </Text>
+            </Box>
+
+            {manualUpdateResult.hasUpdate ? (
+              <>
+                <Box>
+                  <Text color={COLORS.SUCCESS}>
+                    ✓ New version available: v{manualUpdateResult.latestVersion}
+                  </Text>
+                </Box>
+                <Box>
+                  <Text>Current version: v{manualUpdateResult.currentVersion}</Text>
+                </Box>
+                <Box marginTop={1}>
+                  <Text color={COLORS.MUTED}>
+                    Run: <Text bold color={COLORS.PRIMARY}>{MESSAGES.UPDATE_INSTALL_CMD}</Text>
+                  </Text>
+                </Box>
+              </>
+            ) : manualUpdateResult.error ? (
+              <>
+                <Box>
+                  <Text color={COLORS.WARNING}>{MESSAGES.UPDATE_FAILED}</Text>
+                </Box>
+                <Box>
+                  <Text color={COLORS.MUTED}>Current version: v{manualUpdateResult.currentVersion}</Text>
+                </Box>
+              </>
+            ) : (
+              <Box>
+                <Text color={COLORS.SUCCESS}>
+                  ✓ {MESSAGES.UPDATE_UP_TO_DATE} (v{manualUpdateResult.currentVersion})
+                </Text>
+              </Box>
+            )}
+
+            <Box marginTop={1}>
+              <Text color={COLORS.MUTED} dimColor>
+                Press any key to go back.
+              </Text>
+            </Box>
+          </Box>
+        )
+      }
+
+      return <StatusIndicator status="loading" message={MESSAGES.UPDATE_CHECKING} />
+    }
 
     default:
       return <Text>Unknown step</Text>

@@ -70,6 +70,14 @@ export const MESSAGES = {
   LOADING_GIT_INFO: "Loading git information...",
   LOADING_BRANCHES: "Loading branches...",
   LOADING_WORKTREES: "Loading worktrees...",
+
+  // Update checking
+  UPDATE_AVAILABLE: "Update available",
+  UPDATE_CHECK_MENU: "Check for Updates",
+  UPDATE_CHECKING: "Checking for updates...",
+  UPDATE_UP_TO_DATE: "You're running the latest version",
+  UPDATE_FAILED: "Failed to check for updates",
+  UPDATE_INSTALL_CMD: "npm install -g branchlet",
 } as const
 
 export const COLORS = {

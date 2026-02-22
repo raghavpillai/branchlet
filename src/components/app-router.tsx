@@ -12,7 +12,9 @@ import {
 } from "../panels/index.js"
 import type { WorktreeService } from "../services/index.js"
 import type { ShellIntegrationStatus } from "../services/shell-integration-service.js"
+import type { UpdateCheckResult } from "../services/update-service.js"
 import type { AppMode } from "../types/index.js"
+import { UpdateBanner } from "./update-banner.js"
 import { WelcomeHeader } from "./welcome-header.js"
 
 interface AppRouterProps {
@@ -21,6 +23,7 @@ interface AppRouterProps {
   lastMenuIndex: number
   gitRoot?: string | undefined
   shellIntegrationStatus: ShellIntegrationStatus | null
+  updateStatus: UpdateCheckResult | null
   isFromWrapper: boolean
   onMenuSelect: (value: AppMode | "exit", selectedIndex?: number) => void
   onBackToMenu: () => void
@@ -34,6 +37,7 @@ export function AppRouter({
   lastMenuIndex,
   gitRoot,
   shellIntegrationStatus,
+  updateStatus,
   isFromWrapper,
   onMenuSelect,
   onBackToMenu,
@@ -45,6 +49,7 @@ export function AppRouter({
   return (
     <BorderContext.Provider value={{ setBorderColor }}>
       <Box flexDirection="column">
+        <UpdateBanner updateStatus={updateStatus} />
         <WelcomeHeader mode={mode} gitRoot={gitRoot} />
 
         {mode === "menu" && (
