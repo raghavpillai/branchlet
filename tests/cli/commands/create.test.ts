@@ -11,7 +11,10 @@ describe("CLI create command", () => {
     const service = new WorktreeService()
     await service.initialize()
     const repoInfo = await service.getGitService().getRepositoryInfo()
-    sourceBranch = repoInfo.currentBranch || repoInfo.defaultBranch || "main"
+    // In CI (detached HEAD), currentBranch is "HEAD" which isn't a real branch.
+    // Pick the first local branch that actually exists.
+    const localBranch = repoInfo.branches.find((b) => !b.isRemote)
+    sourceBranch = localBranch?.name || repoInfo.defaultBranch || "main"
   })
 
   afterAll(async () => {
