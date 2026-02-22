@@ -240,6 +240,7 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
           options={getBranchOptions()}
           onSelect={handleSourceBranchSelect}
           onCancel={onCancel}
+          searchable={true}
         />
       )
 
