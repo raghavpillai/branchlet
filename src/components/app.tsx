@@ -5,9 +5,13 @@ import { COLORS } from "../constants/index.js"
 import { ConfigService } from "../services/config-service.js"
 import { WorktreeService } from "../services/index.js"
 import type { ShellIntegrationStatus } from "../services/shell-integration-service.js"
-import { ShellIntegrationService } from "../services/shell-integration-service.js"
+import { detectShellIntegration } from "../services/shell-integration-service.js"
 import type { UpdateCheckResult } from "../services/update-service.js"
-import { UpdateService } from "../services/update-service.js"
+import {
+  checkForUpdates,
+  getCachedUpdateStatus,
+  shouldCheckForUpdates,
+} from "../services/update-service.js"
 import type { AppMode } from "../types/index.js"
 import { getGitRoot, getUserFriendlyErrorMessage } from "../utils/index.js"
 import { AppRouter } from "./app-router.js"
@@ -45,7 +49,7 @@ export function App({ initialMode = "menu", isFromWrapper = false, onExit }: App
       setLoading(true)
       setError(undefined)
 
-      ShellIntegrationService.detect()
+      detectShellIntegration()
         .then(setShellIntegrationStatus)
         .catch(() => {
           setShellIntegrationStatus({
@@ -60,17 +64,17 @@ export function App({ initialMode = "menu", isFromWrapper = false, onExit }: App
       await service.initialize()
 
       const configService = service.getConfigService()
-      if (UpdateService.shouldCheckForUpdates(configService)) {
-        UpdateService.checkForUpdates(VERSION, configService)
+      if (shouldCheckForUpdates(configService)) {
+        checkForUpdates(VERSION, configService)
           .then(setUpdateStatus)
           .catch(() => {
-            const cached = UpdateService.getCachedUpdateStatus(configService, VERSION)
+            const cached = getCachedUpdateStatus(configService, VERSION)
             if (cached) {
               setUpdateStatus(cached)
             }
           })
       } else {
-        const cached = UpdateService.getCachedUpdateStatus(configService, VERSION)
+        const cached = getCachedUpdateStatus(configService, VERSION)
         if (cached) {
           setUpdateStatus(cached)
         }
@@ -177,7 +181,7 @@ export function App({ initialMode = "menu", isFromWrapper = false, onExit }: App
       onBackToMenu={handleBackToMenu}
       onExit={handleExit}
       onShellIntegrationComplete={() => {
-        ShellIntegrationService.detect()
+        detectShellIntegration()
           .then(setShellIntegrationStatus)
           .catch(() => {})
       }}
