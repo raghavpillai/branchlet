@@ -25,7 +25,6 @@ type SettingsStep =
   | "post-cmd"
   | "terminal-cmd"
   | "delete-branch"
-  | "show-remote"
   | "check-updates"
 
 export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
@@ -142,11 +141,6 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
       label: "Delete Branch with Worktree",
       value: "delete-branch",
       description: config?.deleteBranchWithWorktree ? "enabled" : "disabled",
-    },
-    {
-      label: "Show Remote Branches",
-      value: "show-remote",
-      description: config?.showRemoteBranches ? "enabled" : "disabled",
     },
     {
       label: MESSAGES.UPDATE_CHECK_MENU,
@@ -426,46 +420,6 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
               <Text color={COLORS.MUTED}>• Never deletes current or default branches</Text>
               <Text color={COLORS.MUTED}>• Shows branch status (commits ahead/behind)</Text>
               <Text color={COLORS.MUTED}>• Requires explicit confirmation</Text>
-            </Box>
-          </Box>
-
-          <Box marginTop={1}>
-            <Text color={COLORS.MUTED} dimColor>
-              Edit in {configPath || GLOBAL_CONFIG_FILE}. Press any key to go back.
-            </Text>
-          </Box>
-        </Box>
-      )
-
-    case "show-remote":
-      return (
-        <Box flexDirection="column">
-          <Box>
-            <Text bold color={COLORS.INFO}>
-              Show Remote Branches
-            </Text>
-          </Box>
-
-          <Box>
-            <Text color={COLORS.MUTED}>
-              Display remote-only branches in the source branch picker when creating a worktree:
-            </Text>
-          </Box>
-
-          <Box marginLeft={2}>
-            <Text color={config?.showRemoteBranches ? COLORS.SUCCESS : COLORS.MUTED}>
-              {config?.showRemoteBranches ? "✓ Enabled" : "✗ Disabled"}
-            </Text>
-          </Box>
-
-          <Box>
-            <Text color={COLORS.INFO}>Details:</Text>
-            <Box flexDirection="column" marginLeft={2}>
-              <Text color={COLORS.MUTED}>• Remote branches appear after local branches</Text>
-              <Text color={COLORS.MUTED}>
-                • Branches already checked out locally are not duplicated
-              </Text>
-              <Text color={COLORS.MUTED}>• Remote branches are searchable/filterable</Text>
             </Box>
           </Box>
 

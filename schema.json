@@ -51,11 +51,6 @@
       "default": false,
       "type": "boolean"
     },
-    "showRemoteBranches": {
-      "description": "Show remote-only branches in the source branch picker",
-      "default": true,
-      "type": "boolean"
-    },
     "lastUpdateCheck": {
       "description": "Timestamp of last update check (milliseconds since epoch)",
       "type": "number"
