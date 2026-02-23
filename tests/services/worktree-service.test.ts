@@ -34,7 +34,7 @@ describe("WorktreeService", () => {
   describe("initialize", () => {
     test("should handle initialization in non-git directory", async () => {
       const service = new WorktreeService("/tmp")
-      
+
       try {
         await service.initialize()
       } catch (error) {
@@ -45,7 +45,7 @@ describe("WorktreeService", () => {
 
     test("should handle initialization in git directory", async () => {
       const service = new WorktreeService()
-      
+
       try {
         await service.initialize()
         // Should succeed if in git repo
@@ -59,7 +59,7 @@ describe("WorktreeService", () => {
   describe("createWorktree", () => {
     test("should handle invalid worktree creation", async () => {
       const service = new WorktreeService("/tmp")
-      
+
       const options = {
         name: "test-worktree",
         sourceBranch: "non-existent-branch",
@@ -76,7 +76,7 @@ describe("WorktreeService", () => {
 
     test("should handle edge case names", async () => {
       const service = new WorktreeService()
-      
+
       const edgeCaseOptions = [
         {
           name: "test-123",
@@ -86,7 +86,7 @@ describe("WorktreeService", () => {
         },
         {
           name: "very-long-worktree-name-that-tests-limits",
-          sourceBranch: "main", 
+          sourceBranch: "main",
           newBranch: "feature/long-name",
           basePath: "/tmp",
         },
@@ -106,7 +106,7 @@ describe("WorktreeService", () => {
   describe("deleteWorktree", () => {
     test("should handle deletion without force", async () => {
       const service = new WorktreeService()
-      
+
       try {
         await service.deleteWorktree("/non/existent/path", false)
       } catch (error) {
@@ -116,7 +116,7 @@ describe("WorktreeService", () => {
 
     test("should handle deletion with force", async () => {
       const service = new WorktreeService()
-      
+
       try {
         await service.deleteWorktree("/non/existent/path", true)
       } catch (error) {
@@ -126,7 +126,7 @@ describe("WorktreeService", () => {
 
     test("should handle deletion with default force parameter", async () => {
       const service = new WorktreeService()
-      
+
       try {
         await service.deleteWorktree("/non/existent/path")
       } catch (error) {
@@ -136,7 +136,7 @@ describe("WorktreeService", () => {
 
     test("should handle path edge cases", async () => {
       const service = new WorktreeService()
-      
+
       const edgeCasePaths = [
         "",
         "/",
@@ -158,31 +158,31 @@ describe("WorktreeService", () => {
   describe("branch deletion functionality", () => {
     test("should handle branch deletion when enabled", async () => {
       const service = new WorktreeService()
-      
+
       // Configure branch deletion
       const configService = service.getConfigService()
       configService.updateConfig({ deleteBranchWithWorktree: true })
-      
+
       try {
         const result = await service.deleteWorktree("/non/existent/path")
         expect(result).toBeDefined()
-        expect(typeof result.worktreeDeleted).toBe('boolean')
-        expect(typeof result.branchDeleted).toBe('boolean')
+        expect(typeof result.worktreeDeleted).toBe("boolean")
+        expect(typeof result.branchDeleted).toBe("boolean")
       } catch (error) {
         expect(error).toBeInstanceOf(Error)
       }
-      
+
       // Reset config
       configService.resetConfig()
     })
 
     test("should handle branch deletion when disabled", async () => {
       const service = new WorktreeService()
-      
+
       // Ensure branch deletion is disabled
       const configService = service.getConfigService()
       configService.updateConfig({ deleteBranchWithWorktree: false })
-      
+
       try {
         const result = await service.deleteWorktree("/non/existent/path")
         expect(result).toBeDefined()
@@ -190,14 +190,14 @@ describe("WorktreeService", () => {
       } catch (error) {
         expect(error).toBeInstanceOf(Error)
       }
-      
+
       // Reset config
       configService.resetConfig()
     })
 
     test("should handle corrupted worktree cleanup", async () => {
       const service = new WorktreeService()
-      
+
       try {
         // This should trigger error handling but not the manual cleanup path
         // since the path doesn't exist
@@ -211,19 +211,19 @@ describe("WorktreeService", () => {
   describe("integration scenarios", () => {
     test("should handle service lifecycle", async () => {
       const service = new WorktreeService()
-      
+
       // Test service creation and basic operations
       expect(service.getGitService()).toBeDefined()
       expect(service.getConfigService()).toBeDefined()
-      
+
       const configService = service.getConfigService()
       const originalConfig = configService.getConfig()
-      
+
       // Test config modification
       configService.updateConfig({ terminalCommand: "test command" })
       const modifiedConfig = configService.getConfig()
       expect(modifiedConfig.terminalCommand).toBe("test command")
-      
+
       // Test config reset
       configService.resetConfig()
       const resetConfig = configService.getConfig()
@@ -233,13 +233,13 @@ describe("WorktreeService", () => {
     test("should handle branch deletion config integration", async () => {
       const service = new WorktreeService()
       const configService = service.getConfigService()
-      
+
       // Test new config option
       expect(configService.getConfig().deleteBranchWithWorktree).toBe(false) // Default
-      
+
       configService.updateConfig({ deleteBranchWithWorktree: true })
       expect(configService.getConfig().deleteBranchWithWorktree).toBe(true)
-      
+
       configService.resetConfig()
       expect(configService.getConfig().deleteBranchWithWorktree).toBe(false)
     })

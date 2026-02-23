@@ -84,7 +84,7 @@ describe("GitService", () => {
       try {
         const result = await gitService.listWorktrees()
         expect(Array.isArray(result)).toBe(true)
-        
+
         if (result.length > 0) {
           const worktree = result[0]
           expect(worktree).toHaveProperty("path")
@@ -105,7 +105,7 @@ describe("GitService", () => {
       try {
         const result = await gitService.listBranches()
         expect(Array.isArray(result)).toBe(true)
-        
+
         if (result.length > 0) {
           const branch = result[0]
           expect(branch).toHaveProperty("name")
@@ -119,6 +119,86 @@ describe("GitService", () => {
         expect(error).toBeInstanceOf(Error)
       }
     })
+
+    test("should return only local branches when includeRemote is false", async () => {
+      try {
+        const result = await gitService.listBranches(false)
+        expect(Array.isArray(result)).toBe(true)
+
+        for (const branch of result) {
+          expect(branch.isRemote).toBe(false)
+        }
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+      }
+    })
+
+    test("should include remote branches when includeRemote is true", async () => {
+      try {
+        const result = await gitService.listBranches(true)
+        expect(Array.isArray(result)).toBe(true)
+
+        // Every branch should have the isRemote property
+        for (const branch of result) {
+          expect(typeof branch.isRemote).toBe("boolean")
+        }
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+      }
+    })
+
+    test("should not duplicate local branches when including remotes", async () => {
+      try {
+        const localBranches = await gitService.listBranches(false)
+        const allBranches = await gitService.listBranches(true)
+
+        const localNames = new Set(localBranches.map((b) => b.name))
+
+        // Remote branches should not share exact names with local branches
+        for (const branch of allBranches) {
+          if (branch.isRemote) {
+            const shortName = branch.name.replace(/^[^/]+\//, "")
+            expect(localNames.has(shortName)).toBe(false)
+          }
+        }
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+      }
+    })
+  })
+
+  describe("listRemoteBranches", () => {
+    test("should return array of remote branches", async () => {
+      try {
+        const result = await gitService.listRemoteBranches()
+        expect(Array.isArray(result)).toBe(true)
+
+        for (const branch of result) {
+          expect(branch.isRemote).toBe(true)
+          expect(branch.isCurrent).toBe(false)
+          expect(branch.isDefault).toBe(false)
+        }
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+      }
+    })
+
+    test("should exclude HEAD refs from remote branches", async () => {
+      try {
+        const result = await gitService.listRemoteBranches()
+        for (const branch of result) {
+          expect(branch.name.endsWith("/HEAD")).toBe(false)
+        }
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+      }
+    })
+
+    test("should return empty array for non-git directory", async () => {
+      const tempService = new GitService("/tmp")
+      const result = await tempService.listRemoteBranches()
+      expect(result).toEqual([])
+    })
   })
 
   describe("getRecentBranches", () => {
@@ -126,7 +206,7 @@ describe("GitService", () => {
       try {
         const result = await gitService.getRecentBranches()
         expect(Array.isArray(result)).toBe(true)
-        
+
         for (const branch of result) {
           expect(typeof branch).toBe("string")
           expect(branch.length).toBeGreaterThan(0)
@@ -184,14 +264,14 @@ describe("GitService", () => {
     test("should return repository information", async () => {
       try {
         const result = await gitService.getRepositoryInfo()
-        
+
         expect(result).toHaveProperty("path")
         expect(result).toHaveProperty("isGitRepo")
         expect(result).toHaveProperty("currentBranch")
         expect(result).toHaveProperty("defaultBranch")
         expect(result).toHaveProperty("worktrees")
         expect(result).toHaveProperty("branches")
-        
+
         expect(typeof result.path).toBe("string")
         expect(result.isGitRepo).toBe(true)
         expect(typeof result.currentBranch).toBe("string")
@@ -205,7 +285,7 @@ describe("GitService", () => {
 
     test("should handle repository info in non-git directory", async () => {
       const tempService = new GitService("/tmp")
-      
+
       try {
         const result = await tempService.getRepositoryInfo()
         expect(result.isGitRepo).toBe(true) // This is set to true in the function
@@ -218,7 +298,7 @@ describe("GitService", () => {
   describe("branch status functionality", () => {
     test("should get branch status when comparison branch exists", async () => {
       const service = new GitService()
-      
+
       try {
         const result = await service.getBranchStatus("test-branch-that-does-not-exist")
         // Should return null for non-existent branch
@@ -230,7 +310,7 @@ describe("GitService", () => {
 
     test("should handle branch status for current branch", async () => {
       const service = new GitService()
-      
+
       try {
         const currentBranch = await service.getCurrentBranch()
         if (currentBranch) {
@@ -245,7 +325,7 @@ describe("GitService", () => {
 
     test("should handle getBranchStatus with no comparison branch available", async () => {
       const service = new GitService("/tmp") // Non-git directory
-      
+
       const result = await service.getBranchStatus("any-branch")
       expect(result).toBeNull()
     })
@@ -254,7 +334,7 @@ describe("GitService", () => {
   describe("branch deletion functionality", () => {
     test("should prevent deletion of current branch", async () => {
       const service = new GitService()
-      
+
       try {
         const currentBranch = await service.getCurrentBranch()
         if (currentBranch) {
@@ -267,7 +347,7 @@ describe("GitService", () => {
 
     test("should prevent deletion of default branch", async () => {
       const service = new GitService()
-      
+
       try {
         const defaultBranch = await service.getDefaultBranch()
         await expect(service.deleteBranch(defaultBranch)).rejects.toThrow()
@@ -278,7 +358,7 @@ describe("GitService", () => {
 
     test("should handle deletion of non-existent branch", async () => {
       const service = new GitService()
-      
+
       try {
         await service.deleteBranch("non-existent-branch-12345")
       } catch (error) {
@@ -288,7 +368,7 @@ describe("GitService", () => {
 
     test("should handle force deletion", async () => {
       const service = new GitService()
-      
+
       try {
         await service.deleteBranch("non-existent-branch-12345", true)
       } catch (error) {
@@ -300,14 +380,14 @@ describe("GitService", () => {
   describe("error handling", () => {
     test("should handle git operations in non-git directory", async () => {
       const tempService = new GitService("/tmp")
-      
+
       const isValid = await tempService.validateRepository()
       expect(isValid).toBe(false)
     })
 
     test("should handle operations with invalid paths", async () => {
       const invalidService = new GitService("/absolutely/does/not/exist/123456789")
-      
+
       const isValid = await invalidService.validateRepository()
       expect(isValid).toBe(false)
     })

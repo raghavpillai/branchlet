@@ -32,7 +32,8 @@ export async function runCreate(args: CliArgs, worktreeService: WorktreeService)
   const gitService = worktreeService.getGitService()
   const repoInfo = await gitService.getRepositoryInfo()
 
-  const branchExists = repoInfo.branches.some((b) => b.name === args.source)
+  const allBranches = await gitService.listBranches(config.showRemoteBranches)
+  const branchExists = allBranches.some((b) => b.name === args.source)
   if (!branchExists) {
     throw new Error(`Source branch '${args.source}' does not exist`)
   }

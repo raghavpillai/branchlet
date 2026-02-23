@@ -12,7 +12,7 @@ describe("schema validation edge cases", () => {
     }
 
     const result = validateConfig(invalidConfig)
-    
+
     expect(result.success).toBe(false)
     expect(result.error).toBeDefined()
     expect(typeof result.error).toBe("string")
@@ -24,11 +24,11 @@ describe("schema validation edge cases", () => {
     const problematicConfig = {
       get worktreeCopyPatterns() {
         throw new Error("Custom error during property access")
-      }
+      },
     }
 
     const result = validateConfig(problematicConfig)
-    
+
     expect(result.success).toBe(false)
     expect(result.error).toBe("Error: Custom error during property access")
   })

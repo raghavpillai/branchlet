@@ -62,6 +62,7 @@ describe("JSON Schema", () => {
         "postCreateCmd",
         "terminalCommand",
         "deleteBranchWithWorktree",
+        "showRemoteBranches",
         "lastUpdateCheck",
         "latestVersion",
         "checkedVersion",
@@ -92,6 +93,7 @@ describe("JSON Schema", () => {
 
       // Boolean fields
       expect(properties.deleteBranchWithWorktree.type).toBe("boolean")
+      expect(properties.showRemoteBranches.type).toBe("boolean")
     })
 
     test("should have descriptions for all fields", () => {
@@ -114,6 +116,7 @@ describe("JSON Schema", () => {
         "postCreateCmd",
         "terminalCommand",
         "deleteBranchWithWorktree",
+        "showRemoteBranches",
       ]
 
       for (const field of fieldsWithDefaults) {

@@ -49,6 +49,7 @@ export interface CreateWorktreeState {
   step:
     | "directory"
     | "source-branch"
+    | "custom-ref"
     | "new-branch"
     | "confirm"
     | "creating"

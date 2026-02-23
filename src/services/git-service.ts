@@ -113,7 +113,7 @@ export class GitService {
     return worktrees
   }
 
-  async listBranches(): Promise<GitBranch[]> {
+  async listBranches(includeRemote = false): Promise<GitBranch[]> {
     const currentBranch = await this.getCurrentBranch()
     const defaultBranch = await this.getDefaultBranch()
 
@@ -156,6 +156,58 @@ export class GitService {
       const bOrder = branchOrder.get(b.name) ?? 999
       return aOrder - bOrder
     })
+
+    if (includeRemote) {
+      const remoteBranches = await this.listRemoteBranches()
+      const localNames = new Set(branches.map((b) => b.name))
+      for (const remote of remoteBranches) {
+        // Deduplicate: skip remote branches that have a local counterpart
+        const shortName = remote.name.replace(/^[^/]+\//, "")
+        if (!localNames.has(shortName)) {
+          branches.push(remote)
+        }
+      }
+    }
+
+    return branches
+  }
+
+  async listRemoteBranches(): Promise<GitBranch[]> {
+    const result = await executeGitCommand(
+      [
+        "for-each-ref",
+        "--sort=-committerdate",
+        "--format=%(refname:short)|%(objectname:short)|%(committerdate:iso8601)",
+        "refs/remotes/",
+      ],
+      this.gitRoot
+    )
+
+    if (!result.success) {
+      return []
+    }
+
+    const branches: GitBranch[] = []
+    const lines = result.stdout.split("\n").filter((line) => line.trim())
+
+    for (const line of lines) {
+      const [name, commit, dateStr] = line.split("|")
+      if (name && commit && dateStr) {
+        // Skip HEAD refs — refname:short collapses "origin/HEAD" to "origin",
+        // so also skip names without a "/" (bare remote name = HEAD symref)
+        if (name.endsWith("/HEAD") || !name.includes("/")) {
+          continue
+        }
+        branches.push({
+          name,
+          commit,
+          lastUsed: new Date(dateStr),
+          isCurrent: false,
+          isDefault: false,
+          isRemote: true,
+        })
+      }
+    }
 
     return branches
   }

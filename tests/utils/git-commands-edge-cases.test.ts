@@ -7,20 +7,15 @@ describe("git-commands edge cases", () => {
       // Test the fallback mechanism when symbolic-ref fails
       // This would typically happen in a detached HEAD state
       const result = await getCurrentBranch("/tmp")
-      
+
       // Result should be either null (not a git repo) or a string (branch/commit)
       expect(result === null || typeof result === "string").toBe(true)
     })
 
     test("should handle edge case paths", async () => {
       // Test various edge case paths
-      const testPaths = [
-        "/",
-        "/tmp", 
-        "/var",
-        "/usr/local",
-      ]
-      
+      const testPaths = ["/", "/tmp", "/var", "/usr/local"]
+
       for (const path of testPaths) {
         const result = await getCurrentBranch(path)
         expect(result === null || typeof result === "string").toBe(true)

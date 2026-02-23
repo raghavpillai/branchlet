@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test"
+import type { TemplateVariables } from "../../src/types/index.js"
 import {
   getRepositoryBaseName,
   getRepositoryRoot,
@@ -7,7 +8,6 @@ import {
   validateBranchName,
   validateDirectoryName,
 } from "../../src/utils/path-utils.js"
-import type { TemplateVariables } from "../../src/types/index.js"
 
 describe("path-utils", () => {
   describe("getRepositoryRoot", () => {
@@ -201,7 +201,7 @@ describe("path-utils", () => {
       const sourceBranch = "main"
 
       const result = getWorktreePath(gitRoot, directoryName, template, branchName, sourceBranch)
-      
+
       expect(result).toContain("my-project-worktrees/feature/awesome")
       expect(result).toContain("feature-branch")
     })
@@ -210,9 +210,9 @@ describe("path-utils", () => {
       const gitRoot = "/Users/test/my-project"
       const directoryName = "test-dir"
       const template = "static-worktrees"
-      
+
       const result = getWorktreePath(gitRoot, directoryName, template)
-      
+
       expect(result).toContain("static-worktrees")
       expect(result).toContain("test-dir")
     })
@@ -221,9 +221,9 @@ describe("path-utils", () => {
       const gitRoot = "/Users/test/my-project"
       const directoryName = "test-dir"
       const template = "$BASE_PATH/$BRANCH_NAME"
-      
+
       const result = getWorktreePath(gitRoot, directoryName, template)
-      
+
       expect(result).toContain("my-project")
       expect(result).toContain("test-dir")
     })
@@ -236,7 +236,7 @@ describe("path-utils", () => {
       const sourceBranch = "develop"
 
       const result = getWorktreePath(gitRoot, directoryName, template, branchName, sourceBranch)
-      
+
       expect(result).toContain("awesome-project-develop-to-feature/new-feature")
       expect(result).toContain("work-dir")
     })
@@ -245,9 +245,9 @@ describe("path-utils", () => {
       const gitRoot = "/"
       const directoryName = "test"
       const template = "$BASE_PATH-worktrees"
-      
+
       const result = getWorktreePath(gitRoot, directoryName, template)
-      
+
       expect(result).toBeDefined()
       expect(result).toContain("test")
     })
@@ -256,9 +256,9 @@ describe("path-utils", () => {
       const gitRoot = "my-project"
       const directoryName = "new-work"
       const template = "$BASE_PATH-branches"
-      
+
       const result = getWorktreePath(gitRoot, directoryName, template)
-      
+
       expect(result).toContain("my-project-branches")
       expect(result).toContain("new-work")
     })

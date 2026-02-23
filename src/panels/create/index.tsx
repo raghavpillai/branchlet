@@ -39,8 +39,12 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
     try {
       setLoading(true)
       const gitService = worktreeService.getGitService()
-      const repoInfo = await gitService.getRepositoryInfo()
-      setBranches(repoInfo.branches)
+      const config = worktreeService.getConfigService().getConfig()
+      const [repoInfo, allBranches] = await Promise.all([
+        gitService.getRepositoryInfo(),
+        gitService.listBranches(config.showRemoteBranches),
+      ])
+      setBranches(allBranches)
       setRepoPath(repoInfo.path)
     } catch (error) {
       setState((prev) => ({
@@ -76,9 +80,25 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
   }
 
   const handleSourceBranchSelect = (sourceBranch: string): void => {
+    if (sourceBranch === "__CUSTOM_REF__") {
+      setState((prev) => ({
+        ...prev,
+        step: "custom-ref",
+      }))
+      return
+    }
     setState((prev) => ({
       ...prev,
       sourceBranch,
+      newBranch: "",
+      step: "new-branch",
+    }))
+  }
+
+  const handleCustomRefSubmit = (ref: string): void => {
+    setState((prev) => ({
+      ...prev,
+      sourceBranch: ref.trim(),
       newBranch: "",
       step: "new-branch",
     }))
@@ -198,10 +218,17 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
         option.description = "current"
       } else if (branch.isDefault) {
         option.description = "default"
+      } else if (branch.isRemote) {
+        option.description = "remote"
       }
 
       options.push(option)
     }
+
+    options.push({
+      label: "Enter custom ref (SHA, tag, etc.)",
+      value: "__CUSTOM_REF__",
+    })
 
     return options
   }
@@ -247,6 +274,16 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
         />
       )
     }
+
+    case "custom-ref":
+      return (
+        <InputPrompt
+          label="Enter a branch name, tag, or commit SHA:"
+          placeholder="origin/feature/foo, v1.0.0, abc123f"
+          onSubmit={handleCustomRefSubmit}
+          onCancel={onCancel}
+        />
+      )
 
     case "new-branch":
       return (

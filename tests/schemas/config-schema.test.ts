@@ -11,6 +11,7 @@ describe("config-schema", () => {
         postCreateCmd: ["npm install"],
         terminalCommand: "code $WORKTREE_PATH",
         deleteBranchWithWorktree: false,
+        showRemoteBranches: true,
       }
 
       const result = validateConfig(validConfig)
@@ -58,11 +59,7 @@ describe("config-schema", () => {
     })
 
     test("should handle null and undefined values", () => {
-      const configs = [
-        null,
-        undefined,
-        { worktreeCopyPatterns: null },
-      ]
+      const configs = [null, undefined, { worktreeCopyPatterns: null }]
 
       for (const config of configs) {
         const result = validateConfig(config)
@@ -106,6 +103,7 @@ describe("config-schema", () => {
           ],
           terminalCommand: "code $WORKTREE_PATH",
           deleteBranchWithWorktree: true,
+          showRemoteBranches: true,
         },
         {
           worktreeCopyPatterns: ["Cargo.toml", "Cargo.lock", "*.md"],
@@ -114,6 +112,7 @@ describe("config-schema", () => {
           postCreateCmd: ["cargo check", "cargo test"],
           terminalCommand: "cd $WORKTREE_PATH && zsh",
           deleteBranchWithWorktree: false,
+          showRemoteBranches: false,
         },
         {
           worktreeCopyPatterns: ["go.mod", "go.sum", "*.md", "Makefile"],
@@ -122,6 +121,7 @@ describe("config-schema", () => {
           postCreateCmd: ["go mod download", "make build"],
           terminalCommand: "tmux new-session -c $WORKTREE_PATH",
           deleteBranchWithWorktree: true,
+          showRemoteBranches: true,
         },
       ]
 
@@ -142,6 +142,7 @@ describe("config-schema", () => {
         postCreateCmd: [],
         terminalCommand: "",
         deleteBranchWithWorktree: false,
+        showRemoteBranches: true,
       }
 
       const result = WorktreeConfigSchema.parse(validConfig)
@@ -212,7 +213,7 @@ describe("config-schema", () => {
 
       for (const config of testConfigs) {
         const validateResult = validateConfig(config)
-        
+
         if (validateResult.success) {
           // If validateConfig succeeds, schema parse should also succeed
           expect(() => WorktreeConfigSchema.parse(config)).not.toThrow()

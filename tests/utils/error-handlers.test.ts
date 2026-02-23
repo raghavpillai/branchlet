@@ -2,9 +2,9 @@ import { describe, expect, test } from "bun:test"
 import {
   ConfigError,
   GitWorktreeError,
-  ValidationError,
-  handleGitError,
   getUserFriendlyErrorMessage,
+  handleGitError,
+  ValidationError,
 } from "../../src/utils/error-handlers.js"
 
 describe("error-handlers", () => {
@@ -146,7 +146,8 @@ describe("error-handlers", () => {
     })
 
     test("should detect corrupted worktree error", () => {
-      const stderr = "fatal: validation failed, cannot remove working tree: '/private/tmp/test/.git' is not a .git file, error code 7"
+      const stderr =
+        "fatal: validation failed, cannot remove working tree: '/private/tmp/test/.git' is not a .git file, error code 7"
 
       const error = handleGitError(stderr, "delete worktree")
 
@@ -241,7 +242,9 @@ describe("error-handlers", () => {
     test("should return friendly message for GitWorktreeError with CORRUPTED_WORKTREE code", () => {
       const error = new GitWorktreeError("Some error", "CORRUPTED_WORKTREE")
       const result = getUserFriendlyErrorMessage(error)
-      expect(result).toBe("Worktree is corrupted. This can be fixed by manually deleting the worktree directory and running 'git worktree prune'.")
+      expect(result).toBe(
+        "Worktree is corrupted. This can be fixed by manually deleting the worktree directory and running 'git worktree prune'."
+      )
     })
 
     test("should return default message for GitWorktreeError with unknown code", () => {

@@ -1,20 +1,16 @@
 import { describe, expect, test } from "bun:test"
+import { ConfigService } from "../../src/services/config-service.js"
 import { GitService } from "../../src/services/git-service.js"
 import { WorktreeService } from "../../src/services/worktree-service.js"
-import { ConfigService } from "../../src/services/config-service.js"
 import { ValidationError } from "../../src/utils/error-handlers.js"
-import { 
-  validateBranchName, 
-  validateDirectoryName,
-  getWorktreePath,
+import { getGitRoot, isGitRepository } from "../../src/utils/git-commands.js"
+import {
   getRepositoryBaseName,
   getRepositoryRoot,
+  getWorktreePath,
+  validateBranchName,
+  validateDirectoryName,
 } from "../../src/utils/path-utils.js"
-import { 
-  executeGitCommand,
-  isGitRepository,
-  getGitRoot,
-} from "../../src/utils/git-commands.js"
 
 describe("Integration Workflows", () => {
   describe("Complete service initialization workflow", () => {
@@ -52,12 +48,12 @@ describe("Integration Workflows", () => {
         { dir: "feature-branch", branch: "feature/awesome", valid: true },
         { dir: "hotfix-123", branch: "hotfix/critical-fix", valid: true },
         { dir: "release_v1", branch: "release/v1.0.0", valid: true },
-        
+
         // Invalid directory names
         { dir: "", branch: "feature/test", valid: false },
         { dir: "dir/with/slash", branch: "feature/test", valid: false },
         { dir: ".hidden", branch: "feature/test", valid: false },
-        
+
         // Invalid branch names
         { dir: "valid-dir", branch: "", valid: false },
         { dir: "valid-dir", branch: "branch with spaces", valid: false },
@@ -68,9 +64,9 @@ describe("Integration Workflows", () => {
       for (const testCase of testCases) {
         const dirValidation = validateDirectoryName(testCase.dir)
         const branchValidation = validateBranchName(testCase.branch)
-        
+
         const isValid = !dirValidation && !branchValidation
-        
+
         if (testCase.valid) {
           expect(isValid).toBe(true)
         } else {
@@ -112,7 +108,7 @@ describe("Integration Workflows", () => {
           scenario.branchName,
           scenario.sourceBranch
         )
-        
+
         expect(result).toBeDefined()
         expect(typeof result).toBe("string")
         expect(result.length).toBeGreaterThan(0)
@@ -123,14 +119,7 @@ describe("Integration Workflows", () => {
 
   describe("Git repository detection workflow", () => {
     test("should handle repository detection in various scenarios", async () => {
-      const testPaths = [
-        process.cwd(),
-        "/tmp",
-        "/",
-        "/usr",
-        "/var",
-        "/home",
-      ]
+      const testPaths = [process.cwd(), "/tmp", "/", "/usr", "/var", "/home"]
 
       for (const path of testPaths) {
         const isRepo = await isGitRepository(path)
@@ -149,7 +138,7 @@ describe("Integration Workflows", () => {
     test("should handle errors gracefully throughout the stack", async () => {
       // Test error propagation from git commands through services
       const gitService = new GitService("/definitely/does/not/exist")
-      
+
       const isValid = await gitService.validateRepository()
       expect(isValid).toBe(false)
 
@@ -160,7 +149,7 @@ describe("Integration Workflows", () => {
 
     test("should handle worktree service errors", async () => {
       const service = new WorktreeService("/tmp")
-      
+
       try {
         await service.initialize()
       } catch (error) {
@@ -215,7 +204,7 @@ describe("Integration Workflows", () => {
     test("should handle repository operations across different structures", () => {
       const repositories = [
         "/Users/dev/frontend-app",
-        "/home/user/backend-service", 
+        "/home/user/backend-service",
         "/repo/monorepo-workspace",
         "/workspace/microservice",
         "relative-repo",
@@ -240,17 +229,12 @@ describe("Integration Workflows", () => {
       expect(validateBranchName("")).toBeDefined()
 
       // Test unicode and special characters
-      const unicodeNames = [
-        "测试-branch",
-        "café-worktree", 
-        "🚀-feature",
-        "branch-with-émojis",
-      ]
+      const unicodeNames = ["测试-branch", "café-worktree", "🚀-feature", "branch-with-émojis"]
 
       for (const name of unicodeNames) {
         const dirResult = validateDirectoryName(name)
         const branchResult = validateBranchName(name)
-        
+
         // Should either pass validation or provide meaningful error
         expect(dirResult === undefined || typeof dirResult === "string").toBe(true)
         expect(branchResult === undefined || typeof branchResult === "string").toBe(true)
@@ -271,10 +255,10 @@ describe("Integration Workflows", () => {
       ]
 
       const results = await Promise.allSettled(operations)
-      
+
       // All operations should complete (either succeed or fail gracefully)
       expect(results).toHaveLength(5)
-      
+
       for (const result of results) {
         expect(result.status === "fulfilled" || result.status === "rejected").toBe(true)
       }
@@ -284,24 +268,24 @@ describe("Integration Workflows", () => {
   describe("Performance and reliability", () => {
     test("should handle repeated operations efficiently", async () => {
       const service = new WorktreeService()
-      
+
       // Test repeated calls to ensure no state issues
       const iterations = 5
       const results = []
-      
+
       for (let i = 0; i < iterations; i++) {
         try {
           const isValid = await service.getGitService().validateRepository()
           results.push(isValid)
-        } catch (error) {
+        } catch (_error) {
           results.push(false)
         }
       }
-      
+
       // All results should be consistent
       expect(results).toHaveLength(iterations)
       const firstResult = results[0]
-      const allSame = results.every(result => result === firstResult)
+      const allSame = results.every((result) => result === firstResult)
       expect(allSame).toBe(true)
     })
 
@@ -313,9 +297,9 @@ describe("Integration Workflows", () => {
       const largeConfig = {
         worktreeCopyPatterns: Array.from({ length: 100 }, (_, i) => `*.pattern${i}`),
         worktreeCopyIgnores: Array.from({ length: 50 }, (_, i) => `ignore${i}/**`),
-        worktreePathTemplate: "$BASE_PATH".repeat(10) + "/$BRANCH_NAME",
+        worktreePathTemplate: `${"$BASE_PATH".repeat(10)}/$BRANCH_NAME`,
         postCreateCmd: Array.from({ length: 20 }, (_, i) => `command-${i}`),
-        terminalCommand: "very-long-terminal-command ".repeat(10) + "$WORKTREE_PATH",
+        terminalCommand: `${"very-long-terminal-command ".repeat(10)}$WORKTREE_PATH`,
       }
 
       const result = configService.updateConfig(largeConfig)

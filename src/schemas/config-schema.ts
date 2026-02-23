@@ -30,6 +30,10 @@ export const WorktreeConfigSchema = z
       .boolean()
       .default(false)
       .describe("Also delete the associated git branch when deleting a worktree"),
+    showRemoteBranches: z
+      .boolean()
+      .default(true)
+      .describe("Show remote-only branches in the source branch picker"),
     lastUpdateCheck: z
       .number()
       .optional()

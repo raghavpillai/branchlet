@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test"
 import {
+  COLORS,
   DEFAULT_CONFIG,
   GLOBAL_CONFIG_DIR,
   GLOBAL_CONFIG_FILE,
   LOCAL_CONFIG_FILE_NAME,
-  COLORS,
   MESSAGES,
 } from "../../src/constants/index.js"
 
@@ -37,7 +37,7 @@ describe("constants", () => {
 
     test("should support recursive directory patterns", () => {
       const patterns = DEFAULT_CONFIG.worktreeCopyPatterns
-      const hasRecursivePattern = patterns.some(p => p.includes("**"))
+      const hasRecursivePattern = patterns.some((p) => p.includes("**"))
       expect(hasRecursivePattern).toBe(true)
     })
   })
@@ -47,7 +47,7 @@ describe("constants", () => {
       expect(typeof GLOBAL_CONFIG_DIR).toBe("string")
       expect(typeof GLOBAL_CONFIG_FILE).toBe("string")
       expect(typeof LOCAL_CONFIG_FILE_NAME).toBe("string")
-      
+
       expect(GLOBAL_CONFIG_DIR.length).toBeGreaterThan(0)
       expect(GLOBAL_CONFIG_FILE.length).toBeGreaterThan(0)
       expect(LOCAL_CONFIG_FILE_NAME.length).toBeGreaterThan(0)
@@ -61,14 +61,7 @@ describe("constants", () => {
 
   describe("COLORS", () => {
     test("should define all required color constants", () => {
-      const requiredColors = [
-        "PRIMARY",
-        "SUCCESS", 
-        "WARNING",
-        "ERROR",
-        "INFO",
-        "MUTED",
-      ]
+      const requiredColors = ["PRIMARY", "SUCCESS", "WARNING", "ERROR", "INFO", "MUTED"]
 
       for (const color of requiredColors) {
         expect(COLORS).toHaveProperty(color)
@@ -79,12 +72,12 @@ describe("constants", () => {
 
     test("should have valid color formats", () => {
       const colorValues = Object.values(COLORS)
-      
+
       for (const color of colorValues) {
         // Should be either hex color (#RRGGBB) or color name
         const isHex = /^#[0-9A-Fa-f]{6}$/.test(color)
         const isColorName = /^[a-zA-Z]+$/.test(color)
-        
+
         expect(isHex || isColorName).toBe(true)
       }
     })
@@ -92,11 +85,7 @@ describe("constants", () => {
 
   describe("MESSAGES", () => {
     test("should define all required message constants", () => {
-      const requiredMessages = [
-        "CREATE_SUCCESS",
-        "DELETE_SUCCESS", 
-        "DELETE_DELETING",
-      ]
+      const requiredMessages = ["CREATE_SUCCESS", "DELETE_SUCCESS", "DELETE_DELETING"]
 
       for (const message of requiredMessages) {
         expect(MESSAGES).toHaveProperty(message)
@@ -113,7 +102,7 @@ describe("constants", () => {
 
     test("should not contain placeholder text", () => {
       const messageValues = Object.values(MESSAGES)
-      
+
       for (const message of messageValues) {
         expect(message).not.toContain("TODO")
         expect(message).not.toContain("FIXME")
@@ -133,13 +122,13 @@ describe("constants", () => {
 
     test("should not allow modification of default config", () => {
       const originalPatterns = [...DEFAULT_CONFIG.worktreeCopyPatterns]
-      
+
       try {
         DEFAULT_CONFIG.worktreeCopyPatterns.push("*.modified")
-      } catch (error) {
+      } catch (_error) {
         // Some environments might throw on modification
       }
-      
+
       // Reset to ensure test doesn't affect others
       DEFAULT_CONFIG.worktreeCopyPatterns.length = 0
       DEFAULT_CONFIG.worktreeCopyPatterns.push(...originalPatterns)
@@ -150,7 +139,7 @@ describe("constants", () => {
     test("should have consistent naming conventions", () => {
       const colorKeys = Object.keys(COLORS)
       const messageKeys = Object.keys(MESSAGES)
-      
+
       // All keys should be UPPER_CASE
       for (const key of [...colorKeys, ...messageKeys]) {
         expect(key).toMatch(/^[A-Z_]+$/)
@@ -161,12 +150,12 @@ describe("constants", () => {
       // Test that defaults work across different operating systems
       expect(DEFAULT_CONFIG.worktreePathTemplate).not.toContain("\\")
       expect(GLOBAL_CONFIG_DIR).toBeDefined()
-      
+
       // Should handle cross-platform paths
       const isWindows = process.platform === "win32"
       const isMac = process.platform === "darwin"
       const isLinux = process.platform === "linux"
-      
+
       expect(isWindows || isMac || isLinux).toBe(true)
     })
   })
@@ -181,7 +170,7 @@ describe("constants", () => {
 
     test("should not have invalid template syntax", () => {
       const template = DEFAULT_CONFIG.worktreePathTemplate
-      
+
       // Should not have unescaped special characters that could break path resolution
       expect(template).not.toMatch(/[<>:"|?*]/)
       expect(template).not.toContain("$$") // Double dollar signs
