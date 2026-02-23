@@ -23,12 +23,13 @@ export class UpdateService {
 
   static async checkForUpdates(
     currentVersion: string,
-    configService: ConfigService
+    configService: ConfigService,
+    force = false
   ): Promise<UpdateCheckResult> {
     const config = configService.getConfig()
     const now = Date.now()
 
-    if (!UpdateService.shouldCheckForUpdates(configService)) {
+    if (!force && !UpdateService.shouldCheckForUpdates(configService)) {
       return (
         UpdateService.getCachedUpdateStatus(configService, currentVersion) || {
           hasUpdate: false,

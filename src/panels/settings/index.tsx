@@ -81,7 +81,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
       setCheckingUpdates(true)
       const configService = worktreeService.getConfigService()
 
-      UpdateService.checkForUpdates(VERSION, configService)
+      UpdateService.checkForUpdates(VERSION, configService, true)
         .then((result) => {
           setManualUpdateResult(result)
           setCheckingUpdates(false)
