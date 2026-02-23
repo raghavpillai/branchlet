@@ -21,6 +21,10 @@ export class GitService {
     this.gitRoot = gitRoot || process.cwd()
   }
 
+  getGitRoot(): string {
+    return this.gitRoot
+  }
+
   async validateRepository(): Promise<boolean> {
     return await isGitRepository(this.gitRoot)
   }

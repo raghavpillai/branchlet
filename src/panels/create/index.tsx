@@ -40,12 +40,9 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
       setLoading(true)
       const gitService = worktreeService.getGitService()
       const config = worktreeService.getConfigService().getConfig()
-      const [repoInfo, allBranches] = await Promise.all([
-        gitService.getRepositoryInfo(),
-        gitService.listBranches(config.showRemoteBranches),
-      ])
+      const allBranches = await gitService.listBranches(config.showRemoteBranches)
       setBranches(allBranches)
-      setRepoPath(repoInfo.path)
+      setRepoPath(gitService.getGitRoot())
     } catch (error) {
       setState((prev) => ({
         ...prev,
@@ -106,11 +103,28 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
 
   const handleNewBranchSubmit = (newBranch: string): void => {
     const trimmedBranch = newBranch.trim()
-    setState((prev) => ({
-      ...prev,
-      newBranch: trimmedBranch || prev.sourceBranch,
-      step: "confirm",
-    }))
+    if (trimmedBranch) {
+      setState((prev) => ({
+        ...prev,
+        newBranch: trimmedBranch,
+        step: "confirm",
+      }))
+    } else {
+      // No new branch name — use source branch directly.
+      // For remote branches, derive a local name by stripping the remote prefix.
+      setState((prev) => {
+        const sourceBranch = prev.sourceBranch
+        const remoteEntry = branches.find((b) => b.name === sourceBranch && b.isRemote)
+        const derivedName = remoteEntry
+          ? sourceBranch.replace(/^[^/]+\//, "")
+          : sourceBranch
+        return {
+          ...prev,
+          newBranch: derivedName,
+          step: "confirm",
+        }
+      })
+    }
   }
 
   const validateNewBranchName = (name: string): string | undefined => {
@@ -123,7 +137,7 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
       return formatError
     }
 
-    const existingBranch = branches.find((branch) => branch.name === name)
+    const existingBranch = branches.find((branch) => branch.name === name && !branch.isRemote)
     if (existingBranch) {
       return "Branch already exists"
     }
@@ -280,6 +294,7 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
         <InputPrompt
           label="Enter a branch name, tag, or commit SHA:"
           placeholder="origin/feature/foo, v1.0.0, abc123f"
+          validate={(v) => (!v.trim() ? "Please enter a ref" : undefined)}
           onSubmit={handleCustomRefSubmit}
           onCancel={onCancel}
         />
