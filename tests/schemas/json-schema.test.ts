@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test"
 import * as fs from "node:fs"
 import * as path from "node:path"
-import { WorktreeConfigSchema, z } from "../../src/schemas/config-schema.js"
+import { z } from "zod"
+import { WorktreeConfigSchema } from "../../src/schemas/config-schema.js"
 
 const SCHEMA_PATH = path.join(import.meta.dirname, "..", "..", "schema.json")
 
@@ -36,7 +37,7 @@ describe("JSON Schema", () => {
   describe("schema drift detection", () => {
     test("should match current Zod schema", () => {
       const currentSchema = JSON.parse(fs.readFileSync(SCHEMA_PATH, "utf-8"))
-      const generatedSchema = z.toJSONSchema(WorktreeConfigSchema, { target: "draft-7" })
+      const generatedSchema = z.toJSONSchema(WorktreeConfigSchema, { target: "draft-7", io: "input" })
 
       const expectedSchema = {
         ...generatedSchema,
@@ -44,6 +45,7 @@ describe("JSON Schema", () => {
         $id: "https://raw.githubusercontent.com/raghavpillai/branchlet/main/schema.json",
         title: "Branchlet Configuration",
         description: "Configuration schema for Branchlet - Git worktree management CLI",
+        additionalProperties: false,
       }
 
       expect(currentSchema).toEqual(expectedSchema)
@@ -100,6 +102,16 @@ describe("JSON Schema", () => {
       for (const [key, value] of Object.entries(properties)) {
         expect((value as { default?: unknown }).default).toBeDefined()
       }
+    })
+
+    test("should not require any fields (all have defaults)", () => {
+      const schema = JSON.parse(fs.readFileSync(SCHEMA_PATH, "utf-8"))
+      expect(schema.required).toBeUndefined()
+    })
+
+    test("should reject unknown properties", () => {
+      const schema = JSON.parse(fs.readFileSync(SCHEMA_PATH, "utf-8"))
+      expect(schema.additionalProperties).toBe(false)
     })
   })
 })

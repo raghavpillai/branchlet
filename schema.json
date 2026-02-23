@@ -52,15 +52,7 @@
       "type": "boolean"
     }
   },
-  "required": [
-    "worktreeCopyPatterns",
-    "worktreeCopyIgnores",
-    "worktreePathTemplate",
-    "postCreateCmd",
-    "terminalCommand",
-    "deleteBranchWithWorktree"
-  ],
-  "additionalProperties": false,
   "$id": "https://raw.githubusercontent.com/raghavpillai/branchlet/main/schema.json",
-  "title": "Branchlet Configuration"
+  "title": "Branchlet Configuration",
+  "additionalProperties": false
 }
