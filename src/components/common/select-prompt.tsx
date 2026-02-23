@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react"
 import { COLORS } from "../../constants/index.js"
 import type { SelectPromptProps } from "../../types/index.js"
 
+const MAX_VISIBLE = 10
+
 export function SelectPrompt<T = string>({
   label,
   options,
@@ -30,6 +32,28 @@ export function SelectPrompt<T = string>({
       setSelectedIndex(filteredOptions.length - 1)
     }
   }, [filteredOptions.length, selectedIndex])
+
+  const getVisibleRange = () => {
+    if (filteredOptions.length <= MAX_VISIBLE) {
+      return { start: 0, end: filteredOptions.length }
+    }
+    const half = Math.floor(MAX_VISIBLE / 2)
+    let start = selectedIndex - half
+    let end = selectedIndex + half + (MAX_VISIBLE % 2)
+    if (start < 0) {
+      start = 0
+      end = MAX_VISIBLE
+    } else if (end > filteredOptions.length) {
+      end = filteredOptions.length
+      start = filteredOptions.length - MAX_VISIBLE
+    }
+    return { start, end }
+  }
+
+  const { start, end } = getVisibleRange()
+  const visibleOptions = filteredOptions.slice(start, end)
+  const hasMoreAbove = start > 0
+  const hasMoreBelow = end < filteredOptions.length
 
   useInput((input, key) => {
     if (key.escape) {
@@ -103,6 +127,14 @@ export function SelectPrompt<T = string>({
         </Box>
       )}
 
+      {hasMoreAbove && (
+        <Box marginLeft={1}>
+          <Text color={COLORS.MUTED} dimColor>
+            ↑ {start} more above
+          </Text>
+        </Box>
+      )}
+
       {filteredOptions.length === 0 ? (
         <Box marginLeft={1}>
           <Text color={COLORS.MUTED} italic>
@@ -110,8 +142,9 @@ export function SelectPrompt<T = string>({
           </Text>
         </Box>
       ) : (
-        filteredOptions.map((option, index) => {
-          const isSelected = index === selectedIndex
+        visibleOptions.map((option, visibleIndex) => {
+          const actualIndex = start + visibleIndex
+          const isSelected = actualIndex === selectedIndex
           const marker = isSelected ? "> " : "  "
           const textColor = option.disabled
             ? COLORS.MUTED
@@ -135,6 +168,14 @@ export function SelectPrompt<T = string>({
             </Box>
           )
         })
+      )}
+
+      {hasMoreBelow && (
+        <Box marginLeft={1}>
+          <Text color={COLORS.MUTED} dimColor>
+            ↓ {filteredOptions.length - end} more below
+          </Text>
+        </Box>
       )}
 
       <Box marginTop={1}>
