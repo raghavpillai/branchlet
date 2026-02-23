@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { ConfirmDialog, SelectPrompt, StatusIndicator } from "../../components/common/index.js"
 import { COLORS } from "../../constants/index.js"
 import {
-  ShellIntegrationService,
+  installShellIntegration,
   type ShellIntegrationStatus,
 } from "../../services/shell-integration-service.js"
 import type { SelectOption } from "../../types/index.js"
@@ -54,7 +54,7 @@ export function SetupShellIntegration({
     setError(undefined)
 
     try {
-      await ShellIntegrationService.install(selectedShell, "branchlet")
+      await installShellIntegration(selectedShell, "branchlet")
       setStep("success")
 
       setTimeout(() => {

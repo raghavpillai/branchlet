@@ -7,7 +7,7 @@ import { COLORS, MESSAGES } from "../../constants/index.js"
 import type { WorktreeConfig } from "../../schemas/config-schema.js"
 import type { WorktreeService } from "../../services/index.js"
 import type { UpdateCheckResult } from "../../services/update-service.js"
-import { UpdateService } from "../../services/update-service.js"
+import { checkForUpdates } from "../../services/update-service.js"
 import type { SelectOption } from "../../types/index.js"
 
 const VERSION = packageJson.version
@@ -81,7 +81,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
       setCheckingUpdates(true)
       const configService = worktreeService.getConfigService()
 
-      UpdateService.checkForUpdates(VERSION, configService, true)
+      checkForUpdates(VERSION, configService, true)
         .then((result) => {
           setManualUpdateResult(result)
           setCheckingUpdates(false)
