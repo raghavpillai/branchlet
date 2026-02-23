@@ -69,6 +69,7 @@ Create a `.branchlet.json` file in your project root or configure global setting
 
 ```json
 {
+  "$schema": "https://raw.githubusercontent.com/raghavpillai/branchlet/main/schema.json",
   "worktreeCopyPatterns": [".env*", ".vscode/**"],
   "worktreeCopyIgnores": ["**/node_modules/**", "**/dist/**", "**/.git/**"],
   "worktreePathTemplate": "$BASE_PATH.worktree",
@@ -142,6 +143,7 @@ Create `.branchlet.json` in your project:
 
 ```json
 {
+  "$schema": "https://raw.githubusercontent.com/raghavpillai/branchlet/main/schema.json",
   "worktreeCopyPatterns": [
     ".env.local",
     ".vscode/**",

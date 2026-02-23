@@ -42,9 +42,14 @@ jobs:
       - name: Run linting
         run: bun run lint
         
+      - name: Validate JSON Schema
+        run: |
+          bun run generate:schema
+          git diff --exit-code schema.json
+
       - name: Run tests
         run: bun test tests/ --coverage
-        
+
       - name: Build project
         run: bun run build
         
