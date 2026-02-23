@@ -50,6 +50,18 @@
       "description": "Also delete the associated git branch when deleting a worktree",
       "default": false,
       "type": "boolean"
+    },
+    "lastUpdateCheck": {
+      "description": "Timestamp of last update check (milliseconds since epoch)",
+      "type": "number"
+    },
+    "latestVersion": {
+      "description": "Latest version available on npm",
+      "type": "string"
+    },
+    "checkedVersion": {
+      "description": "Version that was current when last checked",
+      "type": "string"
     }
   },
   "$id": "https://raw.githubusercontent.com/raghavpillai/branchlet/main/schema.json",

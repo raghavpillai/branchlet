@@ -62,6 +62,9 @@ describe("JSON Schema", () => {
         "postCreateCmd",
         "terminalCommand",
         "deleteBranchWithWorktree",
+        "lastUpdateCheck",
+        "latestVersion",
+        "checkedVersion",
       ]
 
       for (const field of expectedFields) {
@@ -81,6 +84,11 @@ describe("JSON Schema", () => {
       // String fields
       expect(properties.worktreePathTemplate.type).toBe("string")
       expect(properties.terminalCommand.type).toBe("string")
+      expect(properties.latestVersion.type).toBe("string")
+      expect(properties.checkedVersion.type).toBe("string")
+
+      // Number fields
+      expect(properties.lastUpdateCheck.type).toBe("number")
 
       // Boolean fields
       expect(properties.deleteBranchWithWorktree.type).toBe("boolean")
@@ -95,12 +103,21 @@ describe("JSON Schema", () => {
       }
     })
 
-    test("should have default values for all fields", () => {
+    test("should have default values for user-facing config fields", () => {
       const schema = JSON.parse(fs.readFileSync(SCHEMA_PATH, "utf-8"))
       const { properties } = schema
 
-      for (const [key, value] of Object.entries(properties)) {
-        expect((value as { default?: unknown }).default).toBeDefined()
+      const fieldsWithDefaults = [
+        "worktreeCopyPatterns",
+        "worktreeCopyIgnores",
+        "worktreePathTemplate",
+        "postCreateCmd",
+        "terminalCommand",
+        "deleteBranchWithWorktree",
+      ]
+
+      for (const field of fieldsWithDefaults) {
+        expect((properties[field] as { default?: unknown }).default).toBeDefined()
       }
     })
 
