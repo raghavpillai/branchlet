@@ -37,8 +37,8 @@ export async function runCreate(args: CliArgs, worktreeService: WorktreeService)
   }
 
   // For remote branches without an explicit --branch, derive a local name
-  const newBranch = args.branch
-    ?? (sourceBranchEntry.isRemote ? args.source.replace(/^[^/]+\//, "") : args.source)
+  const newBranch =
+    args.branch ?? (sourceBranchEntry.isRemote ? args.source.replace(/^[^/]+\//, "") : args.source)
 
   const worktreePath = getWorktreePath(
     gitService.getGitRoot(),

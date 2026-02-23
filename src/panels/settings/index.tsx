@@ -457,7 +457,10 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
                 </Box>
                 <Box marginTop={1}>
                   <Text color={COLORS.MUTED}>
-                    Run: <Text bold color={COLORS.PRIMARY}>{MESSAGES.UPDATE_INSTALL_CMD}</Text>
+                    Run:{" "}
+                    <Text bold color={COLORS.PRIMARY}>
+                      {MESSAGES.UPDATE_INSTALL_CMD}
+                    </Text>
                   </Text>
                 </Box>
               </>
@@ -467,7 +470,9 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
                   <Text color={COLORS.WARNING}>{MESSAGES.UPDATE_FAILED}</Text>
                 </Box>
                 <Box>
-                  <Text color={COLORS.MUTED}>Current version: v{manualUpdateResult.currentVersion}</Text>
+                  <Text color={COLORS.MUTED}>
+                    Current version: v{manualUpdateResult.currentVersion}
+                  </Text>
                 </Box>
               </>
             ) : (

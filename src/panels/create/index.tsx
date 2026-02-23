@@ -114,9 +114,7 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
       setState((prev) => {
         const sourceBranch = prev.sourceBranch
         const remoteEntry = branches.find((b) => b.name === sourceBranch && b.isRemote)
-        const derivedName = remoteEntry
-          ? sourceBranch.replace(/^[^/]+\//, "")
-          : sourceBranch
+        const derivedName = remoteEntry ? sourceBranch.replace(/^[^/]+\//, "") : sourceBranch
         return {
           ...prev,
           newBranch: derivedName,
