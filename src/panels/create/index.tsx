@@ -39,8 +39,7 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
     try {
       setLoading(true)
       const gitService = worktreeService.getGitService()
-      const config = worktreeService.getConfigService().getConfig()
-      const allBranches = await gitService.listBranches(true)
+      const allBranches = await gitService.listBranches()
       setBranches(allBranches)
       setRepoPath(gitService.getGitRoot())
     } catch (error) {

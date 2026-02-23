@@ -19,7 +19,13 @@ describe("file-patterns", () => {
     })
 
     test("should handle various file types", async () => {
-      const paths = ["/", "/tmp", "/usr", "/var", process.cwd()]
+      const paths = [
+        "/",
+        "/tmp",
+        "/usr",
+        "/var",
+        process.cwd(),
+      ]
 
       for (const path of paths) {
         const result = await fileExists(path)
@@ -40,7 +46,11 @@ describe("file-patterns", () => {
     })
 
     test("should handle edge cases", async () => {
-      const paths = ["", "/", process.cwd()]
+      const paths = [
+        "",
+        "/",
+        process.cwd(),
+      ]
 
       for (const path of paths) {
         const result = await isDirectory(path)
@@ -51,7 +61,13 @@ describe("file-patterns", () => {
 
   describe("shouldIgnoreFile", () => {
     test("should match ignore patterns correctly", () => {
-      const ignorePatterns = ["node_modules/**", ".git/**", "*.log", "dist/*", "*.tmp"]
+      const ignorePatterns = [
+        "node_modules/**",
+        ".git/**", 
+        "*.log",
+        "dist/*",
+        "*.tmp",
+      ]
 
       const testCases = [
         { path: "node_modules/package/index.js", shouldIgnore: true },
@@ -100,7 +116,15 @@ describe("file-patterns", () => {
     })
 
     test("should handle edge case patterns", () => {
-      const edgePatterns = ["", "*", "**", ".", "..", "/", "//"]
+      const edgePatterns = [
+        "",
+        "*",
+        "**",
+        ".",
+        "..",
+        "/",
+        "//",
+      ]
 
       for (const pattern of edgePatterns) {
         const result = shouldIgnoreFile("test/file.js", [pattern])
@@ -113,16 +137,16 @@ describe("file-patterns", () => {
     test("should handle non-existent directory", async () => {
       const patterns = ["*.json", "*.md"]
       const ignores = ["node_modules/**"]
-
+      
       const result = await matchFiles("/non/existent/dir", patterns, ignores)
-
+      
       expect(Array.isArray(result)).toBe(true)
       expect(result).toHaveLength(0)
     })
 
     test("should handle empty patterns", async () => {
       const result = await matchFiles("/tmp", [], [])
-
+      
       expect(Array.isArray(result)).toBe(true)
       expect(result).toHaveLength(0)
     })
@@ -130,11 +154,11 @@ describe("file-patterns", () => {
     test("should handle current directory", async () => {
       const patterns = ["*.json", "*.md", "*.ts"]
       const ignores = ["node_modules/**", ".git/**"]
-
+      
       try {
         const result = await matchFiles(process.cwd(), patterns, ignores)
         expect(Array.isArray(result)).toBe(true)
-
+        
         // Should find some files in a typical project
         for (const file of result) {
           expect(typeof file).toBe("string")
@@ -149,10 +173,10 @@ describe("file-patterns", () => {
     test("should respect ignore patterns", async () => {
       const patterns = ["**/*"]
       const ignores = ["node_modules/**", ".git/**", "dist/**"]
-
+      
       try {
         const result = await matchFiles(process.cwd(), patterns, ignores)
-
+        
         // No results should contain ignored patterns
         for (const file of result) {
           expect(file).not.toMatch(/node_modules/)
@@ -165,7 +189,11 @@ describe("file-patterns", () => {
     })
 
     test("should handle complex glob patterns", async () => {
-      const complexPatterns = ["**/*.{js,ts,tsx,jsx}", "src/**/*.test.*", "*.{json,md,yml,yaml}"]
+      const complexPatterns = [
+        "**/*.{js,ts,tsx,jsx}",
+        "src/**/*.test.*",
+        "*.{json,md,yml,yaml}",
+      ]
 
       for (const pattern of complexPatterns) {
         try {
@@ -223,15 +251,15 @@ describe("file-patterns", () => {
       // Test with patterns that might match many files
       const patterns = ["**/*", "**/*.json", "**/*.md"]
       const ignores = ["node_modules/**", ".git/**", "dist/**", "coverage/**"]
-
+      
       const startTime = Date.now()
-
+      
       try {
         const result = await matchFiles(process.cwd(), patterns, ignores)
         const endTime = Date.now()
-
+        
         expect(Array.isArray(result)).toBe(true)
-
+        
         // Should complete in reasonable time (less than 5 seconds)
         expect(endTime - startTime).toBeLessThan(5000)
       } catch (error) {

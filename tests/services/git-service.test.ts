@@ -109,10 +109,10 @@ describe("GitService", () => {
         if (result.length > 0) {
           const branch = result[0]
           expect(branch).toHaveProperty("name")
-          expect(branch).toHaveProperty("lastCommitDate")
+          expect(branch).toHaveProperty("commit")
           expect(branch).toHaveProperty("isDefault")
           expect(branch).toHaveProperty("isCurrent")
-          expect(branch).toHaveProperty("recentlyUsed")
+          expect(branch).toHaveProperty("isRemote")
         }
       } catch (error) {
         // If not in a git repository, expect an error
@@ -120,25 +120,11 @@ describe("GitService", () => {
       }
     })
 
-    test("should return only local branches when includeRemote is false", async () => {
+    test("should include remote branches with isRemote flag", async () => {
       try {
-        const result = await gitService.listBranches(false)
+        const result = await gitService.listBranches()
         expect(Array.isArray(result)).toBe(true)
 
-        for (const branch of result) {
-          expect(branch.isRemote).toBe(false)
-        }
-      } catch (error) {
-        expect(error).toBeInstanceOf(Error)
-      }
-    })
-
-    test("should include remote branches when includeRemote is true", async () => {
-      try {
-        const result = await gitService.listBranches(true)
-        expect(Array.isArray(result)).toBe(true)
-
-        // Every branch should have the isRemote property
         for (const branch of result) {
           expect(typeof branch.isRemote).toBe("boolean")
         }
@@ -149,12 +135,11 @@ describe("GitService", () => {
 
     test("should not duplicate local branches when including remotes", async () => {
       try {
-        const localBranches = await gitService.listBranches(false)
-        const allBranches = await gitService.listBranches(true)
+        const allBranches = await gitService.listBranches()
+        const localNames = new Set(
+          allBranches.filter((b) => !b.isRemote).map((b) => b.name)
+        )
 
-        const localNames = new Set(localBranches.map((b) => b.name))
-
-        // Remote branches should not share exact names with local branches
         for (const branch of allBranches) {
           if (branch.isRemote) {
             const shortName = branch.name.replace(/^[^/]+\//, "")

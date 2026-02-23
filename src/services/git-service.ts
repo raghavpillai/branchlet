@@ -117,7 +117,7 @@ export class GitService {
     return worktrees
   }
 
-  async listBranches(includeRemote = false): Promise<GitBranch[]> {
+  async listBranches(): Promise<GitBranch[]> {
     const currentBranch = await this.getCurrentBranch()
     const defaultBranch = await this.getDefaultBranch()
 
@@ -161,15 +161,13 @@ export class GitService {
       return aOrder - bOrder
     })
 
-    if (includeRemote) {
-      const remoteBranches = await this.listRemoteBranches()
-      const localNames = new Set(branches.map((b) => b.name))
-      for (const remote of remoteBranches) {
-        // Deduplicate: skip remote branches that have a local counterpart
-        const shortName = remote.name.replace(/^[^/]+\//, "")
-        if (!localNames.has(shortName)) {
-          branches.push(remote)
-        }
+    const remoteBranches = await this.listRemoteBranches()
+    const localNames = new Set(branches.map((b) => b.name))
+    for (const remote of remoteBranches) {
+      // Deduplicate: skip remote branches that have a local counterpart
+      const shortName = remote.name.replace(/^[^/]+\//, "")
+      if (!localNames.has(shortName)) {
+        branches.push(remote)
       }
     }
 
