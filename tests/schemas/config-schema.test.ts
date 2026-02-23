@@ -58,11 +58,7 @@ describe("config-schema", () => {
     })
 
     test("should handle null and undefined values", () => {
-      const configs = [
-        null,
-        undefined,
-        { worktreeCopyPatterns: null },
-      ]
+      const configs = [null, undefined, { worktreeCopyPatterns: null }]
 
       for (const config of configs) {
         const result = validateConfig(config)
@@ -212,7 +208,7 @@ describe("config-schema", () => {
 
       for (const config of testConfigs) {
         const validateResult = validateConfig(config)
-        
+
         if (validateResult.success) {
           // If validateConfig succeeds, schema parse should also succeed
           expect(() => WorktreeConfigSchema.parse(config)).not.toThrow()

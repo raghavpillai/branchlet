@@ -12,11 +12,16 @@ export function UpdateBanner({ updateStatus }: UpdateBannerProps) {
   }
 
   return (
-    <Box borderStyle="round" paddingX={1} paddingY={0} borderColor={COLORS.WARNING} marginBottom={1}>
+    <Box
+      borderStyle="round"
+      paddingX={1}
+      paddingY={0}
+      borderColor={COLORS.WARNING}
+      marginBottom={1}
+    >
       <Box flexDirection="column">
         <Text>
-          <Text color={COLORS.WARNING}>⚠ Update Available:</Text>
-          {" "}
+          <Text color={COLORS.WARNING}>⚠ Update Available:</Text>{" "}
           <Text color={COLORS.MUTED}>v{updateStatus.currentVersion}</Text>
           {" → "}
           <Text bold color={COLORS.SUCCESS}>
@@ -24,7 +29,11 @@ export function UpdateBanner({ updateStatus }: UpdateBannerProps) {
           </Text>
         </Text>
         <Text color={COLORS.MUTED}>
-          Run: <Text bold color={COLORS.PRIMARY}>npm install -g branchlet</Text> to update
+          Run:{" "}
+          <Text bold color={COLORS.PRIMARY}>
+            npm install -g branchlet
+          </Text>{" "}
+          to update
         </Text>
       </Box>
     </Box>

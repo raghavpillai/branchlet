@@ -20,7 +20,6 @@ export async function runCreate(args: CliArgs, worktreeService: WorktreeService)
     throw new Error(`Invalid directory name: ${dirError}`)
   }
 
-  const newBranch = args.branch ?? args.source
   if (args.branch) {
     const branchError = validateBranchName(args.branch)
     if (branchError) {
@@ -30,15 +29,19 @@ export async function runCreate(args: CliArgs, worktreeService: WorktreeService)
 
   const config = worktreeService.getConfigService().getConfig()
   const gitService = worktreeService.getGitService()
-  const repoInfo = await gitService.getRepositoryInfo()
 
-  const branchExists = repoInfo.branches.some((b) => b.name === args.source)
-  if (!branchExists) {
+  const allBranches = await gitService.listBranches()
+  const sourceBranchEntry = allBranches.find((b) => b.name === args.source)
+  if (!sourceBranchEntry) {
     throw new Error(`Source branch '${args.source}' does not exist`)
   }
 
+  // For remote branches without an explicit --branch, derive a local name
+  const newBranch =
+    args.branch ?? (sourceBranchEntry.isRemote ? args.source.replace(/^[^/]+\//, "") : args.source)
+
   const worktreePath = getWorktreePath(
-    repoInfo.path,
+    gitService.getGitRoot(),
     args.name,
     config.worktreePathTemplate,
     newBranch,
