@@ -69,6 +69,7 @@ Create a `.branchlet.json` file in your project root or configure global setting
 
 ```json
 {
+  "$schema": "https://raw.githubusercontent.com/raghavpillai/branchlet/main/schema.json",
   "worktreeCopyPatterns": [".env*", ".vscode/**"],
   "worktreeCopyIgnores": ["**/node_modules/**", "**/dist/**", "**/.git/**"],
   "worktreePathTemplate": "$BASE_PATH.worktree",
@@ -115,28 +116,6 @@ Available in `worktreePathTemplate`, `postCreateCmd`, and `terminalCommand`:
 - `$BRANCH_NAME`: Name of the new branch
 - `$SOURCE_BRANCH`: Name of the source branch
 
-### JSON Schema Support
-
-Branchlet provides a JSON Schema for VSCode autocompletion and real-time validation of `.branchlet.json` configuration files.
-
-Add the `$schema` property to your `.branchlet.json` file:
-
-```json
-{
-  "$schema": "https://raw.githubusercontent.com/raghavpillai/branchlet/main/schema.json",
-  "worktreeCopyPatterns": [".env*", ".vscode/**"],
-  "postCreateCmd": ["npm install"]
-}
-```
-
-If you have Branchlet installed locally via npm, you can also reference the local schema:
-
-```json
-{
-  "$schema": "./node_modules/branchlet/schema.json"
-}
-```
-
 ## Usage Examples
 
 ### Basic Workflow
@@ -164,6 +143,7 @@ Create `.branchlet.json` in your project:
 
 ```json
 {
+  "$schema": "https://raw.githubusercontent.com/raghavpillai/branchlet/main/schema.json",
   "worktreeCopyPatterns": [
     ".env.local",
     ".vscode/**",
