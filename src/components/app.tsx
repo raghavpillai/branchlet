@@ -2,6 +2,7 @@ import { Text, useInput } from "ink"
 import { useCallback, useEffect, useState } from "react"
 import packageJson from "../../package.json" with { type: "json" }
 import { COLORS } from "../constants/index.js"
+import { AppStateService } from "../services/app-state-service.js"
 import { ConfigService } from "../services/config-service.js"
 import { WorktreeService } from "../services/index.js"
 import type { ShellIntegrationStatus } from "../services/shell-integration-service.js"
@@ -63,18 +64,20 @@ export function App({ initialMode = "menu", isFromWrapper = false, onExit }: App
       const service = new WorktreeService(workingDir)
       await service.initialize()
 
-      const configService = service.getConfigService()
-      if (shouldCheckForUpdates(configService)) {
-        checkForUpdates(VERSION, configService)
+      const appStateService = new AppStateService()
+      await appStateService.load()
+
+      if (shouldCheckForUpdates(appStateService)) {
+        checkForUpdates(VERSION, appStateService)
           .then(setUpdateStatus)
           .catch(() => {
-            const cached = getCachedUpdateStatus(configService, VERSION)
+            const cached = getCachedUpdateStatus(appStateService, VERSION)
             if (cached) {
               setUpdateStatus(cached)
             }
           })
       } else {
-        const cached = getCachedUpdateStatus(configService, VERSION)
+        const cached = getCachedUpdateStatus(appStateService, VERSION)
         if (cached) {
           setUpdateStatus(cached)
         }

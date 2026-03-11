@@ -1,4 +1,4 @@
-import type { ConfigService } from "./config-service.js"
+import type { AppStateService } from "./app-state-service.js"
 import { isNewerVersion } from "../utils/version-compare.js"
 
 export interface UpdateCheckResult {
@@ -12,27 +12,27 @@ export interface UpdateCheckResult {
 const NPM_REGISTRY_URL = "https://registry.npmjs.org/branchlet/latest"
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
 
-export function shouldCheckForUpdates(configService: ConfigService): boolean {
-  const config = configService.getConfig()
-  const lastCheck = config.lastUpdateCheck || 0
+export function shouldCheckForUpdates(appStateService: AppStateService): boolean {
+  const state = appStateService.getState()
+  const lastCheck = state.lastUpdateCheck || 0
   const now = Date.now()
   return now - lastCheck >= CACHE_TTL_MS
 }
 
 export async function checkForUpdates(
   currentVersion: string,
-  configService: ConfigService,
+  appStateService: AppStateService,
   force = false
 ): Promise<UpdateCheckResult> {
-  const config = configService.getConfig()
+  const state = appStateService.getState()
   const now = Date.now()
 
-  if (!force && !shouldCheckForUpdates(configService)) {
+  if (!force && !shouldCheckForUpdates(appStateService)) {
     return (
-      getCachedUpdateStatus(configService, currentVersion) || {
+      getCachedUpdateStatus(appStateService, currentVersion) || {
         hasUpdate: false,
         currentVersion,
-        checkedAt: config.lastUpdateCheck || now,
+        checkedAt: state.lastUpdateCheck || now,
       }
     )
   }
@@ -41,13 +41,13 @@ export async function checkForUpdates(
     const latestVersion = await fetchLatestVersion()
     const hasUpdate = isNewerVersion(currentVersion, latestVersion)
 
-    const updatedConfig = configService.updateConfig({
+    appStateService.update({
       lastUpdateCheck: now,
       latestVersion: latestVersion,
       checkedVersion: currentVersion,
     })
 
-    configService.saveConfig(updatedConfig).catch(() => {})
+    appStateService.save().catch(() => {})
 
     return {
       hasUpdate,
@@ -66,23 +66,23 @@ export async function checkForUpdates(
 }
 
 export function getCachedUpdateStatus(
-  configService: ConfigService,
+  appStateService: AppStateService,
   currentVersion?: string
 ): UpdateCheckResult | null {
-  const config = configService.getConfig()
+  const state = appStateService.getState()
 
-  if (!config.lastUpdateCheck || !config.latestVersion) {
+  if (!state.lastUpdateCheck || !state.latestVersion) {
     return null
   }
 
-  const version = currentVersion || config.checkedVersion || config.latestVersion
-  const hasUpdate = isNewerVersion(version, config.latestVersion)
+  const version = currentVersion || state.checkedVersion || state.latestVersion
+  const hasUpdate = isNewerVersion(version, state.latestVersion)
 
   return {
     hasUpdate,
     currentVersion: version,
-    latestVersion: config.latestVersion,
-    checkedAt: config.lastUpdateCheck,
+    latestVersion: state.latestVersion,
+    checkedAt: state.lastUpdateCheck,
   }
 }
 

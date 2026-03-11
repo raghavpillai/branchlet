@@ -5,6 +5,7 @@ import { SelectPrompt, StatusIndicator } from "../../components/common/index.js"
 import { GLOBAL_CONFIG_FILE } from "../../constants/default-config.js"
 import { COLORS, MESSAGES } from "../../constants/index.js"
 import type { WorktreeConfig } from "../../schemas/config-schema.js"
+import { AppStateService } from "../../services/app-state-service.js"
 import type { WorktreeService } from "../../services/index.js"
 import type { UpdateCheckResult } from "../../services/update-service.js"
 import { checkForUpdates } from "../../services/update-service.js"
@@ -79,9 +80,10 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
   useEffect(() => {
     if (step === "check-updates" && !checkingUpdates && !manualUpdateResult) {
       setCheckingUpdates(true)
-      const configService = worktreeService.getConfigService()
-
-      checkForUpdates(VERSION, configService, true)
+      const appStateService = new AppStateService()
+      appStateService
+        .load()
+        .then(() => checkForUpdates(VERSION, appStateService, true))
         .then((result) => {
           setManualUpdateResult(result)
           setCheckingUpdates(false)
@@ -96,7 +98,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
           setCheckingUpdates(false)
         })
     }
-  }, [step, checkingUpdates, manualUpdateResult, worktreeService])
+  }, [step, checkingUpdates, manualUpdateResult])
 
   const resetConfig = async (): Promise<void> => {
     try {
