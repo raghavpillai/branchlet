@@ -62,9 +62,6 @@ describe("JSON Schema", () => {
         "postCreateCmd",
         "terminalCommand",
         "deleteBranchWithWorktree",
-        "lastUpdateCheck",
-        "latestVersion",
-        "checkedVersion",
       ]
 
       for (const field of expectedFields) {
@@ -84,11 +81,6 @@ describe("JSON Schema", () => {
       // String fields
       expect(properties.worktreePathTemplate.type).toBe("string")
       expect(properties.terminalCommand.type).toBe("string")
-      expect(properties.latestVersion.type).toBe("string")
-      expect(properties.checkedVersion.type).toBe("string")
-
-      // Number fields
-      expect(properties.lastUpdateCheck.type).toBe("number")
 
       // Boolean fields
       expect(properties.deleteBranchWithWorktree.type).toBe("boolean")
