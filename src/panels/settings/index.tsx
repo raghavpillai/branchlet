@@ -98,7 +98,7 @@ export function SettingsMenu({ worktreeService, onBack }: SettingsMenuProps) {
           setCheckingUpdates(false)
         })
     }
-  }, [step, checkingUpdates, manualUpdateResult, worktreeService])
+  }, [step, checkingUpdates, manualUpdateResult])
 
   const resetConfig = async (): Promise<void> => {
     try {
