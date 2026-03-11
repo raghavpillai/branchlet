@@ -63,7 +63,7 @@
     "typescript": "^5.9.2"
   },
   "overrides": {
-    "minimatch": "^10.2.3"
+    "minimatch": "^10.2.4"
   },
   "engines": {
     "node": ">=20.0.0"
