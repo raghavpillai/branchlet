@@ -133,7 +133,7 @@ describe("GitService", () => {
       }
     })
 
-    test("should not duplicate local branches when including remotes", async () => {
+    test("should not duplicate origin branches when a local counterpart exists", async () => {
       try {
         const allBranches = await gitService.listBranches()
         const localNames = new Set(
@@ -141,10 +141,27 @@ describe("GitService", () => {
         )
 
         for (const branch of allBranches) {
-          if (branch.isRemote) {
-            const shortName = branch.name.replace(/^[^/]+\//, "")
+          if (branch.isRemote && branch.name.startsWith("origin/")) {
+            const shortName = branch.name.replace(/^origin\//, "")
             expect(localNames.has(shortName)).toBe(false)
           }
+        }
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+      }
+    })
+
+    test("should always include non-origin remote branches regardless of local counterparts", async () => {
+      try {
+        const allBranches = await gitService.listBranches()
+        const nonOriginRemotes = allBranches.filter(
+          (b) => b.isRemote && !b.name.startsWith("origin/")
+        )
+
+        // Every non-origin remote branch (e.g. upstream/main) must appear
+        // even when a local branch with the same short name exists.
+        for (const branch of nonOriginRemotes) {
+          expect(allBranches).toContain(branch)
         }
       } catch (error) {
         expect(error).toBeInstanceOf(Error)
