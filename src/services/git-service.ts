@@ -167,10 +167,11 @@ export class GitService {
       // Deduplicate: skip origin/* branches that have a local counterpart,
       // but always include branches from other remotes (e.g. upstream/main)
       // since they represent distinct refs the user may want to branch from.
-      const isOrigin = remote.name.startsWith("origin/")
-      const shortName = remote.name.replace(/^[^/]+\//, "")
-      if (isOrigin && localNames.has(shortName)) {
-        continue
+      if (remote.name.startsWith("origin/")) {
+        const shortName = remote.name.replace(/^origin\//, "")
+        if (localNames.has(shortName)) {
+          continue
+        }
       }
       branches.push(remote)
     }

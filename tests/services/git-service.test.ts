@@ -154,14 +154,17 @@ describe("GitService", () => {
     test("should always include non-origin remote branches regardless of local counterparts", async () => {
       try {
         const allBranches = await gitService.listBranches()
-        const nonOriginRemotes = allBranches.filter(
-          (b) => b.isRemote && !b.name.startsWith("origin/")
+        const allRemotes = await gitService.listRemoteBranches()
+        const nonOriginRemotes = allRemotes.filter(
+          (b) => !b.name.startsWith("origin/")
         )
 
         // Every non-origin remote branch (e.g. upstream/main) must appear
-        // even when a local branch with the same short name exists.
-        for (const branch of nonOriginRemotes) {
-          expect(allBranches).toContain(branch)
+        // in listBranches() — even when a local branch with the same short
+        // name exists.
+        const allBranchNames = new Set(allBranches.map((b) => b.name))
+        for (const remote of nonOriginRemotes) {
+          expect(allBranchNames.has(remote.name)).toBe(true)
         }
       } catch (error) {
         expect(error).toBeInstanceOf(Error)
