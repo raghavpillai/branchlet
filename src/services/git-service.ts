@@ -263,8 +263,6 @@ export class GitService {
   async deleteWorktree(options: WorktreeDeleteOptions): Promise<void> {
     const { path, force } = options
 
-    // Deinitialize submodules before deleting the worktree
-    // Git does not allow removing worktrees that contain submodules
     await this.deinitializeSubmodules(path)
 
     const args = ["worktree", "remove"]
@@ -285,15 +283,10 @@ export class GitService {
   private async deinitializeSubmodules(worktreePath: string): Promise<void> {
     const result = await executeGitCommand(["submodule", "deinit", "-f", "--all"], worktreePath)
 
-    // Ignore errors if there are no submodules or deinit fails
-    // (e.g., working in a worktree from an earlier Git version)
-    if (!result.success) {
-      // Only log if it's not a "no submodules" scenario
-      const isNoSubmodules = result.stderr.includes("No modules") || result.stderr.includes("not found")
-      if (!isNoSubmodules) {
-        console.warn(`Warning: Failed to deinitialize submodules in ${worktreePath}: ${result.stderr}`)
-      }
-    }
+    if (result.success) return
+    if (result.stderr.includes("No modules") || result.stderr.includes("not found")) return
+
+    console.warn(`Warning: Failed to deinitialize submodules in ${worktreePath}: ${result.stderr}`)
   }
 
   async isWorktreeClean(worktreePath: string): Promise<boolean> {
