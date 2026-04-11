@@ -98,12 +98,12 @@ export function ListWorktrees({
       return
     }
 
-    if (key.upArrow) {
+    if (key.upArrow || input.toLowerCase() === "k") {
       setSelectedIndex((prev) => (prev === 0 ? worktrees.length - 1 : prev - 1))
       return
     }
 
-    if (key.downArrow) {
+    if (key.downArrow || input.toLowerCase() === "j") {
       setSelectedIndex((prev) => (prev === worktrees.length - 1 ? 0 : prev + 1))
       return
     }
@@ -239,7 +239,7 @@ export function ListWorktrees({
 
       <Box marginTop={2}>
         <Text color={COLORS.MUTED} dimColor>
-          ↑↓ Navigate • Enter Action Menu • E Command • Esc Back
+          ↑↓/jk Navigate • Enter Action Menu • E Command • Esc Back
         </Text>
       </Box>
     </Box>

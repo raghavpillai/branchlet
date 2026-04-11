@@ -164,11 +164,16 @@ export class GitService {
     const remoteBranches = await this.listRemoteBranches()
     const localNames = new Set(branches.map((b) => b.name))
     for (const remote of remoteBranches) {
-      // Deduplicate: skip remote branches that have a local counterpart
-      const shortName = remote.name.replace(/^[^/]+\//, "")
-      if (!localNames.has(shortName)) {
-        branches.push(remote)
+      // Deduplicate: skip origin/* branches that have a local counterpart,
+      // but always include branches from other remotes (e.g. upstream/main)
+      // since they represent distinct refs the user may want to branch from.
+      if (remote.name.startsWith("origin/")) {
+        const shortName = remote.name.replace(/^origin\//, "")
+        if (localNames.has(shortName)) {
+          continue
+        }
       }
+      branches.push(remote)
     }
 
     return branches

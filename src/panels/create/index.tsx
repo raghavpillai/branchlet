@@ -302,6 +302,7 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
         <InputPrompt
           label={MESSAGES.CREATE_NEW_BRANCH_PROMPT}
           placeholder={MESSAGES.CREATE_NEW_BRANCH_PLACEHOLDER}
+          defaultValue={state.directoryName}
           validate={validateNewBranchName}
           onSubmit={handleNewBranchSubmit}
           onCancel={onCancel}
