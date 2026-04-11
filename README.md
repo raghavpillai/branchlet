@@ -57,6 +57,45 @@ branchlet --version  # Show version number
 branchlet -m create  # Set initial mode
 ```
 
+### Non-Interactive (Scriptable) CLI
+
+Pass flags to skip the interactive prompts entirely. The three core concepts map directly to flags:
+
+| Flag | Description |
+|------|-------------|
+| `-n, --name <name>` | Worktree directory name |
+| `-s, --source <branch>` | Source branch to create from |
+| `-b, --branch <branch>` | New branch name (defaults to `-n` when omitted) |
+
+```bash
+# Create a worktree — new branch defaults to the worktree name
+branchlet create -n my-feature -s main
+
+# Create a worktree with an explicit branch name different from the directory
+branchlet create -n ticket-3121-backend -s main -b feature/ticket-3121
+
+# Create multiple sibling worktrees from the same source branch
+# (each gets its own branch, so there's no checkout conflict)
+branchlet create -n digit3121-backend  -s main -b feat/digit3121-backend
+branchlet create -n digit3121-frontend -s main -b feat/digit3121-frontend
+
+# List worktrees as JSON
+branchlet list --json
+
+# Delete a worktree by name
+branchlet delete -n my-feature
+
+# Force-delete a worktree by path
+branchlet delete -p /path/to/worktree -f
+```
+
+Successful `create` output:
+```
+/path/to/worktree
+  source: main
+  branch: my-feature
+```
+
 ## Configuration
 
 Branchlet looks for configuration files in this order:

@@ -20,6 +20,10 @@ export async function runCreate(args: CliArgs, worktreeService: WorktreeService)
     throw new Error(`Invalid directory name: ${dirError}`)
   }
 
+  if (args.branch !== undefined && !args.branch.trim()) {
+    throw new Error("Branch name cannot be empty")
+  }
+
   if (args.branch) {
     const branchError = validateBranchName(args.branch)
     if (branchError) {
@@ -36,9 +40,10 @@ export async function runCreate(args: CliArgs, worktreeService: WorktreeService)
     throw new Error(`Source branch '${args.source}' does not exist`)
   }
 
-  // For remote branches without an explicit --branch, derive a local name
-  const newBranch =
-    args.branch ?? (sourceBranchEntry.isRemote ? args.source.replace(/^[^/]+\//, "") : args.source)
+  // When --branch is omitted, default to the worktree directory name so a fresh
+  // branch is always created (avoids conflicts when the source branch is already
+  // checked out in another worktree).
+  const newBranch = args.branch ?? args.name
 
   const worktreePath = getWorktreePath(
     gitService.getGitRoot(),
@@ -57,4 +62,6 @@ export async function runCreate(args: CliArgs, worktreeService: WorktreeService)
   })
 
   console.log(worktreePath)
+  console.log(`  source: ${args.source}`)
+  console.log(`  branch: ${newBranch}`)
 }

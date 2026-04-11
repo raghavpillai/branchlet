@@ -143,6 +143,15 @@ describe("CLI create command", () => {
       }
     })
 
+    test("should throw for empty branch name", async () => {
+      const service = new WorktreeService()
+      await service.initialize()
+
+      await expect(
+        runCreate({ command: "create", name: "test-wt", source: sourceBranch, branch: "" }, service)
+      ).rejects.toThrow("cannot be empty")
+    })
+
     test("should throw for nonexistent source branch", async () => {
       const service = new WorktreeService()
       await service.initialize()
@@ -164,47 +173,12 @@ describe("CLI create command", () => {
   })
 
   describe("branch defaults", () => {
-    test("should default newBranch to source when --branch is omitted", async () => {
+    test("should default newBranch to the worktree directory name when --branch is omitted", async () => {
       const service = new WorktreeService()
       await service.initialize()
 
-      // This will attempt to create a worktree using the source branch directly.
-      // It may fail if the branch is already checked out, but the error should NOT
-      // be about missing arguments or validation.
-      const args: CliArgs = {
-        command: "create",
-        name: "test-default-branch",
-        source: sourceBranch,
-      }
+      const wtName = `test-default-branch-${Date.now()}`
 
-      try {
-        await runCreate(args, service)
-        createdWorktrees.push("test-default-branch")
-      } catch (error) {
-        // Expected: "already checked out" since main is the current branch
-        expect(error).toBeInstanceOf(Error)
-        expect((error as Error).message).not.toContain("Missing required argument")
-        expect((error as Error).message).not.toContain("Invalid")
-      }
-    })
-  })
-
-  describe("successful creation", () => {
-    test("should create worktree and output path to stdout", async () => {
-      const service = new WorktreeService()
-      await service.initialize()
-
-      const branchName = `feat/cli-test-create-${Date.now()}`
-      const wtName = `cli-test-create-${Date.now()}`
-
-      const args: CliArgs = {
-        command: "create",
-        name: wtName,
-        source: sourceBranch,
-        branch: branchName,
-      }
-
-      // Capture console.log output
       const logs: string[] = []
       const originalLog = console.log
       console.log = (...msgArgs: unknown[]) => {
@@ -212,12 +186,98 @@ describe("CLI create command", () => {
       }
 
       try {
-        await runCreate(args, service)
+        await runCreate({ command: "create", name: wtName, source: sourceBranch }, service)
         createdWorktrees.push(wtName)
 
-        // Should have logged the worktree path
-        expect(logs.length).toBeGreaterThan(0)
+        // The branch line in the output should name the worktree, not the source branch
+        const branchLine = logs.find((l) => l.trimStart().startsWith("branch:"))
+        expect(branchLine).toBeDefined()
+        expect(branchLine).toContain(wtName)
+      } finally {
+        console.log = originalLog
+      }
+    })
+  })
+
+  describe("successful creation", () => {
+    test("should create worktree and output path, source, and branch to stdout", async () => {
+      const service = new WorktreeService()
+      await service.initialize()
+
+      const branchName = `feat/cli-test-create-${Date.now()}`
+      const wtName = `cli-test-create-${Date.now()}`
+
+      const logs: string[] = []
+      const originalLog = console.log
+      console.log = (...msgArgs: unknown[]) => {
+        logs.push(msgArgs.map(String).join(" "))
+      }
+
+      try {
+        await runCreate({ command: "create", name: wtName, source: sourceBranch, branch: branchName }, service)
+        createdWorktrees.push(wtName)
+
         expect(logs[0]).toContain(wtName)
+        const sourceLine = logs.find((l) => l.trimStart().startsWith("source:"))
+        const branchLine = logs.find((l) => l.trimStart().startsWith("branch:"))
+        expect(sourceLine).toContain(sourceBranch)
+        expect(branchLine).toContain(branchName)
+      } finally {
+        console.log = originalLog
+      }
+    })
+
+    test("should allow explicit -b that differs from -n", async () => {
+      const service = new WorktreeService()
+      await service.initialize()
+
+      const wtName = `cli-test-diffname-${Date.now()}`
+      const branchName = `feature/different-name-${Date.now()}`
+
+      const logs: string[] = []
+      const originalLog = console.log
+      console.log = (...msgArgs: unknown[]) => {
+        logs.push(msgArgs.map(String).join(" "))
+      }
+
+      try {
+        await runCreate({ command: "create", name: wtName, source: sourceBranch, branch: branchName }, service)
+        createdWorktrees.push(wtName)
+
+        const branchLine = logs.find((l) => l.trimStart().startsWith("branch:"))
+        expect(branchLine).toContain(branchName)
+        expect(branchLine).not.toContain(wtName)
+      } finally {
+        console.log = originalLog
+      }
+    })
+
+    test("should create two sibling worktrees from the same source branch", async () => {
+      const service1 = new WorktreeService()
+      await service1.initialize()
+      const service2 = new WorktreeService()
+      await service2.initialize()
+
+      const ts = Date.now()
+      const wt1 = `cli-sibling-a-${ts}`
+      const wt2 = `cli-sibling-b-${ts}`
+      const branch1 = `feat/sibling-a-${ts}`
+      const branch2 = `feat/sibling-b-${ts}`
+
+      const originalLog = console.log
+      console.log = () => {}
+
+      try {
+        await runCreate({ command: "create", name: wt1, source: sourceBranch, branch: branch1 }, service1)
+        createdWorktrees.push(wt1)
+
+        await runCreate({ command: "create", name: wt2, source: sourceBranch, branch: branch2 }, service2)
+        createdWorktrees.push(wt2)
+
+        const worktrees = await service1.getGitService().listWorktrees()
+        const paths = worktrees.map((wt) => wt.path)
+        expect(paths.some((p) => p.endsWith(wt1))).toBe(true)
+        expect(paths.some((p) => p.endsWith(wt2))).toBe(true)
       } finally {
         console.log = originalLog
       }
