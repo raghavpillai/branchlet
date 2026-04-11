@@ -268,8 +268,6 @@ export class GitService {
   async deleteWorktree(options: WorktreeDeleteOptions): Promise<void> {
     const { path, force } = options
 
-    await this.deinitializeSubmodules(path)
-
     const args = ["worktree", "remove"]
 
     if (force) {
@@ -280,18 +278,15 @@ export class GitService {
 
     const result = await executeGitCommand(args, this.gitRoot)
 
-    if (!result.success) {
-      throw handleGitError(result.stderr, "delete worktree")
-    }
-  }
-
-  private async deinitializeSubmodules(worktreePath: string): Promise<void> {
-    const result = await executeGitCommand(["submodule", "deinit", "-f", "--all"], worktreePath)
-
     if (result.success) return
-    if (result.stderr.includes("No modules") || result.stderr.includes("not found")) return
 
-    console.warn(`Warning: Failed to deinitialize submodules in ${worktreePath}: ${result.stderr}`)
+    if (!force && result.stderr.includes("submodule")) {
+      const forceResult = await executeGitCommand(["worktree", "remove", "--force", path], this.gitRoot)
+      if (forceResult.success) return
+      throw handleGitError(forceResult.stderr, "delete worktree")
+    }
+
+    throw handleGitError(result.stderr, "delete worktree")
   }
 
   async isWorktreeClean(worktreePath: string): Promise<boolean> {
