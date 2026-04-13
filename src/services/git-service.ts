@@ -278,9 +278,15 @@ export class GitService {
 
     const result = await executeGitCommand(args, this.gitRoot)
 
-    if (!result.success) {
-      throw handleGitError(result.stderr, "delete worktree")
+    if (result.success) return
+
+    if (!force && result.stderr.includes("submodule")) {
+      const forceResult = await executeGitCommand(["worktree", "remove", "--force", path], this.gitRoot)
+      if (forceResult.success) return
+      throw handleGitError(forceResult.stderr, "delete worktree")
     }
+
+    throw handleGitError(result.stderr, "delete worktree")
   }
 
   async isWorktreeClean(worktreePath: string): Promise<boolean> {

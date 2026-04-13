@@ -44,6 +44,7 @@
     "schema.json"
   ],
   "dependencies": {
+    "brace-expansion": "^5.0.5",
     "glob": "^13.0.6",
     "ink": "^6.2.2",
     "ink-spinner": "^5.0.0",
@@ -63,7 +64,8 @@
     "typescript": "^5.9.2"
   },
   "overrides": {
-    "minimatch": "^10.2.4"
+    "minimatch": "^10.2.4",
+    "brace-expansion": "^5.0.5"
   },
   "engines": {
     "node": ">=20.0.0"
