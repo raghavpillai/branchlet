@@ -1,6 +1,6 @@
 {
   "name": "branchlet",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "CLI for creating and managing Git worktrees",
   "type": "module",
   "main": "dist/index.js",
