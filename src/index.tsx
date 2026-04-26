@@ -163,6 +163,8 @@ async function main(): Promise<void> {
 
   let inkStdin: NodeJS.ReadStream = process.stdin
   let inkStdout: NodeJS.WriteStream = process.stdout
+  let ttyInFd: number | null = null
+  let ttyOutFd: number | null = null
 
   if (isFromWrapper) {
     process.env.FORCE_COLOR = "3"
@@ -170,29 +172,76 @@ async function main(): Promise<void> {
     try {
       const fs = require("node:fs")
       const tty = require("node:tty")
-      const ttyFd = fs.openSync("/dev/tty", "r+")
-      inkStdin = new tty.ReadStream(ttyFd) as unknown as NodeJS.ReadStream
-      inkStdout = new tty.WriteStream(ttyFd) as unknown as NodeJS.WriteStream
+      // Open /dev/tty with separate fds for read and write. Sharing one fd
+      // between tty.ReadStream and tty.WriteStream leaks references to the
+      // controlling PTY's slave end and causes Terminal.app to hang on Cmd+W
+      // until libuv finally tears the duplicated handles down.
+      ttyInFd = fs.openSync("/dev/tty", "r")
+      ttyOutFd = fs.openSync("/dev/tty", "w")
+      inkStdin = new tty.ReadStream(ttyInFd) as unknown as NodeJS.ReadStream
+      inkStdout = new tty.WriteStream(ttyOutFd) as unknown as NodeJS.WriteStream
 
       Object.defineProperty(inkStdout, "isTTY", { value: true })
       Object.defineProperty(inkStdout, "hasColors", { value: () => true })
       Object.defineProperty(inkStdout, "getColorDepth", { value: () => 24 })
+
+      // The bash subshell inherited fd 0; nothing in --from-wrapper mode reads
+      // from it, so don't let it ref the libuv loop after Ink hands off.
+      if (typeof process.stdin.unref === "function") {
+        process.stdin.unref()
+      }
     } catch (error) {
       console.error("Could not open /dev/tty:", error)
     }
+  }
+
+  const cleanupAndExit = (code: number): void => {
+    if (hasExited) return
+    hasExited = true
+
+    try {
+      unmount()
+    } catch {}
+
+    if (isFromWrapper) {
+      const stdinAny = inkStdin as NodeJS.ReadStream & { destroy?: () => void }
+      const stdoutAny = inkStdout as NodeJS.WriteStream & { destroy?: () => void }
+
+      try {
+        if (stdinAny.isTTY && typeof stdinAny.setRawMode === "function") {
+          stdinAny.setRawMode(false)
+        }
+      } catch {}
+      try {
+        stdinAny.destroy?.()
+      } catch {}
+      try {
+        stdoutAny.destroy?.()
+      } catch {}
+
+      const fs = require("node:fs")
+      if (ttyInFd !== null) {
+        try {
+          fs.closeSync(ttyInFd)
+        } catch {}
+        ttyInFd = null
+      }
+      if (ttyOutFd !== null) {
+        try {
+          fs.closeSync(ttyOutFd)
+        } catch {}
+        ttyOutFd = null
+      }
+    }
+
+    process.exit(code)
   }
 
   const { unmount } = render(
     <App
       initialMode={mode}
       isFromWrapper={isFromWrapper}
-      onExit={() => {
-        if (!hasExited) {
-          hasExited = true
-          unmount()
-          process.exit(0)
-        }
-      }}
+      onExit={() => cleanupAndExit(0)}
     />,
     {
       stdin: inkStdin,
@@ -201,21 +250,14 @@ async function main(): Promise<void> {
     }
   )
 
-  process.on("SIGINT", () => {
-    if (!hasExited) {
-      hasExited = true
-      unmount()
-      process.exit(0)
-    }
-  })
-
-  process.on("SIGTERM", () => {
-    if (!hasExited) {
-      hasExited = true
-      unmount()
-      process.exit(0)
-    }
-  })
+  process.on("SIGINT", () => cleanupAndExit(0))
+  process.on("SIGTERM", () => cleanupAndExit(0))
+  // Cmd+W / closing the terminal tab triggers a PTY vhangup, which delivers
+  // SIGHUP. Without this handler the explicitly-opened /dev/tty fds are only
+  // released by libuv during default-handler teardown — slow enough that
+  // Terminal.app spins for minutes waiting for the slave PTY's refcount to
+  // drop to zero.
+  process.on("SIGHUP", () => cleanupAndExit(0))
 }
 
 main().catch((error) => {
