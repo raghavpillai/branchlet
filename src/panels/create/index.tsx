@@ -216,9 +216,31 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
   }
 
   const getBranchOptions = (): SelectOption<string>[] => {
+    const PRIORITY_REMOTE_BRANCHES = [
+      "upstream/main",
+      "upstream/master",
+      "origin/main",
+      "origin/master",
+    ]
+
+    const prioritized: GitBranch[] = []
+    const rest: GitBranch[] = []
+    for (const branch of branches) {
+      if (branch.isRemote && PRIORITY_REMOTE_BRANCHES.includes(branch.name)) {
+        prioritized.push(branch)
+      } else {
+        rest.push(branch)
+      }
+    }
+    prioritized.sort(
+      (a, b) =>
+        PRIORITY_REMOTE_BRANCHES.indexOf(a.name) - PRIORITY_REMOTE_BRANCHES.indexOf(b.name)
+    )
+    const orderedBranches = [...prioritized, ...rest]
+
     const options: SelectOption<string>[] = []
 
-    for (const branch of branches) {
+    for (const branch of orderedBranches) {
       const option: SelectOption<string> = {
         label: branch.name,
         value: branch.name,
