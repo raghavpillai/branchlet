@@ -341,6 +341,7 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
         <ConfirmDialog
           title={MESSAGES.CREATE_CONFIRM_TITLE}
           message={message}
+          defaultSelection="confirm"
           onConfirm={handleConfirm}
           onCancel={onCancel}
         />

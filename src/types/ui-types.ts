@@ -34,6 +34,7 @@ export interface ConfirmDialogProps {
   message: React.ReactNode
   confirmLabel?: string
   cancelLabel?: string
+  defaultSelection?: "confirm" | "cancel"
   onConfirm: () => void
   onCancel: () => void
   variant?: "default" | "warning" | "danger"
