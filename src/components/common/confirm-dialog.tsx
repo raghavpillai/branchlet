@@ -9,11 +9,12 @@ export function ConfirmDialog({
   message,
   confirmLabel = "Yes",
   cancelLabel = "No",
+  defaultSelection = "cancel",
   onConfirm,
   onCancel,
   variant = "default",
 }: ConfirmDialogProps) {
-  const [selectedOption, setSelectedOption] = useState<"confirm" | "cancel">("cancel")
+  const [selectedOption, setSelectedOption] = useState<"confirm" | "cancel">(defaultSelection)
   const borderContext = useBorderContext()
 
   const variantColors = useMemo(
