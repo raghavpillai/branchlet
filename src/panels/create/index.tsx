@@ -22,9 +22,17 @@ interface CreateWorktreeProps {
   worktreeService: WorktreeService
   onComplete: () => void
   onCancel: () => void
+  isFromWrapper?: boolean
+  onPathSelect?: (path: string) => void
 }
 
-export function CreateWorktree({ worktreeService, onComplete, onCancel }: CreateWorktreeProps) {
+export function CreateWorktree({
+  worktreeService,
+  onComplete,
+  onCancel,
+  isFromWrapper = false,
+  onPathSelect,
+}: CreateWorktreeProps) {
   const [state, setState] = useState<CreateWorktreeState>({
     step: "directory",
     directoryName: "",
@@ -151,7 +159,9 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
       const worktreePath = getWorktreePath(
         gitRoot,
         state.directoryName,
-        config.worktreePathTemplate
+        config.worktreePathTemplate,
+        state.newBranch,
+        state.sourceBranch
       )
       const parentDir = worktreePath.replace(`/${state.directoryName}`, "")
 
@@ -199,6 +209,11 @@ export function CreateWorktree({ worktreeService, onComplete, onCancel }: Create
 
       if (config.terminalCommand) {
         await openTerminal(config.terminalCommand, worktreePath)
+      }
+
+      if (isFromWrapper && onPathSelect) {
+        onPathSelect(worktreePath)
+        return
       }
 
       setState((prev) => ({ ...prev, step: "success" }))

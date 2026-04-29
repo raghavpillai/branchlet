@@ -46,6 +46,11 @@ export function AppRouter({
 }: AppRouterProps) {
   const [borderColor, setBorderColor] = useState<string>(COLORS.MUTED)
 
+  const handlePathSelect = (path: string): void => {
+    process.stdout.write(`${path}\n`)
+    onExit()
+  }
+
   return (
     <BorderContext.Provider value={{ setBorderColor }}>
       <Box flexDirection="column">
@@ -69,6 +74,8 @@ export function AppRouter({
               worktreeService={worktreeService}
               onComplete={onBackToMenu}
               onCancel={onBackToMenu}
+              isFromWrapper={isFromWrapper}
+              onPathSelect={handlePathSelect}
             />
           </Box>
         )}
@@ -79,10 +86,7 @@ export function AppRouter({
               worktreeService={worktreeService}
               onBack={onBackToMenu}
               isFromWrapper={isFromWrapper}
-              onPathSelect={(path) => {
-                process.stdout.write(`${path}\n`)
-                onExit()
-              }}
+              onPathSelect={handlePathSelect}
             />
           </Box>
         )}
